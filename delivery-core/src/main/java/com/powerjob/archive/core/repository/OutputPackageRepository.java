@@ -33,7 +33,7 @@ public class OutputPackageRepository {
         return transactions.execute(status -> {
             List<OutputPackage> result = jdbc.query("WITH candidate AS (" +
                     " SELECT id FROM output_package WHERE " +
-                    " (run_status='READY' OR (run_status='RETRY_WAIT' AND next_retry_at<=now())) " +
+                    " (run_status='READY' OR (run_status IN ('RETRY_WAIT','WAITING') AND next_retry_at<=now())) " +
                     " AND status<>'DELIVERED' ORDER BY (rollover_count>0) DESC,delivery_date,id " +
                     " FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS (" +
                     " UPDATE output_package p SET run_status='RUNNING',lease_owner=?,lease_until=now()+interval '90 seconds'," +
@@ -76,9 +76,18 @@ public class OutputPackageRepository {
                 path, outputId);
     }
 
+    public void markWaiting(long id, long fence, String workerId, String manifest, java.time.Duration nextPoll) {
+        long seconds = Math.max(1, nextPoll.toSeconds());
+        int changed = jdbc.update("UPDATE output_package SET run_status='WAITING',manifest=COALESCE(?::jsonb,manifest)," +
+                "next_retry_at=now()+?*interval '1 second',lease_owner=NULL,lease_until=NULL,updated_at=now() " +
+                "WHERE id=? AND fence=? AND lease_owner=? AND run_status='RUNNING'",
+                manifest, seconds, id, fence, workerId);
+        if (changed != 1) throw new IllegalStateException("Stale output fence for package " + id);
+    }
+
     public void markRetry(long id, long fence, String workerId, String errorCode) {
         jdbc.update("UPDATE output_package SET run_status='RETRY_WAIT',retry_count=retry_count+1," +
-                "next_retry_at=now()+interval '1 second',last_error_code=?,lease_owner=NULL," +
+                "next_retry_at=now()+interval '5 seconds',last_error_code=?,lease_owner=NULL," +
                 "lease_until=NULL,updated_at=now() WHERE id=? AND fence=? AND lease_owner=?",
                 errorCode, id, fence, workerId);
     }

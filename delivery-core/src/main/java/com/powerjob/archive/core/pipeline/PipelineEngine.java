@@ -69,6 +69,13 @@ public class PipelineEngine {
         long runId = runs.start(null, output.id(), node.id(), node.type(), output.fence(), workerId);
         try {
             NodeResult result = handler(node).execute(new NodeContext(null, output, node, runId, output.fence(), workerId));
+            if (result.kind() == NodeResult.ResultKind.WAITING) {
+                outputs.markWaiting(output.id(), output.fence(), workerId,
+                        result.manifest() == null ? null : result.manifest().toString(), result.nextPoll());
+                runs.finish(runId, "WAITING", result.manifest() == null ? null : result.manifest().toString(), null);
+                log.info("Output node waiting outputPackageId={} node={} nextPoll={}", output.id(), node.id(), result.nextPoll());
+                return;
+            }
             boolean terminal = result.nextNode() == null;
             outputs.complete(output.id(), output.fence(), workerId, result.businessStatus(),
                     terminal ? node.id() : result.nextNode(),

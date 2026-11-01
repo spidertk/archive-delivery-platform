@@ -119,12 +119,11 @@ class RetryEndToEndTest {
 
         tickUntil(() -> count("SELECT count(*) FROM output_package") == 2, 60);
         long output1 = jdbc.queryForObject(
-                "SELECT id FROM output_package WHERE production_line_id=1", Long.class);
+                "SELECT min(id) FROM output_package WHERE production_line_id=1", Long.class);
         long source1 = jdbc.queryForObject(
                 "SELECT source_package_id FROM output_package WHERE id=?", Long.class, output1);
 
-        tickUntil(() -> jdbc.queryForObject("SELECT count(*) FROM output_package WHERE id=? " +
-                "AND last_error_code='IOException'", Integer.class, output1) == 1, 20);
+        awaitFailure(output1);
 
         Map<String, Object> failed = jdbc.queryForMap("SELECT status,run_status,current_node,retry_count," +
                 "fence,hz_path FROM output_package WHERE id=?", output1);
@@ -238,6 +237,17 @@ class RetryEndToEndTest {
     private int count(String sql) {
         Integer value = jdbc.queryForObject(sql, Integer.class);
         return value == null ? 0 : value;
+    }
+
+    private void awaitFailure(long outputId) throws Exception {
+        long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(10);
+        while (System.nanoTime() < deadline) {
+            Integer failed = jdbc.queryForObject("SELECT count(*) FROM output_package WHERE id=? " +
+                    "AND last_error_code='IOException' AND run_status='RETRY_WAIT'", Integer.class, outputId);
+            if (failed != null && failed == 1) return;
+            Thread.sleep(40);
+        }
+        throw new AssertionError("RETRY_WAIT was not observed for output " + outputId);
     }
 
     private void tickUntil(BooleanSupplier condition, int maxTicks) throws Exception {

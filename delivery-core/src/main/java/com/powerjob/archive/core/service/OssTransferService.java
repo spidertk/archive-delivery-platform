@@ -19,6 +19,7 @@ public class OssTransferService {
     private final OssDeliveryProperties properties;
     private final OSS hzOverride;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public OssTransferService(OssDeliveryProperties properties) {
         this(properties, null);
     }
@@ -64,6 +65,21 @@ public class OssTransferService {
 
     public String hzUri(String key) {
         return "oss://" + properties.getHz().getBucket() + "/" + key;
+    }
+
+    public java.util.Optional<ObjectMetadata> headSg(String key) {
+        OSS client = client(properties.getSg());
+        try {
+            String bucket = properties.getSg().getBucket();
+            return client.doesObjectExist(bucket, key)
+                    ? java.util.Optional.of(client.getObjectMetadata(bucket, key)) : java.util.Optional.empty();
+        } finally {
+            client.shutdown();
+        }
+    }
+
+    public String sgUri(String key) {
+        return "oss://" + properties.getSg().getBucket() + "/" + key;
     }
 
     private static OSS client(OssDeliveryProperties.Endpoint endpoint) {
