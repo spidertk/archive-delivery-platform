@@ -9,6 +9,7 @@
     <modules>
         <module>delivery-core</module>
         <module>delivery-worker</module>
+        <module>delivery-server</module>
     </modules>
     <properties>
         <java.version>17</java.version>

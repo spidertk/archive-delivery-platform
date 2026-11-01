@@ -24,7 +24,7 @@ class OssDiscoveryIntegrationTest {
         properties.setOssSourceBucket("junflow-ysai-source-hz-20260906");
         properties.setOssSourcePrefix("_derived/ysai-sftp-20261027/delivery_plan_0005/");
         OssClientFactory clients = new OssClientFactory(properties);
-        List<DiscoveredObject> objects = new OssDiscoveryService(clients, properties).discover();
+        List<DiscoveredObject> objects = new OssDiscoveryService(clients, properties, null, null, null, null).discover();
         assertThat(objects).hasSize(10);
         assertThat(objects.stream().filter(object -> object.productionLineId() == 1L)).hasSize(5);
         assertThat(objects.stream().filter(object -> object.productionLineId() == 2L)).hasSize(5);

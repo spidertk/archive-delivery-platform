@@ -38,14 +38,20 @@ public class OutputGroupNode implements NodeHandler {
         List<Long> existing = jdbc.query("SELECT id FROM output_package WHERE source_package_id=?",
                 (rs, row) -> rs.getLong(1), context.source().id());
         if (!existing.isEmpty()) return;
+        String archiveDate = jdbc.queryForObject("SELECT process_date::text FROM source_package WHERE id=?",
+                String.class, context.source().id());
+        int targetCount = context.source().productionLineId() == 1 ? 4 : 3;
+        jdbc.update("INSERT INTO production_group(production_line_id,archive_date,group_no,target_count) " +
+                        "VALUES (?,?::date,1,?) ON CONFLICT(production_line_id,archive_date,group_no) DO NOTHING",
+                context.source().productionLineId(), archiveDate, targetCount);
         var group = jdbc.queryForMap("SELECT * FROM production_group WHERE production_line_id=? " +
-                "AND status='FILLING' ORDER BY group_no FOR UPDATE LIMIT 1", context.source().productionLineId());
+                        "AND archive_date=?::date AND status='FILLING' ORDER BY group_no FOR UPDATE LIMIT 1",
+                context.source().productionLineId(), archiveDate);
         long groupId = ((Number) group.get("id")).longValue();
         int assigned = ((Number) group.get("assigned_count")).intValue();
         int target = ((Number) group.get("target_count")).intValue();
         if (assigned >= target) throw new IllegalStateException("FILLING group is already full");
         int sequence = assigned + 1;
-        String archiveDate = properties.getArchiveDate();
         LocalDate deliveryDate = LocalDate.parse(archiveDate);
         var cutoff = deliveryDate.plusDays(1).atTime(LocalTime.parse(properties.getDeliveryCutoffTime()))
                 .atZone(ZoneId.of(properties.getBusinessTimezone())).toOffsetDateTime();

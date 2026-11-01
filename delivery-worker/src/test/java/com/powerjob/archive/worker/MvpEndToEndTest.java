@@ -68,7 +68,7 @@ class MvpEndToEndTest {
     @Autowired JdbcTemplate jdbc;
 
     @Test
-    void deliversFivePackagesToEachOfTwoFtpGroups() throws Exception {
+    void deliversFourThreeThreePackagesToThreeFtpGroups() throws Exception {
         Path sourceDir = TEMP.resolve("sources");
         Files.createDirectories(sourceDir);
         for (int index = 0; index < 10; index++) {
@@ -102,7 +102,7 @@ class MvpEndToEndTest {
         }
         assertThat(outputs.countDelivered()).isEqualTo(10);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM production_group WHERE status='SEALED' " +
-                "AND target_count=5 AND assigned_count=5", Integer.class)).isEqualTo(2);
+                "AND assigned_count=target_count AND target_count IN (4,3)", Integer.class)).isEqualTo(3);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM request_mapping", Integer.class)).isEqualTo(40);
         assertThat(jdbc.queryForObject("SELECT count(DISTINCT new_request_id) FROM request_mapping", Integer.class))
                 .isEqualTo(40);

@@ -22,6 +22,7 @@ public class PackageTickProcessor implements BroadcastProcessor {
         int completed = 0;
         completed += engine.executeNext(1L, properties.getWorkerId());
         completed += engine.executeNext(2L, properties.getWorkerId());
+        completed += engine.executeNext(3L, properties.getWorkerId());
         return new ProcessResult(true, "completedNodes=" + completed);
     }
 }

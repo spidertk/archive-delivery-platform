@@ -43,6 +43,21 @@ public class SourcePackageRepository {
                 Long.class, object.bucketName(), object.objectKey(), object.objectVersion());
     }
 
+    public long upsertDiscovered(long runId, DiscoveredObject object) {
+        List<Long> inserted = jdbc.query("INSERT INTO source_package " +
+                        "(source_id,pipeline_version_id,definition_snapshot,bucket_name,object_key,object_version," +
+                        "object_etag,source_size,status,run_status,run_id) " +
+                        "SELECT s.id,r.pipeline_version_id,pv.definition,?,?,?,?,?,'DISCOVERED','READY',r.id " +
+                        "FROM delivery_run r JOIN pipeline_version pv ON pv.id=r.pipeline_version_id " +
+                        "JOIN ingest_source s ON s.bucket_ref=r.bucket_name AND s.object_prefix=r.object_prefix " +
+                        "WHERE r.id=? ON CONFLICT(bucket_name,object_key,object_version) DO NOTHING RETURNING id",
+                (rs, n) -> rs.getLong(1), object.bucketName(), object.objectKey(), object.objectVersion(),
+                object.etag(), object.size(), runId);
+        if (!inserted.isEmpty()) return inserted.get(0);
+        return jdbc.queryForObject("SELECT id FROM source_package WHERE bucket_name=? AND object_key=? AND object_version=?",
+                Long.class, object.bucketName(), object.objectKey(), object.objectVersion());
+    }
+
     public Optional<SourcePackage> claimNext(long lineId, String workerId) {
         return transactions.execute(status -> {
             List<SourcePackage> result = jdbc.query("WITH candidate AS (" +
