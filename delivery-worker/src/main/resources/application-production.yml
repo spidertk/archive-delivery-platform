@@ -1,4 +1,6 @@
 archive:
+  line-id: ${ARCHIVE_LINE_ID}
+  async-execution: true
   discovery-mode: oss
   debug-loop: ${ARCHIVE_DEBUG_LOOP:false}
   business-timezone: Asia/Shanghai
@@ -23,3 +25,29 @@ archive:
     source-slots-per-line: 1
     output-slots-global: 10
     max-attempts: 5
+  ftp:
+    lines:
+      1:
+        host: ${FTP_LINE_1_SSH_HOST}
+        user: ${FTP_LINE_1_SSH_USER}
+        key: ${FTP_LINE_1_SSH_KEY}
+        jump-host: ${FTP_LINE_1_JUMP_HOST:}
+        jump-user: ${FTP_LINE_1_JUMP_USER:}
+        jump-key: ${FTP_LINE_1_JUMP_KEY:}
+        remote-root: /srv/maas-sftp/maasData/archive
+      2:
+        host: ${FTP_LINE_2_SSH_HOST}
+        user: ${FTP_LINE_2_SSH_USER}
+        key: ${FTP_LINE_2_SSH_KEY}
+        jump-host: ${FTP_LINE_2_JUMP_HOST:}
+        jump-user: ${FTP_LINE_2_JUMP_USER:}
+        jump-key: ${FTP_LINE_2_JUMP_KEY:}
+        remote-root: /srv/maas-sftp/maasData/archive
+      3:
+        host: ${FTP_LINE_3_SSH_HOST}
+        user: ${FTP_LINE_3_SSH_USER}
+        key: ${FTP_LINE_3_SSH_KEY}
+        jump-host: ${FTP_LINE_3_JUMP_HOST:}
+        jump-user: ${FTP_LINE_3_JUMP_USER:}
+        jump-key: ${FTP_LINE_3_JUMP_KEY:}
+        remote-root: /srv/maas-sftp/maasData/archive

@@ -1,42 +1,152 @@
+x-worker-common: &worker-common
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.worker
+  depends_on:
+    postgres:
+      condition: service_healthy
+    powerjob-server:
+      condition: service_started
+  environment: &worker-environment
+    SPRING_PROFILES_ACTIVE: production
+    ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
+    ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:-archive}
+    ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
+    ARCHIVE_DISCOVERY_MODE: oss
+    ARCHIVE_DEBUG_LOOP: "false"
+    OSS_SOURCE_ENDPOINT: ${OSS_SOURCE_ENDPOINT:-https://oss-cn-hangzhou.aliyuncs.com}
+    OSS_SOURCE_ACCESS_KEY_ID: ${OSS_SOURCE_ACCESS_KEY_ID:-}
+    OSS_SOURCE_ACCESS_KEY_SECRET: ${OSS_SOURCE_ACCESS_KEY_SECRET:-}
+    OSS_SOURCE_BUCKET: ${OSS_SOURCE_BUCKET:-junflow-ysai-source-hz-20260906}
+    OSS_SOURCE_PREFIX: ${OSS_SOURCE_PREFIX:-_derived/ysai-sftp-20261027/delivery_plan_0005/}
+    OSS_HZ_ENDPOINT: ${OSS_HZ_ENDPOINT:-}
+    OSS_HZ_ACCESS_KEY_ID: ${OSS_HZ_ACCESS_KEY_ID:-}
+    OSS_HZ_ACCESS_KEY_SECRET: ${OSS_HZ_ACCESS_KEY_SECRET:-}
+    OSS_HZ_BUCKET: ${OSS_HZ_BUCKET:-hz-storage-20261013-6vmlk}
+    OSS_SG_ENDPOINT: ${OSS_SG_ENDPOINT:-}
+    OSS_SG_ACCESS_KEY_ID: ${OSS_SG_ACCESS_KEY_ID:-}
+    OSS_SG_ACCESS_KEY_SECRET: ${OSS_SG_ACCESS_KEY_SECRET:-}
+    OSS_SG_BUCKET: ${OSS_SG_BUCKET:-sg-storage-20261013-6vmlk}
+    FTP_LINE_1_SSH_HOST: ${FTP_LINE_1_SSH_HOST:-}
+    FTP_LINE_1_SSH_USER: ${FTP_LINE_1_SSH_USER:-}
+    FTP_LINE_1_SSH_KEY: ${FTP_LINE_1_SSH_KEY:-/dev/null}
+    FTP_LINE_1_JUMP_HOST: ${FTP_LINE_1_JUMP_HOST:-}
+    FTP_LINE_1_JUMP_USER: ${FTP_LINE_1_JUMP_USER:-}
+    FTP_LINE_1_JUMP_KEY: ${FTP_LINE_1_JUMP_KEY:-/dev/null}
+    FTP_LINE_2_SSH_HOST: ${FTP_LINE_2_SSH_HOST:-}
+    FTP_LINE_2_SSH_USER: ${FTP_LINE_2_SSH_USER:-}
+    FTP_LINE_2_SSH_KEY: ${FTP_LINE_2_SSH_KEY:-/dev/null}
+    FTP_LINE_2_JUMP_HOST: ${FTP_LINE_2_JUMP_HOST:-}
+    FTP_LINE_2_JUMP_USER: ${FTP_LINE_2_JUMP_USER:-}
+    FTP_LINE_2_JUMP_KEY: ${FTP_LINE_2_JUMP_KEY:-/dev/null}
+    FTP_LINE_3_SSH_HOST: ${FTP_LINE_3_SSH_HOST:-}
+    FTP_LINE_3_SSH_USER: ${FTP_LINE_3_SSH_USER:-}
+    FTP_LINE_3_SSH_KEY: ${FTP_LINE_3_SSH_KEY:-/dev/null}
+    FTP_LINE_3_JUMP_HOST: ${FTP_LINE_3_JUMP_HOST:-}
+    FTP_LINE_3_JUMP_USER: ${FTP_LINE_3_JUMP_USER:-}
+    FTP_LINE_3_JUMP_KEY: ${FTP_LINE_3_JUMP_KEY:-/dev/null}
+    POWERJOB_ENABLED: "true"
+    POWERJOB_APP_NAME: archive-delivery-mvp
+    POWERJOB_SERVER_ADDRESS: powerjob-server:7700
+  volumes: &worker-volumes
+    - archive_data:/data
+    - ${FTP_LINE_1_SSH_KEY:-/dev/null}:${FTP_LINE_1_SSH_KEY:-/dev/null}:ro
+    - ${FTP_LINE_1_JUMP_KEY:-/dev/null}:${FTP_LINE_1_JUMP_KEY:-/dev/null}:ro
+    - ${FTP_LINE_2_SSH_KEY:-/dev/null}:${FTP_LINE_2_SSH_KEY:-/dev/null}:ro
+    - ${FTP_LINE_2_JUMP_KEY:-/dev/null}:${FTP_LINE_2_JUMP_KEY:-/dev/null}:ro
+    - ${FTP_LINE_3_SSH_KEY:-/dev/null}:${FTP_LINE_3_SSH_KEY:-/dev/null}:ro
+    - ${FTP_LINE_3_JUMP_KEY:-/dev/null}:${FTP_LINE_3_JUMP_KEY:-/dev/null}:ro
+
 services:
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: archive_delivery
-      POSTGRES_USER: archive
-      POSTGRES_PASSWORD: archive_local
+      POSTGRES_USER: ${ARCHIVE_DB_USER:-archive}
+      POSTGRES_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
     ports:
-      - "55432:5432"
+      - "127.0.0.1:55432:5432"
     volumes:
       - archive_pg:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U archive -d archive_delivery"]
+      test: ["CMD-SHELL", "pg_isready -U ${ARCHIVE_DB_USER:-archive} -d archive_delivery"]
       interval: 2s
       timeout: 2s
       retries: 30
-  worker:
+
+  mysql:
+    image: mysql:8.0.36
+    environment:
+      MYSQL_ROOT_PASSWORD: powerjob_local
+      MYSQL_DATABASE: powerjob
+    volumes:
+      - powerjob_mysql:/var/lib/mysql
+      - ./powerjob-mysql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -ppowerjob_local --silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  powerjob-server:
+    image: powerjob/powerjob-server:5.1.7
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_NAME: powerjob
+      DB_USERNAME: root
+      DB_PASSWORD: powerjob_local
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:7700:7700"
+
+  archive-server:
     build:
       context: ..
-      dockerfile: deploy/Dockerfile.worker
+      dockerfile: deploy/Dockerfile.server
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
-      ARCHIVE_DB_USER: archive
-      ARCHIVE_DB_PASSWORD: archive_local
-      ARCHIVE_DISCOVERY_MODE: ${ARCHIVE_DISCOVERY_MODE:-oss}
-      ARCHIVE_DEBUG_LOOP: ${ARCHIVE_DEBUG_LOOP:-true}
-      OSS_SOURCE_ENDPOINT: ${OSS_SOURCE_ENDPOINT:-https://oss-cn-hangzhou.aliyuncs.com}
-      OSS_SOURCE_ACCESS_KEY_ID: ${OSS_SOURCE_ACCESS_KEY_ID:-}
-      OSS_SOURCE_ACCESS_KEY_SECRET: ${OSS_SOURCE_ACCESS_KEY_SECRET:-}
-      OSS_SOURCE_BUCKET: ${OSS_SOURCE_BUCKET:-junflow-ysai-source-hz-20260906}
-      OSS_SOURCE_PREFIX: ${OSS_SOURCE_PREFIX:-_derived/ysai-sftp-20261027/delivery_plan_0005/}
-      POWERJOB_ENABLED: ${POWERJOB_ENABLED:-false}
-      POWERJOB_SERVER_ADDRESS: ${POWERJOB_SERVER_ADDRESS:-localhost:7700}
-    volumes:
-      - archive_data:/data
-      - ../../old/sample:/samples:ro
+      ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:-archive}
+      ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q UP <&3"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+  worker-line-1:
+    <<: *worker-common
+    environment:
+      <<: *worker-environment
+      HOSTNAME: worker-line-1
+      ARCHIVE_LINE_ID: "1"
+    volumes: *worker-volumes
+
+  worker-line-2:
+    <<: *worker-common
+    environment:
+      <<: *worker-environment
+      HOSTNAME: worker-line-2
+      ARCHIVE_LINE_ID: "2"
+    volumes: *worker-volumes
+
+  worker-line-3:
+    <<: *worker-common
+    environment:
+      <<: *worker-environment
+      HOSTNAME: worker-line-3
+      ARCHIVE_LINE_ID: "3"
+    volumes: *worker-volumes
+
 volumes:
   archive_pg:
+  powerjob_mysql:
   archive_data:

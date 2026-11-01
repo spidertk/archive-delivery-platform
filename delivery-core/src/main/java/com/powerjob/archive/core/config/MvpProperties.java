@@ -7,6 +7,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "archive")
 public class MvpProperties {
     private String workerId = "local-worker";
+    private long lineId;
+    private boolean asyncExecution;
     private String discoveryMode = "oss";
     private boolean debugLoop;
     private String archiveDate = "2026-10-30";
@@ -29,6 +31,10 @@ public class MvpProperties {
 
     public String getWorkerId() { return workerId; }
     public void setWorkerId(String workerId) { this.workerId = workerId; }
+    public long getLineId() { return lineId; }
+    public void setLineId(long lineId) { this.lineId = lineId; }
+    public boolean isAsyncExecution() { return asyncExecution; }
+    public void setAsyncExecution(boolean asyncExecution) { this.asyncExecution = asyncExecution; }
     public String getDiscoveryMode() { return discoveryMode; }
     public void setDiscoveryMode(String discoveryMode) { this.discoveryMode = discoveryMode; }
     public boolean isDebugLoop() { return debugLoop; }

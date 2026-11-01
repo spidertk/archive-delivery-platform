@@ -22,6 +22,8 @@ powerjob:
     allow-lazy-connect-server: true
 archive:
   worker-id: ${HOSTNAME:local-worker}
+  line-id: ${ARCHIVE_LINE_ID:0}
+  async-execution: ${ARCHIVE_ASYNC_EXECUTION:false}
   discovery-mode: ${ARCHIVE_DISCOVERY_MODE:oss}
   debug-loop: ${ARCHIVE_DEBUG_LOOP:false}
   archive-date: ${ARCHIVE_DATE:2026-10-30}
