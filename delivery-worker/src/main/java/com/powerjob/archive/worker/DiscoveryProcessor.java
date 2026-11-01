@@ -2,6 +2,7 @@ package com.powerjob.archive.worker;
 
 import com.powerjob.archive.core.service.OssDiscoveryService;
 import com.powerjob.archive.core.service.PlanningService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import tech.powerjob.worker.core.processor.ProcessResult;
@@ -11,6 +12,7 @@ import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
 import java.util.List;
 
 @Component
+@ConditionalOnProperty(name = "archive.discovery-mode", havingValue = "oss")
 public class DiscoveryProcessor implements BasicProcessor {
     private final OssDiscoveryService discovery;
     private final PlanningService planning;

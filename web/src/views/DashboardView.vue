@@ -65,6 +65,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { getPackageDetail, getPackages, getSummary, getTimeline, resumeRun, retryPackage } from '../api'
+import PackageTimeline from '../components/PackageTimeline.vue'
 import type { Filters, GroupProgress, PackageItem, Summary, Timeline } from '../types'
 
 const filters = reactive<Filters>({ runId: 1 })
