@@ -18,5 +18,6 @@ public record OutputPackage(
         String currentNode,
         String leaseOwner,
         long fence,
+        int retryCount,
         JsonNode manifest) {
 }

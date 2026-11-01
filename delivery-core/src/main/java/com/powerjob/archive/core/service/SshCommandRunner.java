@@ -67,11 +67,14 @@ public class SshCommandRunner {
         if (!process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS)) {
             process.destroyForcibly();
             process.waitFor(5, TimeUnit.SECONDS);
-            throw new IllegalStateException("SSH command timed out");
+            throw new java.net.SocketTimeoutException("SSH command timed out");
         }
         String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        if (process.exitValue() == 65 || process.exitValue() == 66) {
+            throw new RemoteConflictException("Remote package conflict: " + output.strip());
+        }
         if (process.exitValue() != 0) {
-            throw new IllegalStateException("SSH command failed with exit " + process.exitValue() + ": " + output.strip());
+            throw new java.io.IOException("SSH command failed with exit " + process.exitValue() + ": " + output.strip());
         }
         return output;
     }

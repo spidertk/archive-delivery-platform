@@ -5,6 +5,7 @@ import com.powerjob.archive.core.domain.SourcePackage;
 import com.powerjob.archive.core.repository.NodeRunRepository;
 import com.powerjob.archive.core.repository.OutputPackageRepository;
 import com.powerjob.archive.core.repository.SourcePackageRepository;
+import com.powerjob.archive.core.service.RetryPolicy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,14 +22,17 @@ public class PipelineEngine {
     private final OutputPackageRepository outputs;
     private final NodeRunRepository runs;
     private final PipelineRepository pipelines;
+    private final RetryPolicy retries;
     private final Map<String, NodeHandler> handlers;
 
     public PipelineEngine(SourcePackageRepository sources, OutputPackageRepository outputs,
-                          NodeRunRepository runs, PipelineRepository pipelines, List<NodeHandler> nodeHandlers) {
+                          NodeRunRepository runs, PipelineRepository pipelines, RetryPolicy retries,
+                          List<NodeHandler> nodeHandlers) {
         this.sources = sources;
         this.outputs = outputs;
         this.runs = runs;
         this.pipelines = pipelines;
+        this.retries = retries;
         this.handlers = nodeHandlers.stream().collect(Collectors.toUnmodifiableMap(NodeHandler::type, Function.identity()));
     }
 
@@ -38,7 +42,7 @@ public class PipelineEngine {
             executeSource(source.get(), workerId);
             return 1;
         }
-        var output = outputs.claimNext(workerId);
+        var output = outputs.claimNext(lineId, workerId);
         if (output.isPresent()) {
             executeOutput(output.get(), workerId);
             return 1;
@@ -84,7 +88,7 @@ public class PipelineEngine {
             log.info("Output node succeeded outputPackageId={} node={} status={}", output.id(), node.id(), result.businessStatus());
         } catch (Exception e) {
             runs.finish(runId, "FAILED", null, e.getMessage());
-            outputs.markRetry(output.id(), output.fence(), workerId, e.getClass().getSimpleName());
+            outputs.markFailure(output.id(), output.fence(), workerId, retries.onFailure(e, output.retryCount(), 5));
             log.warn("Output node failed outputPackageId={} node={}", output.id(), node.id(), e);
         }
     }

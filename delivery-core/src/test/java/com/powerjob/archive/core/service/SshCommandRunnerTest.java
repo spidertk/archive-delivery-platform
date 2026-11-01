@@ -45,7 +45,7 @@ class SshCommandRunnerTest {
         fakeSsh.toFile().setExecutable(true);
         SshCommandRunner runner = new SshCommandRunner(properties(), fakeSsh.toString());
         assertThatThrownBy(() -> runner.run(1, "/opt/archive-delivery/bin/sg_download.sh",
-                List.of("false"), Duration.ofMillis(50))).isInstanceOf(IllegalStateException.class)
+                List.of("false"), Duration.ofMillis(50))).isInstanceOf(java.net.SocketTimeoutException.class)
                 .hasMessageContaining("timed out");
     }
 

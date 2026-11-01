@@ -29,9 +29,9 @@ class PipelineEngineWaitingTest {
         PipelineRepository pipelines = mock(PipelineRepository.class);
         JsonNode manifest = new ObjectMapper().createObjectNode();
         OutputPackage output = new OutputPackage(10, 20, 2, manifest, 1, 1, "2026-10-30", "2026-10-30",
-                1, "batch_00001.tar.gz", "HZ_UPLOADED", "RUNNING", "sgVerify", "worker", 1, manifest);
+                1, "batch_00001.tar.gz", "HZ_UPLOADED", "RUNNING", "sgVerify", "worker", 1, 0, manifest);
         when(sources.claimNext(anyLong(), anyString())).thenReturn(Optional.empty());
-        when(outputs.claimNext(anyString())).thenReturn(Optional.of(output));
+        when(outputs.claimNext(anyLong(), anyString())).thenReturn(Optional.of(output));
         NodeDefinition definition = new NodeDefinition("sgVerify", "OUTPUT", "oss.sg-verify", Map.of());
         when(pipelines.read(manifest)).thenReturn(new PipelineDefinition("archive", 2, Map.of(), List.of(definition)));
         when(runs.start(org.mockito.ArgumentMatchers.<Long>any(), org.mockito.ArgumentMatchers.<Long>any(),
@@ -43,7 +43,8 @@ class PipelineEngineWaitingTest {
                 return NodeResult.waiting("sgVerify", manifest, Duration.ofSeconds(30));
             }
         };
-        new PipelineEngine(sources, outputs, runs, pipelines, List.of(handler)).executeNext(1, "worker");
+        new PipelineEngine(sources, outputs, runs, pipelines, new com.powerjob.archive.core.service.RetryPolicy(),
+                List.of(handler)).executeNext(1, "worker");
         verify(outputs).markWaiting(10, 1, "worker", manifest.toString(), Duration.ofSeconds(30));
         verify(runs).finish(100, "WAITING", manifest.toString(), null);
         verify(outputs, never()).markRetry(anyLong(), anyLong(), anyString(), anyString());

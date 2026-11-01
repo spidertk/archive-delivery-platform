@@ -75,6 +75,6 @@ class OssHzUploadNodeTest {
         JsonNode manifest = new ObjectMapper().readTree("{\"artifacts\":[{\"path\":\"" + artifact +
                 "\",\"name\":\"batch_00001.tar.gz\",\"bytes\":7,\"sha256\":\"" + sha + "\"}]}");
         return new OutputPackage(10, 20, 2, manifest, 1, 1, "2026-10-30", "2026-10-30", 1,
-                "batch_00001.tar.gz", "GROUPED", "RUNNING", "hzUpload", "worker", 1, manifest);
+                "batch_00001.tar.gz", "GROUPED", "RUNNING", "hzUpload", "worker", 1, 0, manifest);
     }
 }

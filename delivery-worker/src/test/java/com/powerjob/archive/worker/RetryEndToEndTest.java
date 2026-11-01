@@ -245,6 +245,7 @@ class RetryEndToEndTest {
             Integer failed = jdbc.queryForObject("SELECT count(*) FROM output_package WHERE id=? " +
                     "AND last_error_code='IOException' AND run_status='RETRY_WAIT'", Integer.class, outputId);
             if (failed != null && failed == 1) return;
+            processor.process(new TaskContext());
             Thread.sleep(40);
         }
         throw new AssertionError("RETRY_WAIT was not observed for output " + outputId);

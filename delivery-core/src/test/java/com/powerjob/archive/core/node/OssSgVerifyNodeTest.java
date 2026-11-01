@@ -114,7 +114,7 @@ class OssSgVerifyNodeTest {
         JsonNode snapshot = new ObjectMapper().createObjectNode();
         ((com.fasterxml.jackson.databind.node.ObjectNode) snapshot).putObject("config").put("crrWaitSeconds", wait);
         return new OutputPackage(10, 20, 2, snapshot, 1, 1, "2026-10-30", "2026-10-30", 1,
-                "batch_00001.tar.gz", "HZ_UPLOADED", "RUNNING", "sgVerify", "worker", 1, manifest);
+                "batch_00001.tar.gz", "HZ_UPLOADED", "RUNNING", "sgVerify", "worker", 1, 0, manifest);
     }
 
     private static ObjectMetadata metadata(long size, String sha) {

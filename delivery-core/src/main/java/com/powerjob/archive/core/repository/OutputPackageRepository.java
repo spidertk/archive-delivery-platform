@@ -25,21 +25,25 @@ public class OutputPackageRepository {
                 rs.getLong("production_group_id"), rs.getLong("production_line_id"),
                 rs.getString("archive_date"), rs.getString("delivery_date"), rs.getInt("group_seq"),
                 rs.getString("new_package_name"), rs.getString("status"), rs.getString("run_status"),
-                rs.getString("current_node"), rs.getString("lease_owner"), rs.getLong("fence"),
+                rs.getString("current_node"), rs.getString("lease_owner"), rs.getLong("fence"), rs.getInt("retry_count"),
                 JdbcJson.read(objectMapper, rs.getString("manifest")));
     }
 
-    public Optional<OutputPackage> claimNext(String workerId) {
+    public Optional<OutputPackage> claimNext(long lineId, String workerId) {
         return transactions.execute(status -> {
+            jdbc.query("SELECT pg_advisory_xact_lock(?)", rs -> null, 8_261_032_001L);
+            int running = jdbc.queryForObject("SELECT count(*) FROM output_package " +
+                    "WHERE run_status='RUNNING' AND lease_until>=now()", Integer.class);
+            if (running >= 10) return Optional.empty();
             List<OutputPackage> result = jdbc.query("WITH candidate AS (" +
-                    " SELECT id FROM output_package WHERE " +
-                    " (run_status='READY' OR (run_status IN ('RETRY_WAIT','WAITING') AND next_retry_at<=now())) " +
-                    " AND status<>'DELIVERED' ORDER BY (rollover_count>0) DESC,delivery_date,id " +
-                    " FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS (" +
+                    " SELECT id FROM output_package WHERE production_line_id=? " +
+                    " AND (run_status='READY' OR (run_status IN ('RETRY_WAIT','WAITING') AND next_retry_at<=now())) " +
+                    " AND status<>'DELIVERED' ORDER BY (rollover_count>0) DESC,delivery_date,archive_date," +
+                    " production_group_id,group_seq FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS (" +
                     " UPDATE output_package p SET run_status='RUNNING',lease_owner=?,lease_until=now()+interval '90 seconds'," +
                     " fence=p.fence+1,updated_at=now() FROM candidate c WHERE p.id=c.id RETURNING p.*) " +
                     "SELECT c.*,sp.definition_snapshot FROM claimed c " +
-                    "JOIN source_package sp ON sp.id=c.source_package_id", mapper, workerId);
+                    "JOIN source_package sp ON sp.id=c.source_package_id", mapper, lineId, workerId);
             return result.stream().findFirst();
         });
     }
@@ -54,7 +58,7 @@ public class OutputPackageRepository {
         int changed = jdbc.update("UPDATE output_package SET status=?,current_node=?,run_status=?," +
                 "manifest=COALESCE(?::jsonb,manifest),lease_owner=NULL,lease_until=NULL," +
                 "retry_count=0,next_retry_at=NULL,last_error_code=NULL," +
-                "delivered_at=CASE WHEN ? THEN now() ELSE delivered_at END,updated_at=now() " +
+                "delivered_at=CASE WHEN ? THEN COALESCE(delivered_at,now()) ELSE delivered_at END,updated_at=now() " +
                 "WHERE id=? AND fence=? AND lease_owner=? AND run_status='RUNNING'",
                 businessStatus, nextNode, terminal ? "SUCCEEDED" : "READY", manifest, terminal,
                 id, fence, workerId);
@@ -82,6 +86,16 @@ public class OutputPackageRepository {
                 "next_retry_at=now()+?*interval '1 second',lease_owner=NULL,lease_until=NULL,updated_at=now() " +
                 "WHERE id=? AND fence=? AND lease_owner=? AND run_status='RUNNING'",
                 manifest, seconds, id, fence, workerId);
+        if (changed != 1) throw new IllegalStateException("Stale output fence for package " + id);
+    }
+
+    public void markFailure(long id, long fence, String workerId, com.powerjob.archive.core.service.RetryPolicy.Decision decision) {
+        int changed = jdbc.update("UPDATE output_package SET run_status=?,retry_count=?," +
+                "next_retry_at=CASE WHEN ?=0 THEN NULL ELSE now()+?*interval '1 second' END," +
+                "last_error_code=?,lease_owner=NULL,lease_until=NULL,updated_at=now() " +
+                "WHERE id=? AND fence=? AND lease_owner=? AND run_status='RUNNING'",
+                decision.runStatus(), decision.retryCount(), decision.nextRetrySeconds(), decision.nextRetrySeconds(),
+                decision.errorCode(), id, fence, workerId);
         if (changed != 1) throw new IllegalStateException("Stale output fence for package " + id);
     }
 
