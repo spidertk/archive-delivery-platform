@@ -40,12 +40,15 @@ public class PythonRepairNode implements NodeHandler {
         Path source = Path.of(context.source().manifest().required("localPath").asText());
         JsonNode inspection = run("--source", source.toString(), "--inspect");
         int count = inspection.required("requestCount").asInt();
-        String namespace = "customer-request:" + properties.getArchiveDate().replace("-", "");
+        String archiveDate = jdbc.queryForObject("SELECT COALESCE((SELECT r.job_date::text FROM delivery_run r " +
+                "WHERE r.id=s.run_id),?) FROM source_package s WHERE s.id=?", String.class,
+                properties.getArchiveDate(), context.source().id());
+        String namespace = "customer-request:" + archiveDate.replace("-", "");
         NumberReservationService.NumberRange range = numbers.reserve(context.source().id(), count, namespace);
         Path target = Path.of(properties.getWorkRoot(), "source-" + context.source().id(), "repair");
         Path manifestPath = target.resolve("manifest.json");
         JsonNode manifest = run("--source", source.toString(), "--target", target.toString(),
-                "--archive-date", properties.getArchiveDate(), "--provider-code", provider(context.source().productionLineId()),
+                "--archive-date", archiveDate, "--provider-code", provider(context.source().productionLineId()),
                 "--start-number", Long.toString(range.start()), "--manifest", manifestPath.toString());
         if (manifest.required("requestCount").asInt() != count) {
             throw new IllegalStateException("Repair request count changed between inspect and repair");

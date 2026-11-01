@@ -84,6 +84,74 @@ class ArchiveRepairTest(unittest.TestCase):
             self.assertEqual(metadata["requestTime"], "2026-10-30 00:00:00")
             self.assertIsNotNone(archive.extractfile(new_id + "/biz_response.json"))
 
+    def test_golden_rules_and_deterministic_repair(self):
+        source_dir = self.root / "input"
+        source_dir.mkdir()
+        for name, mode, response, original_time in (
+                ("req_z", "STREAM", "biz_response.json", "2026-10-27 12:34:56"),
+                ("req_a", "SYNC", "biz_stream_response.jsonl", "2026-10-27 01:02:03")):
+            request = source_dir / name
+            request.mkdir()
+            (request / "metadata.json").write_text(json.dumps({
+                "requestId": "old-" + name, "requestMode": mode, "requestTime": original_time
+            }), encoding="utf-8")
+            (request / "biz_request.json").write_text("{}", encoding="utf-8")
+            (request / response).write_text("{}\n", encoding="utf-8")
+        source = self.root / "batch_00007.tar.gz"
+        with tarfile.open(source, "w:gz") as archive:
+            archive.add(source_dir / "req_z", arcname="req_z")
+            archive.add(source_dir / "req_a", arcname="req_a")
+
+        outputs = []
+        for run in ("first", "second"):
+            target = self.root / run
+            manifest = target / "manifest.json"
+            result = self.run_script("--source", source, "--target", target,
+                                     "--archive-date", "2026-11-01", "--provider-code", "june",
+                                     "--start-number", "20", "--manifest", manifest)
+            payload = json.loads(result.stdout)
+            artifact = Path(payload["artifacts"][0]["path"])
+            self.assertLessEqual(artifact.stat().st_size, 100 * 1024 * 1024)
+            with tarfile.open(artifact, "r:gz") as archive:
+                for index, (mode, original_time) in enumerate(
+                        (("SYNC", "01:02:03"), ("STREAM", "12:34:56")), start=20):
+                    new_id = "req_20261101_{:09d}".format(index)
+                    metadata = json.load(archive.extractfile(new_id + "/metadata.json"))
+                    self.assertEqual(metadata["requestId"], new_id)
+                    self.assertEqual(metadata["providerCode"], "june")
+                    self.assertEqual(metadata["requestTime"], "2026-11-01 " + original_time)
+                    names = [Path(name).name for name in archive.getnames()
+                             if name.startswith(new_id + "/") and "response" in name]
+                    self.assertEqual(names, ["biz_response.json" if mode == "SYNC"
+                                             else "biz_stream_response.jsonl"])
+            outputs.append((payload["mappings"], payload["artifacts"][0]["sha256"]))
+        self.assertEqual(outputs[0], outputs[1])
+
+    def test_missing_protocol_files_do_not_publish_output(self):
+        for missing in ("biz_request.json", "response"):
+            with self.subTest(missing=missing):
+                case = self.root / missing
+                request = case / "req_old"
+                request.mkdir(parents=True)
+                (request / "metadata.json").write_text(json.dumps({
+                    "requestId": "old", "requestMode": "STREAM"
+                }), encoding="utf-8")
+                if missing != "biz_request.json":
+                    (request / "biz_request.json").write_text("{}", encoding="utf-8")
+                if missing != "response":
+                    (request / "biz_stream_response.jsonl").write_text("{}\n", encoding="utf-8")
+                source = case / "batch_00008.tar.gz"
+                with tarfile.open(source, "w:gz") as archive:
+                    archive.add(request, arcname="req_old")
+                target = case / "out"
+                manifest = case / "manifest.json"
+                self.run_script("--source", source, "--target", target,
+                                "--archive-date", "2026-11-01", "--provider-code", "june",
+                                "--start-number", "1", "--manifest", manifest, expected=1)
+                self.assertFalse((target / "batch_00008.tar.gz").exists())
+                self.assertFalse((target / "batch_00008.tar.gz.tmp").exists())
+                self.assertFalse(manifest.exists())
+
 
 if __name__ == "__main__":
     unittest.main()

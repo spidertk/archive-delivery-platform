@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import gzip
 import hashlib
 import json
 import os
@@ -9,7 +10,10 @@ import tarfile
 import tempfile
 from pathlib import Path
 
+from legacy_fix_archive import fix_request, verify_output
+
 BATCH_PATTERN = re.compile(r"(batch_\d{5})\.tar\.gz$")
+MAX_ARTIFACT_BYTES = 100 * 1024 * 1024
 
 
 def sha256(path):
@@ -45,34 +49,13 @@ def safe_extract(source, target):
         archive.extractall(target)
 
 
-def repair_request(request_dir, new_request_id, archive_date, provider_code):
-    metadata_path = request_dir / "metadata.json"
-    if not metadata_path.is_file():
-        raise FileNotFoundError("Missing metadata.json in " + request_dir.name)
-    if not (request_dir / "biz_request.json").is_file():
-        raise FileNotFoundError("Missing biz_request.json in " + request_dir.name)
-    with metadata_path.open(encoding="utf-8") as stream:
-        metadata = json.load(stream)
-    original_request_id = metadata.get("requestId")
-    original_time = metadata.get("requestTime", "")
-    time_part = original_time.split(" ", 1)[1] if " " in original_time else "00:00:00"
-    metadata["requestId"] = new_request_id
-    metadata["providerCode"] = provider_code
-    metadata["requestTime"] = archive_date + " " + time_part
-    stream_response = request_dir / "biz_stream_response.jsonl"
-    sync_response = request_dir / "biz_response.json"
-    mode = metadata.get("requestMode", "")
-    if mode == "STREAM" and sync_response.exists() and not stream_response.exists():
-        sync_response.rename(stream_response)
-    elif mode == "SYNC" and stream_response.exists() and not sync_response.exists():
-        stream_response.rename(sync_response)
-    if mode == "STREAM" and not stream_response.is_file():
-        raise FileNotFoundError("Missing STREAM response in " + request_dir.name)
-    if mode == "SYNC" and not sync_response.is_file():
-        raise FileNotFoundError("Missing SYNC response in " + request_dir.name)
-    with metadata_path.open("w", encoding="utf-8") as stream:
-        json.dump(metadata, stream, ensure_ascii=False)
-    return original_request_id
+def stable_member(member):
+    member.mtime = 0
+    member.uid = 0
+    member.gid = 0
+    member.uname = ""
+    member.gname = ""
+    return member
 
 
 def repair(source, target, archive_date, provider_code, start_number, manifest_path):
@@ -94,7 +77,7 @@ def repair(source, target, archive_date, provider_code, start_number, manifest_p
             old_path = temp_dir / old_name
             new_path = temp_dir / new_request_id
             old_path.rename(new_path)
-            original_request_id = repair_request(new_path, new_request_id, archive_date, provider_code)
+            original_request_id = fix_request(new_path, new_request_id, archive_date, provider_code)
             mappings.append({
                 "memberKey": old_name,
                 "originalPath": old_name,
@@ -106,10 +89,20 @@ def repair(source, target, archive_date, provider_code, start_number, manifest_p
         batch_name = (match.group(1) if match else "batch_00001") + ".tar.gz"
         artifact = target / batch_name
         temporary_artifact = target / (batch_name + ".tmp")
-        with tarfile.open(temporary_artifact, "w:gz") as archive:
-            for mapping in mappings:
-                archive.add(temp_dir / mapping["newRequestId"], arcname=mapping["newRequestId"])
-        os.replace(temporary_artifact, artifact)
+        try:
+            with temporary_artifact.open("wb") as raw:
+                with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
+                    with tarfile.open(fileobj=compressed, mode="w") as archive:
+                        for mapping in mappings:
+                            archive.add(temp_dir / mapping["newRequestId"],
+                                        arcname=mapping["newRequestId"], filter=stable_member)
+            if temporary_artifact.stat().st_size > MAX_ARTIFACT_BYTES:
+                raise ValueError("Output artifact exceeds 100 MiB")
+            verify_output(temporary_artifact, archive_date, provider_code)
+            os.replace(temporary_artifact, artifact)
+        except Exception:
+            temporary_artifact.unlink(missing_ok=True)
+            raise
         manifest = {
             "protocolVersion": 1,
             "sourceFile": str(source),
