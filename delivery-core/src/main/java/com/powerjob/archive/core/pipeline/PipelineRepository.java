@@ -24,7 +24,10 @@ public class PipelineRepository {
                 node.required("scope").asText(),
                 node.required("type").asText(),
                 objectMapper.convertValue(node.path("config"), new TypeReference<Map<String, Object>>() {}))));
+        Map<String, Object> config = snapshot.has("config")
+                ? objectMapper.convertValue(snapshot.required("config"), new TypeReference<Map<String, Object>>() {})
+                : Map.of();
         return new PipelineDefinition(snapshot.required("pipelineCode").asText(),
-                snapshot.required("version").asInt(), List.copyOf(nodes));
+                snapshot.required("version").asInt(), Map.copyOf(config), List.copyOf(nodes));
     }
 }
