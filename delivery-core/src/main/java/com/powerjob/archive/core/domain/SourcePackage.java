@@ -10,6 +10,7 @@ public record SourcePackage(
         String objectKey,
         String objectVersion,
         long sourceSize,
+        String sourceSha256,
         String status,
         String runStatus,
         long productionLineId,

@@ -45,6 +45,8 @@ public class DownloadNode implements NodeHandler {
         var manifest = mapper.createObjectNode();
         manifest.put("localPath", target.toAbsolutePath().toString());
         manifest.put("sha256", sha);
+        manifest.put("sourceSha256", sha);
+        manifest.put("objectVersion", context.source().objectVersion());
         return NodeResult.of("repair", "DOWNLOADED", manifest);
     }
 }

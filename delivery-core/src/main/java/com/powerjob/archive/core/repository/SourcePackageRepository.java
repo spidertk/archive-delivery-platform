@@ -24,7 +24,7 @@ public class SourcePackageRepository {
                 rs.getLong("id"), rs.getLong("pipeline_version_id"),
                 JdbcJson.read(objectMapper, rs.getString("definition_snapshot")),
                 rs.getString("bucket_name"), rs.getString("object_key"), rs.getString("object_version"),
-                rs.getLong("source_size"), rs.getString("status"), rs.getString("run_status"),
+                rs.getLong("source_size"), rs.getString("source_sha256"), rs.getString("status"), rs.getString("run_status"),
                 rs.getLong("production_line_id"), rs.getString("current_node"),
                 rs.getString("lease_owner"), rs.getLong("fence"),
                 JdbcJson.read(objectMapper, rs.getString("manifest")));
@@ -60,9 +60,12 @@ public class SourcePackageRepository {
 
     public Optional<SourcePackage> claimNext(long lineId, String workerId) {
         return transactions.execute(status -> {
+            jdbc.query("SELECT pg_advisory_xact_lock(?)", rs -> null, 8_261_031_000L + lineId);
             List<SourcePackage> result = jdbc.query("WITH candidate AS (" +
-                    " SELECT id FROM source_package WHERE production_line_id=? " +
+                    " SELECT id FROM source_package p WHERE production_line_id=? " +
                     " AND (run_status='READY' OR (run_status='RETRY_WAIT' AND next_retry_at<=now())) " +
+                    " AND NOT EXISTS (SELECT 1 FROM source_package r WHERE r.production_line_id=p.production_line_id " +
+                    " AND r.run_status='RUNNING' AND r.lease_until>=now()) " +
                     " ORDER BY process_date,id FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS (" +
                     " UPDATE source_package p SET run_status='RUNNING',lease_owner=?,lease_until=now()+interval '90 seconds'," +
                     " fence=p.fence+1,updated_at=now() FROM candidate c WHERE p.id=c.id RETURNING p.*) " +

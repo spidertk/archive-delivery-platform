@@ -21,8 +21,26 @@ public class OssSourceDownloader implements SourceDownloader {
     @Override
     public void download(SourcePackage source, Path destination) throws Exception {
         OSS client = clients.create();
-        try (var input = client.getObject(source.bucketName(), source.objectKey()).getObjectContent()) {
-            files.copyStream(input, destination);
+        try {
+            var metadata = client.getObjectMetadata(source.bucketName(), source.objectKey());
+            if (metadata.getContentLength() != source.sourceSize()) {
+                throw new java.io.IOException("Source OSS size does not match discovery metadata");
+            }
+            if (java.nio.file.Files.isRegularFile(destination)
+                    && java.nio.file.Files.size(destination) == source.sourceSize()
+                    && source.sourceSha256() != null
+                    && files.sha256(destination).equals(source.sourceSha256())) {
+                return;
+            }
+            try (var input = client.getObject(source.bucketName(), source.objectKey()).getObjectContent()) {
+                files.copyStream(input, destination);
+            }
+            if (java.nio.file.Files.size(destination) != source.sourceSize()) {
+                throw new java.io.IOException("Downloaded size does not match source metadata");
+            }
+            if (source.sourceSha256() != null && !files.sha256(destination).equals(source.sourceSha256())) {
+                throw new java.io.IOException("Downloaded SHA-256 does not match source metadata");
+            }
         } finally {
             client.shutdown();
         }

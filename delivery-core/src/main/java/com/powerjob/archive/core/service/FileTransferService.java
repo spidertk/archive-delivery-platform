@@ -57,11 +57,14 @@ public class FileTransferService {
     public void copyStream(InputStream input, Path destination) throws IOException {
         Files.createDirectories(destination.getParent());
         Path partial = destination.resolveSibling(destination.getFileName() + ".partial");
-        try (OutputStream output = Files.newOutputStream(partial,
+        try (var channel = java.nio.channels.FileChannel.open(partial,
                 java.nio.file.StandardOpenOption.CREATE,
                 java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
-                java.nio.file.StandardOpenOption.WRITE)) {
+                java.nio.file.StandardOpenOption.WRITE);
+             OutputStream output = java.nio.channels.Channels.newOutputStream(channel)) {
             input.transferTo(output);
+            output.flush();
+            channel.force(true);
         }
         moveAtomically(partial, destination);
     }
