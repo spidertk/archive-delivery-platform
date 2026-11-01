@@ -1,5 +1,6 @@
 package com.powerjob.archive.server.api;
 
+import com.powerjob.archive.core.service.DeliveryRolloverService;
 import com.powerjob.archive.core.service.IdempotencyConflictException;
 import com.powerjob.archive.core.service.ResumeConflictException;
 import com.powerjob.archive.core.service.ResumeService;
@@ -27,10 +28,12 @@ import java.util.Map;
 public class RunController {
     private final RunSubmissionService submission;
     private final ResumeService resumes;
+    private final DeliveryRolloverService rollovers;
 
-    public RunController(RunSubmissionService submission, ResumeService resumes) {
+    public RunController(RunSubmissionService submission, ResumeService resumes, DeliveryRolloverService rollovers) {
         this.submission = submission;
         this.resumes = resumes;
+        this.rollovers = rollovers;
     }
 
     @PostMapping
@@ -46,6 +49,13 @@ public class RunController {
     public Map<String, Object> resume(@PathVariable long runId, @Valid @RequestBody ResumeRequest request) {
         int count = resumes.resume(runId, request.fromNode(), request.packageIds(), request.reason());
         return Map.of("runId", runId, "fromNode", request.fromNode(), "resumed", count);
+    }
+
+    @PostMapping("/{runId}/rollover")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public Map<String, Object> rollover(@PathVariable long runId, @Valid @RequestBody RolloverRequest request) {
+        int count = rollovers.rolloverRun(runId, java.time.LocalDate.parse(request.expectedDeliveryDate()), request.reason());
+        return Map.of("runId", runId, "rolledOver", count);
     }
 
     @ExceptionHandler({IdempotencyConflictException.class, ResumeConflictException.class})
@@ -64,5 +74,6 @@ public class RunController {
             @Pattern(regexp = "^\\d{8}$") String jobDate) {}
 
     public record ResumeRequest(@NotBlank String fromNode, List<Long> packageIds, @NotBlank String reason) {}
+    public record RolloverRequest(@NotBlank String expectedDeliveryDate, @NotBlank String reason) {}
     public record RunView(long runId, String status, String jobDate, int pipelineVersion) {}
 }

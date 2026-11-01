@@ -111,7 +111,7 @@ class MvpEndToEndTest {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM output_artifact WHERE published_path IS NOT NULL",
                 Integer.class)).isEqualTo(10);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM package_node_run WHERE status='SUCCEEDED'",
-                Integer.class)).isEqualTo(90);
+                Integer.class)).isEqualTo(91);
     }
 
     private static Path samplePath() {
