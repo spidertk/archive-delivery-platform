@@ -26,9 +26,10 @@ class LocalPostgresIntegrationTest {
                 "WHERE table_schema='archive_delivery' AND table_name IN " +
                 "('source_package','source_member','output_package','request_mapping','output_artifact')",
                 Integer.class)).isEqualTo(5);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM archive_delivery.production_line", Integer.class)).isEqualTo(2);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM archive_delivery.production_group " +
-                "WHERE target_count=5 AND status='FILLING'", Integer.class)).isEqualTo(2);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM archive_delivery.production_line", Integer.class)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM archive_delivery.production_group g " +
+                "JOIN archive_delivery.production_line l ON l.id=g.production_line_id " +
+                "WHERE l.line_code='LINE-3' AND g.target_count=3", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM archive_delivery.pipeline_version " +
                 "WHERE pipeline_id=1 AND version_no=1 AND status='PUBLISHED'", Integer.class)).isEqualTo(1);
     }
