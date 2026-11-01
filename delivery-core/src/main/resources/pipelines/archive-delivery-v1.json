@@ -1,0 +1,15 @@
+{
+  "pipelineCode": "archive-delivery",
+  "version": 1,
+  "nodes": [
+    {"id":"download","scope":"SOURCE","type":"archive.download","config":{}},
+    {"id":"repair","scope":"SOURCE","type":"python.repair","config":{}},
+    {"id":"qualify","scope":"SOURCE","type":"manifest.qualify","config":{}},
+    {"id":"group","scope":"SOURCE","type":"output.group","config":{}},
+    {"id":"hzUpload","scope":"OUTPUT","type":"local.hz-upload","config":{}},
+    {"id":"sgVerify","scope":"OUTPUT","type":"local.sg-verify","config":{}},
+    {"id":"sgDownload","scope":"OUTPUT","type":"local.sg-download","config":{}},
+    {"id":"publish","scope":"OUTPUT","type":"local.publish","config":{}},
+    {"id":"receipt","scope":"OUTPUT","type":"delivery.receipt","config":{}}
+  ]
+}

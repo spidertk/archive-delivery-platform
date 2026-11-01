@@ -1,0 +1,42 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: archive_delivery
+      POSTGRES_USER: archive
+      POSTGRES_PASSWORD: archive_local
+    ports:
+      - "55432:5432"
+    volumes:
+      - archive_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archive -d archive_delivery"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
+      ARCHIVE_DB_USER: archive
+      ARCHIVE_DB_PASSWORD: archive_local
+      ARCHIVE_DISCOVERY_MODE: ${ARCHIVE_DISCOVERY_MODE:-oss}
+      ARCHIVE_DEBUG_LOOP: ${ARCHIVE_DEBUG_LOOP:-true}
+      OSS_SOURCE_ENDPOINT: ${OSS_SOURCE_ENDPOINT:-https://oss-cn-hangzhou.aliyuncs.com}
+      OSS_SOURCE_ACCESS_KEY_ID: ${OSS_SOURCE_ACCESS_KEY_ID:-}
+      OSS_SOURCE_ACCESS_KEY_SECRET: ${OSS_SOURCE_ACCESS_KEY_SECRET:-}
+      OSS_SOURCE_BUCKET: ${OSS_SOURCE_BUCKET:-junflow-ysai-source-hz-20260906}
+      OSS_SOURCE_PREFIX: ${OSS_SOURCE_PREFIX:-_derived/ysai-sftp-20261027/delivery_plan_0005/}
+      POWERJOB_ENABLED: ${POWERJOB_ENABLED:-false}
+      POWERJOB_SERVER_ADDRESS: ${POWERJOB_SERVER_ADDRESS:-localhost:7700}
+    volumes:
+      - archive_data:/data
+      - ../../old/sample:/samples:ro
+volumes:
+  archive_pg:
+  archive_data:
