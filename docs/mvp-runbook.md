@@ -2,12 +2,13 @@
 
 ## 1. 范围
 
-MVP 不使用前端。两条生产线各读取 5 个源包：
+本地生产 MVP 使用三条生产线，合计交付 10 个输出包：
 
-| 生产线 | provider | 本地 FTP 交付目录 | 配额 |
-|---|---|---|---:|
-| LINE-1 | june | `/data/ftp/june/2026-10-30` | 5 |
-| LINE-2 | june-1 | `/data/ftp/june-1/2026-10-30` | 5 |
+| 生产线 | legacyBatch | provider | 配额 |
+|---|---:|---|---:|
+| LINE-1 | 3 | june | 4 |
+| LINE-2 | 4 | june-1 | 3 |
+| LINE-3 | 5 | june-2 | 3 |
 
 真实输入前缀：
 
@@ -15,21 +16,22 @@ MVP 不使用前端。两条生产线各读取 5 个源包：
 oss://junflow-ysai-source-hz-20260906/_derived/ysai-sftp-20261027/delivery_plan_0005/
 ```
 
-Pipeline：下载 → repair → 协议校验 → 分组 → 杭州 OSS → 新加坡 OSS 核验 → FTP 下载 → 原子发布 → 回执交付。杭州、新加坡和 FTP 在 MVP 中使用本地目录适配器；只有输入 OSS 是真实外部连接，不能据此认定真实三地交付验收通过。
+目标 Pipeline 为下载 → repair → 协议校验 → 分组 → 杭州 OSS → CRR/新加坡 OSS 核验 → FTP 下载 → 原子发布 → 本地回执。只有真实 HZ OSS、SG OSS、FTP 与本地 PostgreSQL 全部核验通过，才可认定生产验收完成；`Local*Node` 仅用于自动化测试。
 
 ## 2. 环境
 
-需要 Docker、Docker Compose 和 Python 3.10+。Java 17/Maven 通过构建容器提供，不要求安装在本机。
+需要 macOS、Docker、Docker Compose 和 Python 3.11。Java 17/Maven 通过 `./scripts/mvn.sh` 构建容器提供，不要求安装在本机。
 
 手动环境准备清单：
 
-- [ ] Docker daemon 可用：`docker info` 能返回服务端信息，Compose 可以启动 PostgreSQL 16。
-- [ ] 构建机器可以访问 Maven 仓库、Docker 镜像仓库和 OSS Endpoint。
-- [ ] 准备输入 Bucket 的只读 AccessKey，至少允许指定前缀的 List、Get/Head；不要提供写权限。
-- [ ] 准备 `OSS_SOURCE_ACCESS_KEY_ID`、`OSS_SOURCE_ACCESS_KEY_SECRET` 和 `OSS_SOURCE_ENDPOINT`，只通过环境变量注入。
-- [ ] 准备足够的本地磁盘用于 10 个源包、repair 工作目录和三地适配器目录；Compose 默认使用 `archive_data` 数据卷。
-- [ ] 无 PowerJob Server 时保持 `POWERJOB_ENABLED=false`、`ARCHIVE_DEBUG_LOOP=true`；接入 Server 时再准备 5.1.x Server、应用名和 Worker 可达端口 27777。
-- [ ] 杭州 OSS、新加坡 OSS、FTP 当前均为本地适配器；如需真实三地验收，需另行提供对应 Endpoint、Bucket、FTP 账号及写入授权，当前清单不包含这些外部写入。
+- [ ] Docker daemon 可用，Compose 可以启动 PostgreSQL 16。
+- [ ] 构建机器可以访问 Maven 仓库、Docker 镜像仓库和三个 OSS Endpoint。
+- [ ] 源 Bucket 凭据具有指定前缀的 List、Get/Head 权限；HZ 凭据另需测试前缀 Put/Head/Delete 权限；SG 凭据需 Head 权限。
+- [ ] 三条线的 SSH 私钥通过只读文件挂载，跳板与 FTP 主机可达，FTP 机器已有 `ossutil64`。
+- [ ] 准备足够的本地磁盘用于 10 个源包、repair 临时文件和工作卷。
+- [ ] 复制 `deploy/env.example` 为 `deploy/.env`，只填写真实环境值；该文件已被 Git 忽略。
+- [ ] 运行 `./scripts/preflight.sh`。任何 403、CRR 探测对象缺失、SSH 或跳板失败都会非零退出；修复环境前不得开始真实 E2E。
+- [ ] 预检只在 HZ 的 `.archive-mvp-preflight/{uuid}` 写入并删除一个测试对象，不触碰业务对象或 FTP 历史文件。
 
 数据库访问使用 Java JDBC/HikariCP 连接池，Flyway 自动建表，JdbcTemplate 执行 SQL，事务和 `SKIP LOCKED` 保证并发领取安全；不依赖原项目的 Go/GORM，也不需要使用 `psql` 执行业务流程。PG 指 PostgreSQL，是独立数据库，不是项目自研组件。
 
