@@ -11,15 +11,15 @@ if [[ "$MODE" != "check" && -z "$OUTPUT_DIR" ]]; then
   echo "Output directory is required for $MODE" >&2
   exit 1
 fi
-mkdir -p "$OUTPUT_DIR"
+if [[ "$MODE" != "check" ]]; then mkdir -p "$OUTPUT_DIR"; fi
 LINES="$(docker compose -f "$ROOT/deploy/docker-compose.yml" --env-file "$ROOT/deploy/.env" exec -T postgres \
   psql -U "${ARCHIVE_DB_USER:-archive}" -d archive_delivery -Atc \
-  "SELECT jsonb_path_query_first(pv.definition,'\$.nodes[*] ? (@.id==\"publish\").config.lines') FROM source_pipeline_binding b JOIN pipeline_version pv ON pv.id=b.pipeline_version_id WHERE b.effective_to IS NULL AND pv.status='PUBLISHED' ORDER BY b.effective_from DESC LIMIT 1")"
+  "SELECT jsonb_path_query_first(pv.definition,'\$.nodes[*] ? (@.id==\"publish\").config.lines') FROM archive_delivery.source_pipeline_binding b JOIN archive_delivery.pipeline_version pv ON pv.id=b.pipeline_version_id WHERE b.effective_to IS NULL AND pv.status='PUBLISHED' ORDER BY b.effective_from DESC LIMIT 1")"
 while IFS='|' read -r line host user key jump_host jump_user jump_key; do
   [[ -n "$line" ]] || continue
   key="$HOME/.ssh/archive-delivery-mvp/$(basename "$key")"
   if [[ -n "$jump_key" ]]; then jump_key="$HOME/.ssh/archive-delivery-mvp/$(basename "$jump_key")"; fi
-  args=(-o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1 -o IdentitiesOnly=yes -i "$key")
+  args=(-n -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1 -o IdentitiesOnly=yes -i "$key")
   if [[ -n "$jump_host" ]]; then
     args+=(-o "ProxyCommand=ssh -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1 -o IdentitiesOnly=yes -i $jump_key -W %h:%p $jump_user@$jump_host")
   fi

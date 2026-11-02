@@ -68,6 +68,8 @@ public class PipelineAdminService {
             VersionRow current = row(id, true);
             requireDraft(current);
             ObjectNode updated = definition.deepCopy();
+            updated.put("pipelineCode", current.pipelineCode());
+            updated.put("version", current.version());
             restoreSecrets(updated, current.definition());
             jdbc.update("UPDATE pipeline_version SET definition=?::jsonb,definition_sha256=? WHERE id=?",
                     updated.toString(), sha256(updated), id);

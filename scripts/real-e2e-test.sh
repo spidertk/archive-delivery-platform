@@ -10,14 +10,13 @@ set -a
 source "$ROOT/deploy/.env"
 set +a
 
-./scripts/configure-pipeline.sh "$ROOT/deploy/pipeline-v3.local.json"
 ./scripts/preflight.sh
 ./scripts/mvp-up.sh
 ./scripts/bootstrap-powerjob.sh
 
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T postgres \
   psql -U "${ARCHIVE_DB_USER:-archive}" -d archive_delivery -Atc \
-  "SELECT pv.definition->'config' FROM source_pipeline_binding b JOIN pipeline_version pv ON pv.id=b.pipeline_version_id WHERE b.effective_to IS NULL AND pv.status='PUBLISHED' ORDER BY b.effective_from DESC LIMIT 1" | \
+  "SELECT pv.definition->'config' FROM archive_delivery.source_pipeline_binding b JOIN archive_delivery.pipeline_version pv ON pv.id=b.pipeline_version_id WHERE b.effective_to IS NULL AND pv.status='PUBLISHED' ORDER BY b.effective_from DESC LIMIT 1" | \
   python3 -c 'import json,sys; c=json.load(sys.stdin); assert c=={"crrWaitSeconds":180,"autoRollover":False,"ftpCleanBeforeDownload":False},c'
 
 WORK="$(mktemp -d)"

@@ -20,7 +20,7 @@ docker compose -f "$ROOT/deploy/docker-compose.yml" --env-file "$ENV_FILE" exec 
 echo "OK PostgreSQL archive_delivery"
 BOUND="$(docker compose -f "$ROOT/deploy/docker-compose.yml" --env-file "$ENV_FILE" exec -T postgres \
   psql -U "$ARCHIVE_DB_USER" -d archive_delivery -Atc \
-  "SELECT count(*) FROM source_pipeline_binding b JOIN pipeline_version pv ON pv.id=b.pipeline_version_id WHERE b.effective_to IS NULL AND pv.status='PUBLISHED'")"
+  "SELECT count(*) FROM archive_delivery.source_pipeline_binding b JOIN archive_delivery.pipeline_version pv ON pv.id=b.pipeline_version_id WHERE b.effective_to IS NULL AND pv.status='PUBLISHED'")"
 if [[ "$BOUND" -eq 0 ]]; then
   echo "FAIL no published Pipeline binding; run scripts/configure-pipeline.sh first" >&2
   exit 1
@@ -29,7 +29,7 @@ fi
 docker build -t archive-delivery-maven:test -f "$ROOT/deploy/Dockerfile.test" "$ROOT/deploy" >/dev/null
 docker run --rm --network host -e ARCHIVE_PREFLIGHT=true \
   -e ARCHIVE_DB_URL='jdbc:postgresql://127.0.0.1:55432/archive_delivery?currentSchema=archive_delivery' \
-  -e ARCHIVE_DB_USER -e ARCHIVE_DB_PASSWORD \
+  -e ARCHIVE_DB_USER="$ARCHIVE_DB_USER" -e ARCHIVE_DB_PASSWORD="${ARCHIVE_DB_PASSWORD:-archive_local}" \
   -v "$ROOT":/workspace -v "$HOME/.m2":/root/.m2 -w /workspace \
   -v "$HOME/.ssh/archive-delivery-mvp/line-1-id_ed25519:/run/secrets/line-1-id_ed25519:ro" \
   -v "$HOME/.ssh/archive-delivery-mvp/line-2-id_ed25519:/run/secrets/line-2-id_ed25519:ro" \
