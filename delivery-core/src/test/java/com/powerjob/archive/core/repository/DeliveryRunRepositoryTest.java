@@ -63,6 +63,15 @@ class DeliveryRunRepositoryTest {
                 first);
         assertThat(jdbc.queryForObject("SELECT run_id FROM source_package WHERE object_key='batch_00001.tar.gz'", Long.class))
                 .isEqualTo(first);
+        long otherRun = runs.create("oss://bucket/prefix/", "other-key", jobDate, 1L);
+        jdbc.update("INSERT INTO source_package(source_id,pipeline_version_id,bucket_name," +
+                        "object_key,object_version,source_size,run_id) VALUES (1,1,'bucket','batch_00001.tar.gz','v1',1,?)",
+                otherRun);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM source_package WHERE object_key='batch_00001.tar.gz'", Long.class))
+                .isEqualTo(2);
+        assertThatThrownBy(() -> jdbc.update("INSERT INTO source_package(source_id,pipeline_version_id,bucket_name," +
+                        "object_key,object_version,source_size,run_id) VALUES (1,1,'bucket','batch_00001.tar.gz','v1',1,?)",
+                otherRun)).hasMessageContaining("duplicate key");
 
         ObjectMapper mapper = new ObjectMapper();
         long auditId = audits.append(first, null, "RESUME", "verified restart",

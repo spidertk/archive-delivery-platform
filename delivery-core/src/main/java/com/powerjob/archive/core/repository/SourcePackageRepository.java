@@ -35,11 +35,12 @@ public class SourcePackageRepository {
                 "(source_id,pipeline_version_id,bucket_name,object_key,object_version," +
                 "object_etag,source_size,status,run_status,production_line_id,process_date,planned_at) " +
                 "VALUES (1,?,?,?,?,?,?,'PLANNED','READY',?,?::date,now()) " +
-                "ON CONFLICT(bucket_name,object_key,object_version) DO NOTHING RETURNING id",
+                "ON CONFLICT DO NOTHING RETURNING id",
                 (rs, n) -> rs.getLong(1), pipelineVersionId, object.bucketName(), object.objectKey(),
                 object.objectVersion(), object.etag(), object.size(), object.productionLineId(), processDate);
         if (!inserted.isEmpty()) return inserted.get(0);
-        return jdbc.queryForObject("SELECT id FROM source_package WHERE bucket_name=? AND object_key=? AND object_version=?",
+        return jdbc.queryForObject("SELECT id FROM source_package WHERE run_id IS NULL " +
+                        "AND bucket_name=? AND object_key=? AND object_version=?",
                 Long.class, object.bucketName(), object.objectKey(), object.objectVersion());
     }
 
@@ -50,12 +51,13 @@ public class SourcePackageRepository {
                         "SELECT s.id,r.pipeline_version_id,?,?,?,?,?,'DISCOVERED','READY',r.id " +
                         "FROM delivery_run r " +
                         "JOIN ingest_source s ON s.bucket_ref=r.bucket_name AND s.object_prefix=r.object_prefix " +
-                        "WHERE r.id=? ON CONFLICT(bucket_name,object_key,object_version) DO NOTHING RETURNING id",
+                        "WHERE r.id=? ON CONFLICT DO NOTHING RETURNING id",
                 (rs, n) -> rs.getLong(1), object.bucketName(), object.objectKey(), object.objectVersion(),
                 object.etag(), object.size(), runId);
         if (!inserted.isEmpty()) return inserted.get(0);
-        return jdbc.queryForObject("SELECT id FROM source_package WHERE bucket_name=? AND object_key=? AND object_version=?",
-                Long.class, object.bucketName(), object.objectKey(), object.objectVersion());
+        return jdbc.queryForObject("SELECT id FROM source_package WHERE run_id=? " +
+                        "AND bucket_name=? AND object_key=? AND object_version=?",
+                Long.class, runId, object.bucketName(), object.objectKey(), object.objectVersion());
     }
 
     public Optional<SourcePackage> claimNext(long lineId, String workerId) {
