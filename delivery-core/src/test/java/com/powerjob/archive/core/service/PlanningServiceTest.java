@@ -65,5 +65,15 @@ class PlanningServiceTest {
                 "WHERE pv.definition->'config'->>'crrWaitSeconds'='180'", Integer.class)).isEqualTo(12);
         assertThat(planning.plan(runId, null)).containsExactly(
                 java.util.Map.entry("LINE-1", 0), java.util.Map.entry("LINE-2", 0), java.util.Map.entry("LINE-3", 0));
+
+        long replayRun = runs.create("oss://junflow-ysai-source-hz-20260906/_derived/ysai-sftp-20261027/delivery_plan_0005/",
+                "planning-replay", LocalDate.of(2026, 10, 30), 2L);
+        for (int index = 0; index < 12; index++) {
+            String key = String.format("_derived/ysai-sftp-20261027/delivery_plan_0005/batch_%05d.tar.gz", index + 1);
+            sources.upsertDiscovered(replayRun, new DiscoveredObject("junflow-ysai-source-hz-20260906", key,
+                    "etag-" + index, "etag-" + index, 100, 0));
+        }
+        assertThat(planning.plan(replayRun, null)).containsExactly(
+                java.util.Map.entry("LINE-1", 4), java.util.Map.entry("LINE-2", 3), java.util.Map.entry("LINE-3", 3));
     }
 }

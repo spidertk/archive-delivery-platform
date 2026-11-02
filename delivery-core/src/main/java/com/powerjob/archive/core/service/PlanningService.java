@@ -33,13 +33,14 @@ public class PlanningService {
             for (long lineId = 1; lineId <= 3; lineId++) {
                 int quota = lineId == 1 ? 4 : 3;
                 int reserved = jdbc.queryForObject("SELECT " +
-                        "(SELECT count(*) FROM output_package p WHERE p.production_line_id=? " +
-                        " AND p.run_status<>'CANCELLED' AND (p.delivery_date=? " +
-                        " OR (p.delivery_date<? AND p.status<>'DELIVERED'))) + " +
-                        "(SELECT count(*) FROM source_package s WHERE s.production_line_id=? AND s.process_date<=? " +
-                        " AND s.status IN ('PLANNED','DOWNLOADED','REPAIRED') AND s.run_status<>'CANCELLED' " +
+                        "(SELECT count(*) FROM output_package p JOIN source_package ps ON ps.id=p.source_package_id " +
+                        " WHERE p.production_line_id=? AND ps.run_id=? AND p.run_status<>'CANCELLED' " +
+                        " AND (p.delivery_date=? OR (p.delivery_date<? AND p.status<>'DELIVERED'))) + " +
+                        "(SELECT count(*) FROM source_package s WHERE s.run_id=? AND s.production_line_id=? " +
+                        " AND s.process_date<=? AND s.status IN ('PLANNED','DOWNLOADED','REPAIRED') " +
+                        " AND s.run_status<>'CANCELLED' " +
                         " AND NOT EXISTS (SELECT 1 FROM output_package o WHERE o.source_package_id=s.id))",
-                        Integer.class, lineId, date, date, lineId, date);
+                        Integer.class, lineId, runId, date, date, runId, lineId, date);
                 int count = planLine(runId, lineId, date, Math.max(0, quota - reserved));
                 planned.put("LINE-" + lineId, count);
             }
