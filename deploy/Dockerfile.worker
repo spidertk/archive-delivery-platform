@@ -6,7 +6,9 @@ RUN mvn -q -s deploy/maven-settings.xml -DskipTests package
 FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17
 RUN apt-get update && apt-get install -y --no-install-recommends python3 openssh-client \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd -r -u 10001 -m delivery
+    && useradd -r -u 10001 -m delivery \
+    && mkdir -p /data/work \
+    && chown -R 10001:10001 /data
 WORKDIR /app
 COPY --from=build /workspace/delivery-worker/target/delivery-worker.jar app.jar
 COPY nodes/python /app/nodes/python
