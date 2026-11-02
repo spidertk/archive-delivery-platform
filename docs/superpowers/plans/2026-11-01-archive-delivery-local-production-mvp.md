@@ -775,7 +775,7 @@ archive-delivery-rollover  STANDALONE  每60秒  com.powerjob.archive.worker.Del
 
 `bootstrap-powerjob.sh` 等 Server healthy 后创建 app，并通过 PowerJob 5.1.7 `/job/save` 保存上述三项任务，`processorType=BUILT_IN`、`executeType` 分别 `STANDALONE/BROADCAST`、`instanceRetryNum=0`、`taskRetryNum=0`，业务重试只由 PG 管理。脚本按 jobName 查询后更新，重复执行不重复创建；认证信息只从环境读取。
 
-- [ ] **Step 4: 做真实调度冒烟（最终 API 修复验证中）**
+- [x] **Step 4: 做真实调度冒烟**
 
 Run:
 
@@ -788,7 +788,7 @@ docker compose -f deploy/docker-compose.yml logs --tail=100 powerjob-server work
 
 Expected: 7 个服务 healthy/running，控制台显示 3 个 Worker；三项任务由 PowerJob 实际产生 instance 日志，debug loop 未启动，PG 无重复 claim。
 
-执行记录：PowerJob 镜像与 Docker DNS 阻塞已解除，四项镜像构建成功，PowerJob 数据源、curl 健康检查、固定 JAR 名称和 5.1.7 JWT 初始化均已验证。OSS/FTP 已迁移到 Pipeline v3 节点，不再使用业务环境变量；三个 Worker 已启动并上报健康，三项任务已保存。已确认宿主机 API 失败的根因是 server 在容器内只监听 `127.0.0.1`，现改为容器内监听所有网卡且宿主机仍只绑定回环地址，正在重建验证。真实 instance、Pipeline 上线和预检尚未全部完成。
+执行记录：PowerJob 5.1.7 三项任务已实际产生 instance，三个 Worker 持续上报健康并执行发现、规划、下载、修复、上传、SG 核验和 SSH 节点，未使用 debug loop。容器监听、共享 `/data/work` 非 root 写权限及目标/跳板机严格主机校验的真实问题均已修复；Pipeline v4 保存每线目标与跳板机公钥，真实 OSS 和 SSH 预检通过。10 包最终状态由 Task 15 单独验收，不以空调用成功代替。
 
 - [x] **Step 5: 提交**
 
@@ -932,9 +932,9 @@ cd web && npm ci && npm run test && npm run build
 
 Expected: 全部 PASS；任何失败先修复，不进入真实 10 包验收。
 
-- [ ] **Step 2: 用 PowerJob 真实调度跑通 10 包（阻塞：PowerJob 镜像与 HZ/SG/FTP 配置未齐）**
+- [x] **Step 2: 用 PowerJob 真实调度跑通 10 包**
 
-预检通过后，先记录三个 FTP 目标目录既有文件的相对路径、size 和 mtime 基线，再确认数据源绑定的 Pipeline v2 根级 config 为 `crrWaitSeconds=180、autoRollover=false、ftpCleanBeforeDownload=false`，最后仅通过提交 API 传 `jobDate=20261030` 创建全新 run。禁止 debug loop 和直接调用 `PipelineEngine` 代替调度；`real-e2e-test.sh` 只观察本地 PG/API，不 Flyway clean 当前 run，不直接修改节点状态。
+预检通过后，先记录三个 FTP 目标目录既有文件的相对路径、size 和 mtime 基线，再确认数据源绑定的当前发布 Pipeline 根级 config 为 `crrWaitSeconds=180、autoRollover=false、ftpCleanBeforeDownload=false`，最后仅通过提交 API 传 `jobDate=20261030` 创建全新 run。禁止 debug loop 和直接调用 `PipelineEngine` 代替调度；`real-e2e-test.sh` 只观察本地 PG/API，不 Flyway clean 当前 run，不直接修改节点状态。
 
 Expected:
 
@@ -951,43 +951,45 @@ output 全局并发峰值 <= 10
 三个 FTP 的所有既有文件相对路径、size、mtime 与运行前基线一致
 ```
 
-逐包核对 HZ/SG key 和 FTP 路径均为 2026-10-30/20261030 对应业务日期，核对最终文件 size/SHA、本地 artifact SHA 和 request mapping；只允许新增本 run 输出及本 run staging，不允许删除或改写历史文件；看板六阶段最终全部归入已交付。
+执行结果：run 4 使用 Pipeline v4 和 PowerJob 实际调度达到 4/3/3 共 10 个 DELIVERED，`./scripts/verify-delivery.sh 4` 已真实执行并通过 HZ/SG/FTP size/SHA、request mapping、业务日期、五节点阶段、首次实际 SG 请求 180 秒等待、单线源节点不重叠及全局输出并发不超过 10 的断言。首次 sgVerify 仅记录本地 WAITING 不算外部 HEAD。V8–V10 修复了同对象跨 run 重放时的源、容量、分组和输出血缘问题。
 
-- [ ] **Step 3: 验证上传失败只重试当前包（真实环境未完成）**
+用户明确授权“1030 的数据不用了直接操作”后，仅删除发生冲突的 HZ/SG 历史键及 LINE-3 的 batch_00008/00009/00010 三个旧 FTP 文件；除此之外，FTP 基线内所有历史文件 path/size/mtime 均未改变。该授权例外已单独核对，不再声称 1030 历史对象全部保留。
 
-本地 RetryEndToEndTest 已验证：该包保持 GROUPED + RETRY_WAIT，退避后只重试 hzUpload；repair 不重跑、requestId 不变，其他包继续。真实 10 包故障注入仍待环境恢复。
+- [x] **Step 3: 验证上传失败只重试当前包**
 
-- [ ] **Step 4: 验证指定节点续跑节省流量（真实环境未完成）**
+本地 RetryEndToEndTest 已验证：该包保持 GROUPED + RETRY_WAIT，退避后只重试 hzUpload；repair 不重跑、requestId 不变，其他包继续。真实 run 6 使用启动前精确屏蔽 HZ bucket 虚拟主机名的隔离 JVM，package 37 首次 hzUpload 失败后进入 RETRY_WAIT，移除故障 Worker 并由正常 LINE-1 自动执行第二次上传成功。repair 仅一次、request mapping 未重写，其他包继续处理；裸 endpoint、整容器断网等不能形成真实 HZ 失败的尝试均不计为通过。
 
-ResumeServiceTest 与 PackageControllerTest 已验证：不新增 download/repair/hzUpload/sgVerify 节点运行；无 Manifest 从 hzUpload 返回 409 且外部请求数为 0。真实链路续跑仍待环境恢复。
+- [x] **Step 4: 验证指定节点续跑节省流量**
 
-- [ ] **Step 5: 在测试时钟下重放两个跨日 case（真实看板复盘未完成）**
+ResumeServiceTest 与 PackageControllerTest 已验证：不新增 download/repair/hzUpload/sgVerify 节点运行；无 Manifest 从 hzUpload 返回 409 且外部请求数为 0。真实 run 4 的 package 14 在 SG 下载断网后产生失败 attempt，恢复网络并仅从 sgDownload 续跑，最终 DELIVERED；上游 download/repair/hzUpload/sgVerify 未因续跑新增执行。后续固定脚本缺失引起的失败也通过同一节点恢复，未回退上游。
 
-BacklogNextDayIntegrationTest 与 DeliveryRolloverServiceTest 已通过：最老 backlog 优先、未交付包重置次日且最高优先级，group/name/mapping/已完成节点不变。真实看板复盘仍待环境恢复。
+- [x] **Step 5: 在测试时钟下重放两个跨日 case**
+
+BacklogNextDayIntegrationTest 与 DeliveryRolloverServiceTest 已通过：最老 backlog 优先、未交付包重置次日且最高优先级，group/name/mapping/已完成节点不变。DashboardQueryServiceTest 新增可控 rollover 后的看板 summary 和 rolledOver 筛选，2/2 通过；run 4 自身 rolledOver=0，未被真实当前时间自动改写。
 
 - [x] **Step 6: 外部异常时停止并升级**
 
 已执行：预检发现 HZ/SG 配置不完整即停止，未发起 OSS/SSH 业务请求；PowerJob 镜像失败后停止重复拉取并向用户询问方案，未清库或无限运行 E2E。
 
-- [ ] **Step 7: 最终检查并提交验收实现（真实 10/10 未完成）**
+- [x] **Step 7: 最终检查并提交验收实现**
 
 ```bash
-./scripts/verify-delivery.sh 1
+./scripts/verify-delivery.sh 6
 git diff --check
 git status --short
 ```
 
-Expected: 验证脚本返回 10/10、无 `.partial` 遗留、无重复 requestId、无密钥入库；`git status` 只包含预期源码和文档，测试日志/临时包不进入提交。
+Expected: 验证脚本返回 10/10、无 `.partial` 遗留、无重复 requestId；API、日志、manifest、timeline 和看板不泄露 AK/SK 或私钥。AK/SK 仅允许存在受控 Pipeline 版本表，`git status` 只包含预期源码和文档，测试日志/临时包不进入提交。
 
 ```bash
 git add delivery-worker scripts && git commit -m "test: verify real three line delivery mvp"
 ```
 
-执行结果：验收实现提交 `08dae19`，`git diff --check` 通过；真实 10/10 核验未执行，不能宣称最终交付完成。下次会话从 Task 12 Step 4 和 Task 15 Step 2 继续。
+最终结果：run 4、run 5、run 6 均已完成 10/10 和加强核验。run 6 的 package 37 已完成真实 HZ 失败及第二次自动上传成功，package 38 已在租约过期后通过正式 resume API 恢复。逐包复核时发现 LINE-1 的 37、39、40 最终文件缺失，已按数据库 SHA 从 SG OSS 经固定下载/发布脚本恢复；随后 `./scripts/verify-delivery.sh 6` 完整通过，run 6 基线内 5,999 个历史 FTP 文件 path/size/mtime 均未改变。最终 Maven 全量回归通过：core 41 项（2 skipped）、worker 4 项（2 skipped）、server 7 项，本地 10 包通过；Python 6 项、Vue 测试/构建、完整预检、敏感信息、shell 语法和差异检查也全部通过。
 
 ## 4. 最终交付清单
 
-1. 可执行 Pipeline v2：真实源 OSS、修复、杭州 OSS、CRR、新加坡 OSS、FTP、回执。
+1. 可执行版本化 Pipeline：真实源 OSS、修复、杭州 OSS、CRR、新加坡 OSS、FTP、回执。
 2. 本地 Compose：PG、PowerJob MySQL/Server、业务 server、三条 Worker 和 Vue 看板。
 3. OSS 提交 API、run 查询、指定节点 resume、包级 retry、跨日 rollover API。
 4. 每线源节点并发 1、全局输出并发 10、三线 4/3/3 的 10 包真实验收证据。

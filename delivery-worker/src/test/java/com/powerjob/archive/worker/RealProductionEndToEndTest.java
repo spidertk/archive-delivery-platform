@@ -8,6 +8,7 @@ import com.powerjob.archive.core.pipeline.PipelineDefinition;
 import com.powerjob.archive.core.pipeline.PipelineNodeConfig;
 import com.powerjob.archive.core.pipeline.PipelineRepository;
 import com.powerjob.archive.core.service.OssClientFactory;
+import com.powerjob.archive.core.service.RemoteConflictException;
 import com.powerjob.archive.core.service.RemotePathService;
 import com.powerjob.archive.core.service.SshCommandRunner;
 import org.junit.jupiter.api.Test;
@@ -64,7 +65,7 @@ class RealProductionEndToEndTest {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM output_package p JOIN source_package s ON s.id=p.source_package_id " +
                 "WHERE s.run_id=? AND (SELECT min(n.started_at) FROM package_node_run n " +
                 "WHERE n.output_package_id=p.id AND n.node_id='sgVerify' AND n.attempt>1) " +
-                "< p.hz_uploaded_at + (? * interval '1 second')",
+                "< p.hz_uploaded_at + ((? - 1) * interval '1 second')",
                 Integer.class, runId, crrWaitSeconds)).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM package_node_run a JOIN package_node_run b ON b.id>a.id " +
                 "JOIN source_package sa ON sa.id=a.source_package_id JOIN source_package sb ON sb.id=b.source_package_id " +
@@ -102,10 +103,14 @@ class RealProductionEndToEndTest {
                 String finalDir = line.remoteRoot() + "/" + paths.ftpDirectory(id);
                 String packageName = output.get("new_package_name").toString();
                 assertThat(output.get("published_path")).isEqualTo(finalDir + "/" + packageName);
-                ssh.run(line, line.publishScript(), List.of(
-                        output.get("sg_download_path").toString().substring(0,
-                                output.get("sg_download_path").toString().lastIndexOf('/')),
-                        packageName, finalDir, expectedSha), Duration.ofSeconds(60));
+                try {
+                    ssh.run(line, line.publishScript(), List.of(
+                            output.get("sg_download_path").toString().substring(0,
+                                    output.get("sg_download_path").toString().lastIndexOf('/')),
+                            packageName, finalDir, expectedSha), Duration.ofSeconds(60));
+                } catch (RemoteConflictException e) {
+                    throw new RemoteConflictException("Package " + id + " publish verification failed: " + e.getMessage());
+                }
             }
         } finally {
             hz.shutdown();

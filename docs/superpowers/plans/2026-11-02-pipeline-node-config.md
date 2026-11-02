@@ -8,6 +8,8 @@
 
 **Tech Stack:** Java 17、Spring Boot 2.7、JdbcTemplate、Jackson、PostgreSQL、JUnit 5、MockMvc、Docker Compose、Bash、PowerJob 5.1.7。
 
+**当前进度：** Task 1–7 全部完成。Pipeline v4 已上线，run 6 的真实 10 包、HZ 故障重试、过期租约 resume、HZ/SG/FTP 全量核验和 5,999 个历史 FTP 文件基线比较通过。最终 Maven 全量回归、Python、Vue、真实预检、敏感信息、shell 语法和差异检查全部通过，所有步骤已按证据勾选。
+
 ---
 
 ### Task 1: 类型化 OSS/FTP 节点配置
@@ -18,7 +20,7 @@
 - Create: `delivery-core/src/main/java/com/powerjob/archive/core/pipeline/PipelineNodeConfig.java`
 - Test: `delivery-core/src/test/java/com/powerjob/archive/core/pipeline/PipelineNodeConfigTest.java`
 
-- [ ] **Step 1: 写 OSS/FTP 解析与安全校验的失败测试**
+- [x] **Step 1: 写 OSS/FTP 解析与安全校验的失败测试**
 
 ```java
 class PipelineNodeConfigTest {
@@ -59,12 +61,12 @@ class PipelineNodeConfigTest {
 
 测试类补充 `throws Exception` 或方法级 `SneakyThrows` 不使用；将两个测试方法声明为 `throws Exception`，helper 也声明 `throws Exception`。
 
-- [ ] **Step 2: 运行测试并确认编译失败**
+- [x] **Step 2: 运行测试并确认编译失败**
 
 Run: `./scripts/mvn.sh -pl delivery-core -Dtest=PipelineNodeConfigTest test`
 Expected: FAIL，提示 `PipelineNodeConfig`、`OssNodeConfig`、`FtpNodeConfig` 不存在。
 
-- [ ] **Step 3: 实现 OSS 值对象**
+- [x] **Step 3: 实现 OSS 值对象**
 
 ```java
 package com.powerjob.archive.core.pipeline;
@@ -88,7 +90,7 @@ public record OssNodeConfig(String endpoint, String bucket, String prefix,
 }
 ```
 
-- [ ] **Step 4: 实现 FTP 值对象与三线读取**
+- [x] **Step 4: 实现 FTP 值对象与三线读取**
 
 ```java
 package com.powerjob.archive.core.pipeline;
@@ -123,7 +125,7 @@ public record FtpNodeConfig(Map<String, Line> lines) {
 }
 ```
 
-- [ ] **Step 5: 实现统一转换入口并运行测试**
+- [x] **Step 5: 实现统一转换入口并运行测试**
 
 ```java
 package com.powerjob.archive.core.pipeline;
@@ -151,7 +153,7 @@ public class PipelineNodeConfig {
 Run: `./scripts/mvn.sh -pl delivery-core -Dtest=PipelineNodeConfigTest test`
 Expected: PASS。
 
-- [ ] **Step 6: 提交**
+- [x] **Step 6: 提交**
 
 ```bash
 git add delivery-core && git commit -m "feat: add typed pipeline node connection config"
@@ -168,7 +170,7 @@ git add delivery-core && git commit -m "feat: add typed pipeline node connection
 - Modify: `delivery-core/src/main/java/com/powerjob/archive/core/pipeline/PipelineDefinition.java`
 - Test: `delivery-core/src/test/java/com/powerjob/archive/core/pipeline/ProductionPipelineTest.java`
 
-- [ ] **Step 1: 写版本生命周期和脱敏失败测试**
+- [x] **Step 1: 写版本生命周期和脱敏失败测试**
 
 使用 `RunControllerTest` 的 Testcontainers 基架创建 `PipelineControllerTest`。从 v2 复制草稿，写入带测试连接配置的完整定义，再验证脱敏、上线和不可变：
 
@@ -221,12 +223,12 @@ private static String validDefinition() throws Exception {
 }
 ```
 
-- [ ] **Step 2: 运行 API 测试并确认 404**
+- [x] **Step 2: 运行 API 测试并确认 404**
 
 Run: `./scripts/mvn.sh -pl delivery-server -am -Dsurefire.failIfNoSpecifiedTests=false -Dtest=PipelineControllerTest test`
 Expected: FAIL，版本接口 404。
 
-- [ ] **Step 3: 扩展 PipelineDefinition 上线校验**
+- [x] **Step 3: 扩展 PipelineDefinition 上线校验**
 
 在 `validateProduction()` 保留根配置检查后增加：
 
@@ -262,7 +264,7 @@ configs.ftp(node("publish"));
 }
 ```
 
-- [ ] **Step 4: 实现 PipelineAdminService**
+- [x] **Step 4: 实现 PipelineAdminService**
 
 实现以下公开签名，所有修改使用 `TransactionTemplate`：
 
@@ -281,7 +283,7 @@ public JsonNode rawDefinition(long id)
 
 SHA 使用 `objectMapper.writeValueAsBytes(definition)` 的 SHA-256；数据库唯一约束继续防止重复版本号。
 
-- [ ] **Step 5: 实现 Controller 与冲突响应**
+- [x] **Step 5: 实现 Controller 与冲突响应**
 
 ```java
 @RestController
@@ -305,7 +307,7 @@ public class PipelineController {
 
 Controller 必须添加 Jackson、Spring Web 和 `java.util` imports；`PipelineVersionConflictException` 创建在 core pipeline 包中。
 
-- [ ] **Step 6: 运行测试并提交**
+- [x] **Step 6: 运行测试并提交**
 
 Run: `./scripts/mvn.sh -pl delivery-server -am -Dsurefire.failIfNoSpecifiedTests=false -Dtest=PipelineControllerTest,PipelineNodeConfigTest test`
 Expected: PASS，响应和日志无 `test-secret`。
@@ -327,7 +329,7 @@ git add delivery-core delivery-server && git commit -m "feat: manage draft and p
 - Modify: `delivery-core/src/main/java/com/powerjob/archive/core/pipeline/PipelineEngine.java`
 - Test: `delivery-core/src/test/java/com/powerjob/archive/core/repository/DeliveryRunRepositoryTest.java`
 
-- [ ] **Step 1: 写关联版本定义的失败测试**
+- [x] **Step 1: 写关联版本定义的失败测试**
 
 在 repository 集成测试创建 source 后断言：
 
@@ -341,12 +343,12 @@ assertThat(jdbc.queryForObject("SELECT count(*) FROM information_schema.columns 
 
 对 output 的 `findById/claimNext` 增加同样断言，确认 `pipelineDefinition` 来自 `pipeline_version` 而不是 source 列。
 
-- [ ] **Step 2: 运行测试并确认编译/查询失败**
+- [x] **Step 2: 运行测试并确认编译/查询失败**
 
 Run: `./scripts/mvn.sh -pl delivery-core -Dtest=DeliveryRunRepositoryTest test`
 Expected: FAIL，`pipelineDefinition` 不存在且 snapshot 列仍存在。
 
-- [ ] **Step 3: 写 V5 迁移和 v3 草稿资源**
+- [x] **Step 3: 写 V5 迁移和 v3 草稿资源**
 
 `V5__pipeline_version_config.sql` 复制 v2 定义作为不可直接上线的 v3 草稿，不修改 v2 active binding；真实配置在 Task 6 通过 API 写入并重新计算 SHA：
 
@@ -360,7 +362,7 @@ SELECT setval('pipeline_version_id_seq',(SELECT max(id) FROM pipeline_version),t
 
 Task 2 创建的 v3 JSON 根配置保持 `180/false/false`，节点 ID/type/scope 不变；OSS/FTP 字段为空字符串，只作为不可上线的草稿模板，真实密钥由本地初始化 API 写入。
 
-- [ ] **Step 4: 改领域对象与仓库 JOIN**
+- [x] **Step 4: 改领域对象与仓库 JOIN**
 
 两个领域 record 将 `JsonNode pipelineSnapshot` 更名为 `JsonNode pipelineDefinition`。所有 source 查询使用：
 
@@ -380,7 +382,7 @@ FROM output_package op JOIN pipeline_version pv ON pv.id=op.pipeline_version_id
 
 claim CTE 在最外层 JOIN 版本表。两个 RowMapper 均读取 `rs.getString("pipeline_definition")`。
 
-- [ ] **Step 5: 改 PipelineEngine 和 NodeContext**
+- [x] **Step 5: 改 PipelineEngine 和 NodeContext**
 
 `NodeContext` 增加 `PipelineDefinition pipeline`：
 
@@ -401,7 +403,7 @@ NodeContext context = new NodeContext(source, null, node, pipeline, runId, sourc
 
 Output 使用同样的 `output.pipelineDefinition()`。把所有节点中的根配置读取改为 `context.pipeline().intConfig(...)` 或 `booleanConfig(...)`，所有测试构造器同步传入测试 PipelineDefinition。
 
-- [ ] **Step 6: 运行 core 回归并提交**
+- [x] **Step 6: 运行 core 回归并提交**
 
 Run: `./scripts/mvn.sh -pl delivery-core test`
 Expected: PASS，无 `definition_snapshot` 或 `pipelineSnapshot` 引用。
@@ -427,7 +429,7 @@ git add delivery-core && git commit -m "refactor: read pipeline definitions by v
 - Test: `delivery-core/src/test/java/com/powerjob/archive/core/service/OssTransferServiceTest.java`
 - Test: `delivery-core/src/test/java/com/powerjob/archive/core/service/OssDiscoveryIntegrationTest.java`
 
-- [ ] **Step 1: 写无环境回退的失败测试**
+- [x] **Step 1: 写无环境回退的失败测试**
 
 修改 `OssTransferServiceTest`，构造两个不同 bucket 的 `OssNodeConfig`，调用：
 
@@ -439,12 +441,12 @@ service.headSg(sgConfig, key);
 
 Mock 客户端断言只收到参数中的 endpoint/bucket/credentials。另写 discovery 测试：`delivery_run.pipeline_version_id` 指向不同 download 配置时，list 请求使用该版本 bucket/prefix，而不是 `MvpProperties`。
 
-- [ ] **Step 2: 运行定向测试并确认签名不匹配**
+- [x] **Step 2: 运行定向测试并确认签名不匹配**
 
 Run: `./scripts/mvn.sh -pl delivery-core -Dtest=OssTransferServiceTest,OssDiscoveryIntegrationTest test`
 Expected: FAIL，新方法尚不存在。
 
-- [ ] **Step 3: 改 OSS 客户端与下载器**
+- [x] **Step 3: 改 OSS 客户端与下载器**
 
 ```java
 public OSS create(OssNodeConfig config) {
@@ -458,7 +460,7 @@ public OSS create(OssNodeConfig config) {
 
 `SourceDownloader` 改为 `download(SourcePackage source, OssNodeConfig config, Path destination)`；实现类用该 config 创建客户端。`DownloadNode` 调用 `configs.oss(context.node(), true)` 并显式传入下载器。
 
-- [ ] **Step 4: 改上传与 SG 服务及节点**
+- [x] **Step 4: 改上传与 SG 服务及节点**
 
 `OssTransferService` 删除 properties 字段，方法签名统一为：
 
@@ -471,7 +473,7 @@ sgUri(OssNodeConfig config, String key)
 
 hzUpload 从当前 node 读取 config；sgVerify 从当前 node 读取 config；bucket 和 URI 均从同一 config 生成。CRR 根配置从 `context.pipeline()` 读取。
 
-- [ ] **Step 5: 改发现与提交一致性**
+- [x] **Step 5: 改发现与提交一致性**
 
 `OssDiscoveryService` 查询：
 
@@ -484,7 +486,7 @@ FROM delivery_run r JOIN pipeline_version pv ON pv.id=r.pipeline_version_id WHER
 
 删除 `MvpProperties` 五个 `ossSource*` 字段和 getter/setter，删除 `OssDeliveryProperties` 与对应环境校验。
 
-- [ ] **Step 6: 运行 OSS/core 测试并提交**
+- [x] **Step 6: 运行 OSS/core 测试并提交**
 
 Run: `./scripts/mvn.sh -pl delivery-core test`
 Expected: PASS，无 OSS 环境属性回退。
@@ -502,7 +504,7 @@ git add delivery-core && git commit -m "feat: execute oss nodes with versioned c
 - Delete: `delivery-core/src/main/java/com/powerjob/archive/core/config/FtpDeliveryProperties.java`
 - Test: `delivery-core/src/test/java/com/powerjob/archive/core/service/SshCommandRunnerTest.java`
 
-- [ ] **Step 1: 写按线配置的失败测试**
+- [x] **Step 1: 写按线配置的失败测试**
 
 将原 properties fixture 改为两个 `FtpNodeConfig.Line`，执行：
 
@@ -513,12 +515,12 @@ runner.run(line2, line2.publishScript(), List.of("/staging", "pkg.tar.gz"), Dura
 
 用 fake `ssh` 分别断言 line1/line2 的 `-i`、jump host、目标 host；脚本不在对应 line 的固定值中时抛出 `IllegalArgumentException`。保留原有 host/user/key/argument 安全测试。
 
-- [ ] **Step 2: 运行测试并确认编译失败**
+- [x] **Step 2: 运行测试并确认编译失败**
 
 Run: `./scripts/mvn.sh -pl delivery-core -Dtest=SshCommandRunnerTest test`
 Expected: FAIL，`run(FtpNodeConfig.Line,...)` 不存在。
 
-- [ ] **Step 3: 改 SshCommandRunner**
+- [x] **Step 3: 改 SshCommandRunner**
 
 公开签名改为：
 
@@ -528,7 +530,7 @@ public String run(FtpNodeConfig.Line line, String script, List<String> arguments
 
 方法内部不再按 lineId 查询 properties；固定脚本校验、host/user/key 校验、ProxyCommand、超时和 exit 65/66 处理保持原逻辑。原有静态白名单方法保持不变。
 
-- [ ] **Step 4: 改两个 SSH 节点**
+- [x] **Step 4: 改两个 SSH 节点**
 
 两个节点注入 `PipelineNodeConfig`，执行：
 
@@ -539,7 +541,7 @@ ssh.run(line, line.downloadScript(), arguments, Duration.ofSeconds(timeout));
 
 publish 使用 `line.publishScript()`。远程目录、staging 和最终路径都由该 line 生成；根级 `ftpCleanBeforeDownload` 从 `context.pipeline()` 读取。删除 FTP properties 和启动校验器。
 
-- [ ] **Step 5: 运行 core 全量并提交**
+- [x] **Step 5: 运行 core 全量并提交**
 
 Run: `./scripts/mvn.sh -pl delivery-core test`
 Expected: PASS，无 `FtpDeliveryProperties`、`ProductionConfigurationValidator` 或 FTP 环境回退。
@@ -562,14 +564,14 @@ git add delivery-core && git commit -m "feat: execute ssh nodes with line versio
 - Modify: `delivery-core/src/test/java/com/powerjob/archive/core/service/ProductionPreflightTest.java`
 - Modify: `delivery-worker/src/test/java/com/powerjob/archive/worker/RealProductionEndToEndTest.java`
 
-- [ ] **Step 1: 写本地初始化脚本的 shell 检查与 API 失败测试**
+- [x] **Step 1: 写本地初始化脚本的 shell 检查与 API 失败测试**
 
 `configure-pipeline.sh` 要求传入一个本地 JSON 文件路径，拒绝空文件和 `replace-` 值；先查询版本列表并选择最大 version id，若为 DRAFT则 PUT，若已 PUBLISHED则从该最新版本复制新草稿再 PUT，最后 POST publish。输出只包含 version id/status，不使用 `set -x`，不 echo JSON。
 
 Run: `bash -n scripts/configure-pipeline.sh`
 Expected: 语法 PASS；无参数和空文件均非零退出。
 
-- [ ] **Step 2: 实现初始化脚本与敏感文件忽略**
+- [x] **Step 2: 实现初始化脚本与敏感文件忽略**
 
 脚本核心请求：
 
@@ -589,7 +591,7 @@ printf 'Published Pipeline version %s\n' "$version_id"
 
 将 `deploy/pipeline-v3.local.json` 加入 `.gitignore`。本地真实文件包含设计规定的节点字段和三条线 `/run/secrets/line-N-id_ed25519`，不得提交。
 
-- [ ] **Step 3: 删除 Compose OSS/FTP 环境变量并固定只读挂载**
+- [x] **Step 3: 删除 Compose OSS/FTP 环境变量并固定只读挂载**
 
 删除 `OSS_SOURCE_*`、`OSS_HZ_*`、`OSS_SG_*`、`FTP_LINE_*` environment 项。每个 Worker 只挂载该线密钥：
 
@@ -599,13 +601,13 @@ printf 'Published Pipeline version %s\n' "$version_id"
 
 line2/3 同理。`${HOME}` 仅描述宿主机密钥位置，不提供业务连接配置。Worker 保持 `ARCHIVE_DEBUG_LOOP=false` 和 PowerJob 配置。`env.example` 只保留数据库、PowerJob 与本地运行配置。
 
-- [ ] **Step 4: 改预检从绑定版本读取配置**
+- [x] **Step 4: 改预检从绑定版本读取配置**
 
 `ProductionPreflightTest` 通过 JDBC 查询 active binding 的 `pv.definition`，用 `PipelineRepository/PipelineNodeConfig` 创建 OSS 客户端，执行源 list、HZ 小对象写/读/删、SG HEAD；从 publish 节点读取三条 FTP line 并调用 `SshCommandRunner` 执行固定只读命令。测试仅在 `ARCHIVE_PREFLIGHT=true` 时启用。
 
 `preflight.sh` 只 source 数据库/运行环境，不再检查 OSS/FTP 环境变量；将三线宿主机密钥只读挂载到预检容器 `/run/secrets`，连接 PostgreSQL 后运行该测试。任何缺配置、权限或网络失败立即非零退出，不进入 real-e2e。
 
-- [ ] **Step 5: 改真实 E2E 不再读取 FTP 环境变量**
+- [x] **Step 5: 改真实 E2E 不再读取 FTP 环境变量**
 
 新增 `scripts/ftp-inspect.sh`，参数为 `before|after` 和输出目录。脚本通过 Compose `psql` 读取 active 版本的 publish 节点三线配置，把容器密钥路径 `/run/secrets/line-N-id_ed25519` 映射到 `${HOME}/.ssh/archive-delivery-mvp/line-N-id_ed25519`，用节点中的 host/user/jump 执行固定 `find` 只读命令，输出相对路径、size、mtime；不得打印 OSS 配置。
 
@@ -614,7 +616,7 @@ line2/3 同理。`${HOME}` 仅描述宿主机密钥位置，不提供业务连�
 Run: `bash -n scripts/configure-pipeline.sh scripts/ftp-inspect.sh scripts/preflight.sh scripts/real-e2e-test.sh scripts/mvp-up.sh`
 Expected: PASS。
 
-- [ ] **Step 6: 构建镜像并验证三 Worker 注册**
+- [x] **Step 6: 构建镜像并验证三 Worker 注册**
 
 Run:
 
@@ -626,7 +628,7 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env ps -a
 
 Expected: 7 服务 healthy/running，Worker 不再因 OSS/FTP 环境缺失退出；PowerJob 三项任务有真实 instance，debug loop 未启动。
 
-- [ ] **Step 7: 提交**
+- [x] **Step 7: 提交**
 
 ```bash
 git add .gitignore deploy delivery-core delivery-worker scripts && git commit -m "feat: bootstrap and preflight versioned pipeline config"
@@ -641,11 +643,11 @@ git add .gitignore deploy delivery-core delivery-worker scripts && git commit -m
 - Modify: `docs/superpowers/plans/2026-11-01-archive-delivery-local-production-mvp.md`
 - Modify: `docs/superpowers/plans/2026-11-02-pipeline-node-config.md`
 
-- [ ] **Step 1: 更新文档和验收口径**
+- [x] **Step 1: 更新文档和验收口径**
 
 文档说明草稿/上线 API、本地 JSON 不入 Git、密钥只存受控版本表、版本切换不影响既有 run、SSH 只读挂载及故障排查。删除 OSS/FTP 环境变量教程。MVP 最终验收改为“API 明文响应、日志、manifest、看板无密钥”，不再要求“无密钥入库”。
 
-- [ ] **Step 2: 运行全部非生产测试**
+- [x] **Step 2: 运行全部非生产测试**
 
 Run:
 
@@ -658,17 +660,17 @@ cd .. && git diff --check
 
 Expected: 全 PASS；RealProductionEndToEndTest 在非生产模式 skipped 不计为真实证据。
 
-- [ ] **Step 3: 执行一次真实有界预检**
+- [x] **Step 3: 执行一次真实有界预检**
 
 Run: `./scripts/preflight.sh`
 Expected: 源 OSS、HZ 测试写、SG HEAD、三线 SSH/ossutil 全 PASS；失败则记录实际错误并停止，不循环重试。
 
-- [ ] **Step 4: 执行真实 10 包验收**
+- [x] **Step 4: 执行真实 10 包验收**
 
 Run: `./scripts/real-e2e-test.sh`
 Expected: PowerJob 实际调度，LINE-1/2/3 为 4/3/3，10/10 DELIVERED，HZ/SG/FTP SHA 一致，历史 FTP 文件未改变，无 debug loop 或直接 PipelineEngine 替代。
 
-- [ ] **Step 5: 验证密钥不泄露和最终工作区**
+- [x] **Step 5: 验证密钥不泄露和最终工作区**
 
 Run:
 
@@ -680,7 +682,7 @@ git status --short
 
 另外查询版本列表、包详情、timeline 和应用日志，断言不包含真实 AK/SK；数据库 `pipeline_version.definition` 包含真实配置是本次明确允许的行为。不得提交 `deploy/.env`、`deploy/pipeline-v3.local.json`、私钥、日志或测试包。
 
-- [ ] **Step 6: 更新两项计划并提交最终改动**
+- [x] **Step 6: 更新两项计划并提交最终改动**
 
 只在实际证据具备时勾选 Task 12 Step 4 和 Task 15 Step 2–5/7；环境仍阻塞时保持未勾选并记录恢复入口。提交：
 

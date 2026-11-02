@@ -16,7 +16,7 @@ cp deploy/env.example deploy/.env
 chmod 600 deploy/.env
 ```
 
-`deploy/.env` 只保留数据库、PowerJob 和本地运行配置。OSS/FTP 连接信息维护在 `deploy/pipeline-v3.local.json`：`download` 配置源 OSS，`hzUpload` 配置杭州 OSS，`sgVerify` 配置新加坡 OSS，`sgDownload/publish` 配置三线 SSH 与跳板。该文件已被 Git 忽略，执行 `chmod 600 deploy/pipeline-v3.local.json`，禁止提交其中的 AK/SK。私钥内容不写入 JSON，只使用 `/run/secrets/line-N-id_ed25519` 容器路径。
+`deploy/.env` 只保留数据库、PowerJob 和本地运行配置。OSS/FTP 连接信息维护在 `deploy/pipeline-v3.local.json`：`download` 配置源 OSS，`hzUpload` 配置杭州 OSS，`sgVerify` 配置新加坡 OSS，`sgDownload/publish` 配置三线 SSH 与跳板。每条线还必须填写经管理员核对的 `hostKey`，使用跳板时填写 `jumpHostKey`，值为标准 OpenSSH `known_hosts` 公钥行；Worker 目标和 ProxyCommand 均使用严格主机校验，不读取宿主机 `known_hosts`，禁止配置 `StrictHostKeyChecking=no`。该文件已被 Git 忽略，执行 `chmod 600 deploy/pipeline-v3.local.json`，禁止提交其中的 AK/SK。私钥内容不写入 JSON，只使用 `/run/secrets/line-N-id_ed25519` 容器路径。
 
 ## 启动与预检
 

@@ -35,11 +35,11 @@ python3 -m unittest nodes/python/test_archive_repair.py -v
 cd web && npm ci && npm run test && npm run build
 ```
 
-测试覆盖真实 PG 迁移、4/3/3 规划、repair 黄金规则、断点下载、全局并发、包级重试、CRR 等待、续跑、两个跨日 case 和看板聚合。`ARCHIVE_TEST_REAL_OSS=true` 前的真实小对象测试只有在凭据齐全时执行；skipped 不是生产通过。最终验收必须同时看到 HZ OSS、SG OSS、FTP 文件和本地 PG 的 10 个 DELIVERED。
+测试覆盖真实 PG 迁移、4/3/3 规划、repair 黄金规则、断点下载、全局并发、包级重试、CRR 等待、续跑、两个跨日 case 和看板聚合。真实预检由预检容器中的 `ARCHIVE_PREFLIGHT=true` 启用，业务 Worker 不读取 OSS/FTP 环境变量；skipped 不是生产通过。最终验收必须同时看到 HZ OSS、SG OSS、FTP 文件和本地 PG 的 10 个 DELIVERED。
 
 ## 4. 提交历史作业日 run
 
-测试 Pipeline v3 根级策略固定为 `crrWaitSeconds=180`、`autoRollover=false`、`ftpCleanBeforeDownload=false`；OSS/FTP 连接信息位于各自节点，不再从业务环境变量读取。提交只接受 OSS URI、idempotencyKey 和可选 jobDate，不接受任何节点或策略参数：
+当前发布 Pipeline 的根级策略固定为 `crrWaitSeconds=180`、`autoRollover=false`、`ftpCleanBeforeDownload=false`；OSS/FTP 连接信息位于各自节点，不再从业务环境变量读取。提交只接受 OSS URI、idempotencyKey 和可选 jobDate，不接受任何节点或策略参数：
 
 ```bash
 ./scripts/submit-run.sh \
@@ -122,6 +122,6 @@ FROM package_node_run ORDER BY id;
 - CRR 超 2 小时：保留 WAITING/BLOCKED 事实，确认 CRR metadata 后用 resume/retry，不重新 repair。
 - SSH/跳板失败：检查 BatchMode 私钥、跳板、固定脚本与远端 `ossutil64`；恢复后只续跑失败节点。
 - FTP 磁盘不足：停止对应线，保留 staging 与错误，扩容后重试当前包。
-- Stale fence：旧 Worker 已过期，停止旧实例，禁止强制覆盖新租约。
+- Stale fence：先停止旧实例并确认 `lease_until` 已过期，再从当前节点 resume；活跃 RUNNING 和未过期租约仍返回 409，禁止强制覆盖新租约。
 
-最终运行 `./scripts/verify-delivery.sh <runId>`，要求 10/10、无 `.partial`、无重复 requestId、三地 SHA 一致、历史文件不变且无密钥入库。
+最终运行 `./scripts/verify-delivery.sh <runId>`，要求 10/10、无 `.partial`、无重复 requestId、三地 SHA 一致且历史文件不变。AK/SK 按设计只存受控 Pipeline 版本表；版本列表、包详情、timeline、应用日志、manifest 和看板不得泄露 AK/SK 或私钥。SSH 主机公钥保存在每线 `hostKey/jumpHostKey`，目标和跳板机均严格校验。
