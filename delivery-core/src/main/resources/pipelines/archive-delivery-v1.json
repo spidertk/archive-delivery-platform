@@ -1,6 +1,7 @@
 {
   "pipelineCode": "archive-delivery",
   "version": 1,
+  "config":{"crrWaitSeconds":180,"autoRollover":false,"ftpCleanBeforeDownload":false},
   "nodes": [
     {"id":"download","scope":"SOURCE","type":"archive.download","config":{}},
     {"id":"repair","scope":"SOURCE","type":"python.repair","config":{}},

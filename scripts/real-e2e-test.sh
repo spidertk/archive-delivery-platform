@@ -13,6 +13,16 @@ set +a
 ./scripts/preflight.sh
 ./scripts/mvp-up.sh
 ./scripts/bootstrap-powerjob.sh
+for attempt in $(seq 1 30); do
+  if curl -fsS --connect-timeout 2 --max-time 3 http://127.0.0.1:8080/actuator/health >/dev/null 2>&1; then
+    break
+  fi
+  if [[ "$attempt" -eq 30 ]]; then
+    echo "Archive API did not become ready within 90 seconds" >&2
+    exit 1
+  fi
+  sleep 3
+done
 
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T postgres \
   psql -U "${ARCHIVE_DB_USER:-archive}" -d archive_delivery -Atc \
