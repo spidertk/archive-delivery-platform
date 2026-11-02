@@ -14,48 +14,9 @@ x-worker-common: &worker-common
     ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
     ARCHIVE_DISCOVERY_MODE: oss
     ARCHIVE_DEBUG_LOOP: "false"
-    OSS_SOURCE_ENDPOINT: ${OSS_SOURCE_ENDPOINT:-https://oss-cn-hangzhou.aliyuncs.com}
-    OSS_SOURCE_ACCESS_KEY_ID: ${OSS_SOURCE_ACCESS_KEY_ID:-}
-    OSS_SOURCE_ACCESS_KEY_SECRET: ${OSS_SOURCE_ACCESS_KEY_SECRET:-}
-    OSS_SOURCE_BUCKET: ${OSS_SOURCE_BUCKET:-junflow-ysai-source-hz-20260906}
-    OSS_SOURCE_PREFIX: ${OSS_SOURCE_PREFIX:-_derived/ysai-sftp-20261027/delivery_plan_0005/}
-    OSS_HZ_ENDPOINT: ${OSS_HZ_ENDPOINT:-}
-    OSS_HZ_ACCESS_KEY_ID: ${OSS_HZ_ACCESS_KEY_ID:-}
-    OSS_HZ_ACCESS_KEY_SECRET: ${OSS_HZ_ACCESS_KEY_SECRET:-}
-    OSS_HZ_BUCKET: ${OSS_HZ_BUCKET:-hz-storage-20261013-6vmlk}
-    OSS_SG_ENDPOINT: ${OSS_SG_ENDPOINT:-}
-    OSS_SG_ACCESS_KEY_ID: ${OSS_SG_ACCESS_KEY_ID:-}
-    OSS_SG_ACCESS_KEY_SECRET: ${OSS_SG_ACCESS_KEY_SECRET:-}
-    OSS_SG_BUCKET: ${OSS_SG_BUCKET:-sg-storage-20261013-6vmlk}
-    FTP_LINE_1_SSH_HOST: ${FTP_LINE_1_SSH_HOST:-}
-    FTP_LINE_1_SSH_USER: ${FTP_LINE_1_SSH_USER:-}
-    FTP_LINE_1_SSH_KEY: ${FTP_LINE_1_SSH_KEY:-/dev/null}
-    FTP_LINE_1_JUMP_HOST: ${FTP_LINE_1_JUMP_HOST:-}
-    FTP_LINE_1_JUMP_USER: ${FTP_LINE_1_JUMP_USER:-}
-    FTP_LINE_1_JUMP_KEY: ${FTP_LINE_1_JUMP_KEY:-/dev/null}
-    FTP_LINE_2_SSH_HOST: ${FTP_LINE_2_SSH_HOST:-}
-    FTP_LINE_2_SSH_USER: ${FTP_LINE_2_SSH_USER:-}
-    FTP_LINE_2_SSH_KEY: ${FTP_LINE_2_SSH_KEY:-/dev/null}
-    FTP_LINE_2_JUMP_HOST: ${FTP_LINE_2_JUMP_HOST:-}
-    FTP_LINE_2_JUMP_USER: ${FTP_LINE_2_JUMP_USER:-}
-    FTP_LINE_2_JUMP_KEY: ${FTP_LINE_2_JUMP_KEY:-/dev/null}
-    FTP_LINE_3_SSH_HOST: ${FTP_LINE_3_SSH_HOST:-}
-    FTP_LINE_3_SSH_USER: ${FTP_LINE_3_SSH_USER:-}
-    FTP_LINE_3_SSH_KEY: ${FTP_LINE_3_SSH_KEY:-/dev/null}
-    FTP_LINE_3_JUMP_HOST: ${FTP_LINE_3_JUMP_HOST:-}
-    FTP_LINE_3_JUMP_USER: ${FTP_LINE_3_JUMP_USER:-}
-    FTP_LINE_3_JUMP_KEY: ${FTP_LINE_3_JUMP_KEY:-/dev/null}
     POWERJOB_ENABLED: "true"
     POWERJOB_APP_NAME: archive-delivery-mvp
     POWERJOB_SERVER_ADDRESS: powerjob-server:7700
-  volumes: &worker-volumes
-    - archive_data:/data
-    - ${FTP_LINE_1_SSH_KEY:-/dev/null}:${FTP_LINE_1_SSH_KEY:-/dev/null}:ro
-    - ${FTP_LINE_1_JUMP_KEY:-/dev/null}:${FTP_LINE_1_JUMP_KEY:-/dev/null}:ro
-    - ${FTP_LINE_2_SSH_KEY:-/dev/null}:${FTP_LINE_2_SSH_KEY:-/dev/null}:ro
-    - ${FTP_LINE_2_JUMP_KEY:-/dev/null}:${FTP_LINE_2_JUMP_KEY:-/dev/null}:ro
-    - ${FTP_LINE_3_SSH_KEY:-/dev/null}:${FTP_LINE_3_SSH_KEY:-/dev/null}:ro
-    - ${FTP_LINE_3_JUMP_KEY:-/dev/null}:${FTP_LINE_3_JUMP_KEY:-/dev/null}:ro
 
 services:
   postgres:
@@ -89,13 +50,16 @@ services:
       retries: 40
 
   powerjob-server:
-    image: powerjob/powerjob-server:5.1.7
+    image: powerjob/powerjob-server:v5.1.7
     environment:
-      DB_HOST: mysql
-      DB_PORT: "3306"
-      DB_NAME: powerjob
-      DB_USERNAME: root
-      DB_PASSWORD: powerjob_local
+      PARAMS: >-
+        --spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+        --spring.datasource.core.username=root
+        --spring.datasource.core.password=powerjob_local
+        --oms.storage.dfs.mysql_series.url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+        --oms.storage.dfs.mysql_series.username=root
+        --oms.storage.dfs.mysql_series.password=powerjob_local
+        --oms.mongodb.enable=false
       TZ: Asia/Shanghai
     depends_on:
       mysql:
@@ -117,7 +81,7 @@ services:
     ports:
       - "127.0.0.1:8080:8080"
     healthcheck:
-      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q UP <&3"]
+      test: ["CMD", "curl", "-fsS", "--connect-timeout", "2", "--max-time", "3", "http://127.0.0.1:8080/actuator/health"]
       interval: 3s
       timeout: 3s
       retries: 30
@@ -128,7 +92,9 @@ services:
       <<: *worker-environment
       HOSTNAME: worker-line-1
       ARCHIVE_LINE_ID: "1"
-    volumes: *worker-volumes
+    volumes:
+      - archive_data:/data
+      - ${HOME}/.ssh/archive-delivery-mvp/line-1-id_ed25519:/run/secrets/line-1-id_ed25519:ro
 
   worker-line-2:
     <<: *worker-common
@@ -136,7 +102,9 @@ services:
       <<: *worker-environment
       HOSTNAME: worker-line-2
       ARCHIVE_LINE_ID: "2"
-    volumes: *worker-volumes
+    volumes:
+      - archive_data:/data
+      - ${HOME}/.ssh/archive-delivery-mvp/line-2-id_ed25519:/run/secrets/line-2-id_ed25519:ro
 
   worker-line-3:
     <<: *worker-common
@@ -144,7 +112,9 @@ services:
       <<: *worker-environment
       HOSTNAME: worker-line-3
       ARCHIVE_LINE_ID: "3"
-    volumes: *worker-volumes
+    volumes:
+      - archive_data:/data
+      - ${HOME}/.ssh/archive-delivery-mvp/line-3-id_ed25519:/run/secrets/line-3-id_ed25519:ro
 
 volumes:
   archive_pg:

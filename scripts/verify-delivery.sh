@@ -25,6 +25,10 @@ docker run --rm --env-file "$ROOT/deploy/.env" \
   -e ARCHIVE_REAL_E2E -e ARCHIVE_VERIFY_RUN_ID -e ARCHIVE_DB_URL \
   -e ARCHIVE_DB_USER="${ARCHIVE_DB_USER:-archive}" -e ARCHIVE_DB_PASSWORD="${ARCHIVE_DB_PASSWORD:-archive_local}" \
   -e TESTCONTAINERS_RYUK_DISABLED=true -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal \
+  -e JAVA_TOOL_OPTIONS="-Dapi.version=${DOCKER_API_VERSION:-1.44}" \
   -v "$ROOT":/workspace -v "$HOME/.m2":/root/.m2 -v "$DOCKER_SOCK":/var/run/docker.sock \
+  -v "$HOME/.ssh/archive-delivery-mvp/line-1-id_ed25519:/run/secrets/line-1-id_ed25519:ro" \
+  -v "$HOME/.ssh/archive-delivery-mvp/line-2-id_ed25519:/run/secrets/line-2-id_ed25519:ro" \
+  -v "$HOME/.ssh/archive-delivery-mvp/line-3-id_ed25519:/run/secrets/line-3-id_ed25519:ro" \
   -v "$ROOT/../old/sample":/samples:ro -w /workspace \
   archive-delivery-maven:test mvn -q -pl delivery-worker -Dtest=RealProductionEndToEndTest test

@@ -10,3 +10,4 @@ web/node_modules/
 web/dist/
 web/*.tsbuildinfo
 web/vite.config.js
+deploy/pipeline-v3.local.json

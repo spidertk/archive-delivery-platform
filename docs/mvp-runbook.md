@@ -39,7 +39,7 @@ cd web && npm ci && npm run test && npm run build
 
 ## 4. 提交历史作业日 run
 
-测试 Pipeline v2 根级策略固定为 `crrWaitSeconds=180`、`autoRollover=false`、`ftpCleanBeforeDownload=false`。提交只接受 OSS URI、idempotencyKey 和可选 jobDate，不接受任何节点或策略参数：
+测试 Pipeline v3 根级策略固定为 `crrWaitSeconds=180`、`autoRollover=false`、`ftpCleanBeforeDownload=false`；OSS/FTP 连接信息位于各自节点，不再从业务环境变量读取。提交只接受 OSS URI、idempotencyKey 和可选 jobDate，不接受任何节点或策略参数：
 
 ```bash
 ./scripts/submit-run.sh \
@@ -80,7 +80,7 @@ FTP 使用 `ossutil64 cp` 下载到本次 run 专属 staging 的 `.partial`，�
 
 Case A：首日 12 个对象只准入 10 个，2 个保持 DISCOVERED；次日最老 backlog 先于新对象获得容量。未完成的 PLANNED 包 process_date 不变并继续占预留。
 
-Case B：到期 READY/RUNNING/WAITING/BLOCKED 包的 deliveryDate/cutoff/rolloverCount 前进一天，DELIVERED 不变；RUNNING 不中断，groupId/groupSeq/包名/映射/currentNode 不变，流转包优先 claim。历史 v2 测试 run 因 `autoRollover=false` 不被真实当前时间自动改写。
+Case B：到期 READY/RUNNING/WAITING/BLOCKED 包的 deliveryDate/cutoff/rolloverCount 前进一天，DELIVERED 不变；RUNNING 不中断，groupId/groupSeq/包名/映射/currentNode 不变，流转包优先 claim。历史 v3 测试 run 因 `autoRollover=false` 不被真实当前时间自动改写。
 
 人工入口与自动 Processor 调用同一事务：
 
@@ -90,7 +90,7 @@ curl -fsS -H 'Content-Type: application/json' \
   http://127.0.0.1:8080/api/v1/runs/1/rollover
 ```
 
-同一 expectedDeliveryDate 重放返回 0。需要自动流转时发布 `autoRollover=true` 的新 PipelineVersion 并切换绑定；在途 run 继续使用旧快照。测试使用可控时钟/显式业务日期，不等待真实午夜，也不修改宿主机时间。
+同一 expectedDeliveryDate 重放返回 0。需要自动流转时发布 `autoRollover=true` 的新 PipelineVersion 并切换绑定；在途 run 继续读取其绑定的旧版本。测试使用可控时钟/显式业务日期，不等待真实午夜，也不修改宿主机时间。
 
 ## 8. 看板与 PG 查询
 

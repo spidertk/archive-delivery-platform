@@ -1,9 +1,9 @@
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /workspace
 COPY . .
-RUN mvn -q -DskipTests package
+RUN mvn -q -s deploy/maven-settings.xml -DskipTests package
 
-FROM eclipse-temurin:17-jre-jammy
+FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17
 RUN apt-get update && apt-get install -y --no-install-recommends python3 openssh-client \
     && rm -rf /var/lib/apt/lists/* \
     && useradd -r -u 10001 -m delivery

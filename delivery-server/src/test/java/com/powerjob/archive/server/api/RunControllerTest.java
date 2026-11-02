@@ -1,6 +1,7 @@
 package com.powerjob.archive.server.api;
 
 import com.powerjob.archive.server.ArchiveServerApplication;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,13 +36,31 @@ class RunControllerTest {
         registry.add("spring.datasource.password", POSTGRES::getPassword);
     }
 
+    @BeforeAll
+    static void publishPipeline(@Autowired MockMvc mvc) throws Exception {
+        var definition = (com.fasterxml.jackson.databind.node.ObjectNode)
+                new com.fasterxml.jackson.databind.ObjectMapper().readTree(PipelineControllerTest.validDefinition());
+        for (var node : definition.required("nodes")) {
+            if (node.required("id").asText().equals("download")) {
+                var config = (com.fasterxml.jackson.databind.node.ObjectNode) node.required("config");
+                config.put("bucket", "junflow-ysai-source-hz-20260906");
+                config.put("prefix", "_derived/ysai-sftp-20261027/delivery_plan_0005/");
+            }
+        }
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .put("/api/v1/pipeline-versions/3/definition")
+                        .contentType("application/json").content(definition.toString()))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/v1/pipeline-versions/3/publish")).andExpect(status().isOk());
+    }
+
     @Test
     void submitsIdempotentlyWithoutListingOss() throws Exception {
         String body = "{\"ossUri\":\"" + OSS_URI + "\",\"idempotencyKey\":\"delivery-plan-0005-local-v1\",\"jobDate\":\"20261030\"}";
         String first = mvc.perform(post("/api/v1/runs").contentType("application/json").content(body))
                 .andExpect(status().isAccepted()).andExpect(jsonPath("$.status").value("DISCOVERING"))
                 .andExpect(jsonPath("$.jobDate").value("2026-10-30"))
-                .andExpect(jsonPath("$.pipelineVersion").value(2))
+                .andExpect(jsonPath("$.pipelineVersion").value(3))
                 .andReturn().getResponse().getContentAsString();
         Number runId = com.jayway.jsonpath.JsonPath.read(first, "$.runId");
         mvc.perform(post("/api/v1/runs").contentType("application/json").content(body))

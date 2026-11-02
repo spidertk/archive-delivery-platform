@@ -88,7 +88,7 @@ class PipelineControllerTest {
         throw new AssertionError("Missing node " + nodeId);
     }
 
-    private static String validDefinition() throws Exception {
+    static String validDefinition() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode root = (ObjectNode) mapper.readTree(
                 Path.of("../delivery-core/src/main/resources/pipelines/archive-delivery-v3.json").toFile());

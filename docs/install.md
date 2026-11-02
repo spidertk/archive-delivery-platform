@@ -16,23 +16,19 @@ cp deploy/env.example deploy/.env
 chmod 600 deploy/.env
 ```
 
-按模板填写 `OSS_SOURCE_*`、`OSS_HZ_*`、`OSS_SG_*`、`FTP_LINE_1/2/3_SSH_*`、跳板、`ARCHIVE_DB_*` 和 `POWERJOB_*`。`OSS_SG_HEAD_KEY` 必须是已存在且可读的新加坡探测对象。`deploy/.env` 已被 Git 忽略，禁止提交其中的 AK/SK 或私钥内容。
+`deploy/.env` 只保留数据库、PowerJob 和本地运行配置。OSS/FTP 连接信息维护在 `deploy/pipeline-v3.local.json`：`download` 配置源 OSS，`hzUpload` 配置杭州 OSS，`sgVerify` 配置新加坡 OSS，`sgDownload/publish` 配置三线 SSH 与跳板。该文件已被 Git 忽略，执行 `chmod 600 deploy/pipeline-v3.local.json`，禁止提交其中的 AK/SK。私钥内容不写入 JSON，只使用 `/run/secrets/line-N-id_ed25519` 容器路径。
 
-先执行一次有界预检：
-
-```bash
-./scripts/preflight.sh
-```
-
-它检查 Docker、Compose、本地 PG、源 OSS List/Head/1 字节 Range Get、HZ 测试前缀 Put/Head/Delete、SG Head，以及三线 SSH 和远端 `ossutil64`。任何 403、SSH/跳板失败或探测对象缺失都会非零退出；此时不得开始真实 10 包 E2E。
-
-## 启动
+## 启动与预检
 
 ```bash
 ./scripts/mvp-up.sh
 ./scripts/bootstrap-powerjob.sh
+./scripts/configure-pipeline.sh deploy/pipeline-v3.local.json
+./scripts/preflight.sh
 curl -f http://127.0.0.1:8080/actuator/health
 ```
+
+初始化脚本从最新版本复制草稿（或直接修改未上线草稿），上线后原子切换 active binding；已上线版本不可原地修改。预检从当前绑定版本读取节点配置，检查 Docker、Compose、本地 PG、源 OSS List/Head/1 字节 Range Get、HZ 测试前缀 Put/Head/Delete、SG List/Head，以及三线 SSH 和远端 `ossutil64`。任何 403、SSH/跳板失败或对象缺失都会非零退出；此时不得开始真实 10 包 E2E。
 
 服务地址：
 
@@ -45,10 +41,11 @@ curl -f http://127.0.0.1:8080/actuator/health
 
 ```bash
 cp deploy/env.example deploy/.env
-# 编辑 deploy/.env 后：
-./scripts/preflight.sh
+# 编辑 deploy/.env 和 deploy/pipeline-v3.local.json 后：
 ./scripts/mvp-up.sh
 ./scripts/bootstrap-powerjob.sh
+./scripts/configure-pipeline.sh deploy/pipeline-v3.local.json
+./scripts/preflight.sh
 curl -f http://127.0.0.1:8080/actuator/health
 ```
 

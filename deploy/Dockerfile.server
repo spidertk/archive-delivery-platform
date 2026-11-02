@@ -5,13 +5,13 @@ RUN npm ci
 COPY web .
 RUN npm run build
 
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /workspace
 COPY . .
 COPY --from=web /workspace/dist ./web/dist
-RUN mvn -q -DskipTests package
+RUN mvn -q -s deploy/maven-settings.xml -DskipTests package
 
-FROM eclipse-temurin:17-jre-jammy
+FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17
 RUN useradd -r -u 10001 -m delivery
 WORKDIR /app
 COPY --from=build /workspace/delivery-server/target/delivery-server.jar app.jar
