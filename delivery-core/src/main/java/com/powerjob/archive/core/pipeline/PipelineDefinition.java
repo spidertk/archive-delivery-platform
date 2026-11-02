@@ -30,6 +30,12 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
         if (booleanConfig("ftpCleanBeforeDownload")) {
             throw new IllegalArgumentException("FTP_CLEAN_FORBIDDEN");
         }
+        PipelineNodeConfig configs = new PipelineNodeConfig(new com.fasterxml.jackson.databind.ObjectMapper());
+        configs.oss(node("download"), true);
+        configs.oss(node("hzUpload"), false);
+        configs.oss(node("sgVerify"), false);
+        configs.ftp(node("sgDownload"));
+        configs.ftp(node("publish"));
     }
 
     public NodeDefinition node(String id) {

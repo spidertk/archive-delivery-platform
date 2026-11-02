@@ -1,0 +1,16 @@
+{
+  "pipelineCode":"archive-delivery",
+  "version":3,
+  "config":{"crrWaitSeconds":180,"autoRollover":false,"ftpCleanBeforeDownload":false},
+  "nodes":[
+    {"id":"download","scope":"SOURCE","type":"archive.download","config":{"endpoint":"","bucket":"","prefix":"","accessKeyId":"","accessKeySecret":""}},
+    {"id":"repair","scope":"SOURCE","type":"python.repair","config":{"ruleSet":"fix-archive-legacy-v1"}},
+    {"id":"qualify","scope":"SOURCE","type":"manifest.qualify","config":{}},
+    {"id":"group","scope":"SOURCE","type":"output.group","config":{}},
+    {"id":"hzUpload","scope":"OUTPUT","type":"oss.hz-upload","config":{"endpoint":"","bucket":"","accessKeyId":"","accessKeySecret":"","contentMd5":true}},
+    {"id":"sgVerify","scope":"OUTPUT","type":"oss.sg-verify","config":{"endpoint":"","bucket":"","accessKeyId":"","accessKeySecret":"","pollSeconds":30,"maxWaitSeconds":7200}},
+    {"id":"sgDownload","scope":"OUTPUT","type":"ssh.sg-download","config":{"commandTimeoutSeconds":900,"lines":{}}},
+    {"id":"publish","scope":"OUTPUT","type":"ssh.publish","config":{"commandTimeoutSeconds":60,"lines":{}}},
+    {"id":"receipt","scope":"OUTPUT","type":"delivery.receipt","config":{}}
+  ]
+}
