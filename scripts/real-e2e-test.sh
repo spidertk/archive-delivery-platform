@@ -62,7 +62,7 @@ done
 ./scripts/verify-delivery.sh "$RUN_ID"
 ./scripts/ftp-inspect.sh after "$WORK"
 for line in 1 2 3; do
-  python3 -c 'import sys; before=dict(line.rstrip("\n").split("|",2) for line in open(sys.argv[1]) if line.strip()); after=dict(line.rstrip("\n").split("|",2) for line in open(sys.argv[2]) if line.strip()); changed={k:(v,after.get(k)) for k,v in before.items() if after.get(k)!=v}; assert not changed,changed' \
+  python3 -c 'import sys; before=dict((p[0],p[1:]) for p in (line.rstrip("\n").split("|",2) for line in open(sys.argv[1]) if line.strip())); after=dict((p[0],p[1:]) for p in (line.rstrip("\n").split("|",2) for line in open(sys.argv[2]) if line.strip())); changed={k:(v,after.get(k)) for k,v in before.items() if after.get(k)!=v}; assert not changed,changed' \
     "$WORK/before-$line" "$WORK/after-$line"
 done
 
