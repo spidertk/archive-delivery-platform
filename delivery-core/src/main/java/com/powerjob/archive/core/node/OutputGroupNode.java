@@ -38,15 +38,18 @@ public class OutputGroupNode implements NodeHandler {
         List<Long> existing = jdbc.query("SELECT id FROM output_package WHERE source_package_id=?",
                 (rs, row) -> rs.getLong(1), context.source().id());
         if (!existing.isEmpty()) return;
-        String archiveDate = jdbc.queryForObject("SELECT process_date::text FROM source_package WHERE id=?",
-                String.class, context.source().id());
+        var source = jdbc.queryForMap("SELECT process_date::text AS process_date,run_id FROM source_package WHERE id=?",
+                context.source().id());
+        String archiveDate = source.get("process_date").toString();
+        Long runId = (Long) source.get("run_id");
         int targetCount = context.source().productionLineId() == 1 ? 4 : 3;
-        jdbc.update("INSERT INTO production_group(production_line_id,archive_date,group_no,target_count) " +
-                        "VALUES (?,?::date,1,?) ON CONFLICT(production_line_id,archive_date,group_no) DO NOTHING",
-                context.source().productionLineId(), archiveDate, targetCount);
-        var group = jdbc.queryForMap("SELECT * FROM production_group WHERE production_line_id=? " +
-                        "AND archive_date=?::date AND status='FILLING' ORDER BY group_no FOR UPDATE LIMIT 1",
-                context.source().productionLineId(), archiveDate);
+        jdbc.update("INSERT INTO production_group(run_id,production_line_id,archive_date,group_no,target_count) " +
+                        "VALUES (?,?,?::date,1,?) ON CONFLICT DO NOTHING",
+                runId, context.source().productionLineId(), archiveDate, targetCount);
+        var group = jdbc.queryForMap("SELECT * FROM production_group WHERE run_id IS NOT DISTINCT FROM ? " +
+                        "AND production_line_id=? AND archive_date=?::date AND status='FILLING' " +
+                        "ORDER BY group_no FOR UPDATE LIMIT 1",
+                runId, context.source().productionLineId(), archiveDate);
         long groupId = ((Number) group.get("id")).longValue();
         int assigned = ((Number) group.get("assigned_count")).intValue();
         int target = ((Number) group.get("target_count")).intValue();
@@ -58,10 +61,10 @@ public class OutputGroupNode implements NodeHandler {
         var artifact = context.source().manifest().required("artifacts").required(0);
         String packageName = artifact.required("name").asText();
         long outputId = jdbc.queryForObject("INSERT INTO output_package " +
-                "(source_package_id,pipeline_version_id,production_group_id,production_line_id,archive_date," +
+                "(source_package_id,run_id,pipeline_version_id,production_group_id,production_line_id,archive_date," +
                 "delivery_date,cutoff_at,group_seq,new_package_name,manifest) " +
-                "VALUES (?,?,?,?,?::date,?::date,?, ?,?,?::jsonb) RETURNING id", Long.class,
-                context.source().id(), context.source().pipelineVersionId(), groupId,
+                "VALUES (?,?,?,?,?,?::date,?::date,?, ?,?,?::jsonb) RETURNING id", Long.class,
+                context.source().id(), runId, context.source().pipelineVersionId(), groupId,
                 context.source().productionLineId(), archiveDate, archiveDate, cutoff,
                 sequence, packageName, context.source().manifest().toString());
         jdbc.update("INSERT INTO output_artifact(output_package_id,artifact_seq,original_file_name," +
