@@ -4,6 +4,9 @@ import com.powerjob.archive.core.pipeline.FtpNodeConfig;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,41 +41,61 @@ public class SshCommandRunner {
             validateKey(line.jumpKey());
         }
         arguments.forEach(SshCommandRunner::validateArgument);
-        List<String> command = new ArrayList<>();
-        command.add(sshExecutable);
-        command.add("-o");
-        command.add("BatchMode=yes");
-        command.add("-o");
-        command.add("ConnectTimeout=10");
-        command.add("-o");
-        command.add("ConnectionAttempts=1");
-        command.add("-o");
-        command.add("IdentitiesOnly=yes");
-        command.add("-i");
-        command.add(line.key());
-        if (line.jumpHost() != null && !line.jumpHost().isBlank()) {
+        Path tempDirectory = Files.createTempDirectory("archive-ssh-");
+        Path knownHosts = tempDirectory.resolve("known_hosts");
+        try {
+            String hostKeys = line.hostKey() + "\n";
+            if (line.jumpHost() != null && !line.jumpHost().isBlank()) {
+                hostKeys += line.jumpHostKey() + "\n";
+            }
+            Files.writeString(knownHosts, hostKeys);
+            Files.setPosixFilePermissions(knownHosts, PosixFilePermissions.fromString("rw-------"));
+            List<String> command = new ArrayList<>();
+            command.add(sshExecutable);
             command.add("-o");
-            command.add("ProxyCommand=ssh -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1 " +
-                    "-o IdentitiesOnly=yes -i " + line.jumpKey() + " -W %h:%p " +
-                    line.jumpUser() + "@" + line.jumpHost());
+            command.add("BatchMode=yes");
+            command.add("-o");
+            command.add("ConnectTimeout=10");
+            command.add("-o");
+            command.add("ConnectionAttempts=1");
+            command.add("-o");
+            command.add("IdentitiesOnly=yes");
+            command.add("-o");
+            command.add("UserKnownHostsFile=" + knownHosts);
+            command.add("-o");
+            command.add("GlobalKnownHostsFile=/dev/null");
+            command.add("-o");
+            command.add("StrictHostKeyChecking=yes");
+            command.add("-i");
+            command.add(line.key());
+            if (line.jumpHost() != null && !line.jumpHost().isBlank()) {
+                command.add("-o");
+                command.add("ProxyCommand=ssh -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1 " +
+                        "-o IdentitiesOnly=yes -o UserKnownHostsFile=" + knownHosts +
+                        " -o GlobalKnownHostsFile=/dev/null -o StrictHostKeyChecking=yes -i " + line.jumpKey() +
+                        " -W %h:%p " + line.jumpUser() + "@" + line.jumpHost());
+            }
+            command.add(line.user() + "@" + line.host());
+            command.add(script);
+            arguments.forEach(command::add);
+            Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
+            if (!process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS)) {
+                process.destroyForcibly();
+                process.waitFor(5, TimeUnit.SECONDS);
+                throw new java.net.SocketTimeoutException("SSH command timed out");
+            }
+            String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+            if (process.exitValue() == 65 || process.exitValue() == 66) {
+                throw new RemoteConflictException("Remote package conflict: " + output.strip());
+            }
+            if (process.exitValue() != 0) {
+                throw new java.io.IOException("SSH command failed with exit " + process.exitValue() + ": " + output.strip());
+            }
+            return output;
+        } finally {
+            Files.deleteIfExists(knownHosts);
+            Files.deleteIfExists(tempDirectory);
         }
-        command.add(line.user() + "@" + line.host());
-        command.add(script);
-        arguments.forEach(command::add);
-        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
-        if (!process.waitFor(timeout.toMillis(), TimeUnit.MILLISECONDS)) {
-            process.destroyForcibly();
-            process.waitFor(5, TimeUnit.SECONDS);
-            throw new java.net.SocketTimeoutException("SSH command timed out");
-        }
-        String output = new String(process.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        if (process.exitValue() == 65 || process.exitValue() == 66) {
-            throw new RemoteConflictException("Remote package conflict: " + output.strip());
-        }
-        if (process.exitValue() != 0) {
-            throw new java.io.IOException("SSH command failed with exit " + process.exitValue() + ": " + output.strip());
-        }
-        return output;
     }
 
     static void validateHost(String host) {

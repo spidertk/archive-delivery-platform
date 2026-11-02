@@ -24,9 +24,18 @@ class SshCommandRunnerTest {
 
     @Test
     void usesArgvAndExplicitlyDisablesFtpCleaning() throws Exception {
-        Path log = Files.createTempFile("ssh-argv", ".log");
-        Path fakeSsh = Files.createTempFile("fake-ssh", ".sh");
-        Files.writeString(fakeSsh, "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"" + log + "\"\n");
+        Path root = Files.createTempDirectory("fake-ssh");
+        Path log = root.resolve("argv");
+        Path capturedKeys = root.resolve("known-hosts-copy");
+        Path capturedPath = root.resolve("known-hosts-path");
+        Path fakeSsh = root.resolve("ssh");
+        Files.writeString(fakeSsh, "#!/usr/bin/env bash\n"
+                + "printf '%s\\n' \"$@\" > \"" + log + "\"\n"
+                + "while [[ $# -gt 0 ]]; do\n"
+                + "  if [[ \"$1\" == '-o' && \"$2\" == UserKnownHostsFile=* ]]; then\n"
+                + "    file=\"${2#*=}\"; cp \"$file\" \"" + capturedKeys + "\"; printf '%s' \"$file\" > \"" + capturedPath + "\"\n"
+                + "  fi; shift\n"
+                + "done\n");
         fakeSsh.toFile().setExecutable(true);
         SshCommandRunner runner = new SshCommandRunner(fakeSsh.toString());
         runner.run(line(), "/opt/archive-delivery/bin/sg_download.sh",
@@ -34,7 +43,10 @@ class SshCommandRunnerTest {
                         "/srv/maas-sftp/maasData/archive/.archive-mvp-staging/run-1", "batch_00001.tar.gz", "false"),
                 Duration.ofSeconds(2));
         String argv = Files.readString(log);
-        assertThat(argv).contains("BatchMode=yes", "ConnectTimeout=10", "oss://sg/june/date/batch_00001.tar.gz", "false");
+        assertThat(argv).contains("BatchMode=yes", "ConnectTimeout=10", "UserKnownHostsFile=",
+                "StrictHostKeyChecking=yes", "oss://sg/june/date/batch_00001.tar.gz", "false");
+        assertThat(Files.readAllLines(capturedKeys)).containsExactly(line().hostKey(), line().jumpHostKey());
+        assertThat(Path.of(Files.readString(capturedPath))).doesNotExist();
     }
 
     @Test
@@ -97,8 +109,8 @@ class SshCommandRunnerTest {
 
     private static com.powerjob.archive.core.pipeline.FtpNodeConfig.Line line() {
         return new com.powerjob.archive.core.pipeline.FtpNodeConfig.Line(
-                "ftp.example.com", "archive", "/keys/archive", null, null, null,
-                "ftp.example.com ssh-ed25519 AAAA", null,
+                "ftp.example.com", "archive", "/keys/archive", "jump.example.com", "jump", "/keys/jump",
+                "ftp.example.com ssh-ed25519 AAAA", "jump.example.com ssh-ed25519 AAAA",
                 "/srv/maas-sftp/maasData/archive", "/opt/archive-delivery/bin/sg_download.sh",
                 "/opt/archive-delivery/bin/publish_package.sh");
     }
