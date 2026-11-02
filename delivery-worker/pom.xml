@@ -36,6 +36,7 @@
         </dependency>
     </dependencies>
     <build>
+        <finalName>delivery-worker</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

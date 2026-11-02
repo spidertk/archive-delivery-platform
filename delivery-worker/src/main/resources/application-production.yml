@@ -5,49 +5,7 @@ archive:
   debug-loop: ${ARCHIVE_DEBUG_LOOP:false}
   business-timezone: Asia/Shanghai
   delivery-cutoff-time: "02:00"
-  oss:
-    source:
-      endpoint: ${OSS_SOURCE_ENDPOINT}
-      bucket: ${OSS_SOURCE_BUCKET}
-      access-key-id: ${OSS_SOURCE_ACCESS_KEY_ID}
-      access-key-secret: ${OSS_SOURCE_ACCESS_KEY_SECRET}
-    hz:
-      endpoint: ${OSS_HZ_ENDPOINT}
-      bucket: ${OSS_HZ_BUCKET}
-      access-key-id: ${OSS_HZ_ACCESS_KEY_ID}
-      access-key-secret: ${OSS_HZ_ACCESS_KEY_SECRET}
-    sg:
-      endpoint: ${OSS_SG_ENDPOINT}
-      bucket: ${OSS_SG_BUCKET}
-      access-key-id: ${OSS_SG_ACCESS_KEY_ID}
-      access-key-secret: ${OSS_SG_ACCESS_KEY_SECRET}
   worker-slots:
     source-slots-per-line: 1
     output-slots-global: 10
     max-attempts: 5
-  ftp:
-    lines:
-      1:
-        host: ${FTP_LINE_1_SSH_HOST}
-        user: ${FTP_LINE_1_SSH_USER}
-        key: ${FTP_LINE_1_SSH_KEY}
-        jump-host: ${FTP_LINE_1_JUMP_HOST:}
-        jump-user: ${FTP_LINE_1_JUMP_USER:}
-        jump-key: ${FTP_LINE_1_JUMP_KEY:}
-        remote-root: /srv/maas-sftp/maasData/archive
-      2:
-        host: ${FTP_LINE_2_SSH_HOST}
-        user: ${FTP_LINE_2_SSH_USER}
-        key: ${FTP_LINE_2_SSH_KEY}
-        jump-host: ${FTP_LINE_2_JUMP_HOST:}
-        jump-user: ${FTP_LINE_2_JUMP_USER:}
-        jump-key: ${FTP_LINE_2_JUMP_KEY:}
-        remote-root: /srv/maas-sftp/maasData/archive
-      3:
-        host: ${FTP_LINE_3_SSH_HOST}
-        user: ${FTP_LINE_3_SSH_USER}
-        key: ${FTP_LINE_3_SSH_KEY}
-        jump-host: ${FTP_LINE_3_JUMP_HOST:}
-        jump-user: ${FTP_LINE_3_JUMP_USER:}
-        jump-key: ${FTP_LINE_3_JUMP_KEY:}
-        remote-root: /srv/maas-sftp/maasData/archive

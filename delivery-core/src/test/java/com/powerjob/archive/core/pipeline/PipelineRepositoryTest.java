@@ -11,7 +11,7 @@ class PipelineRepositoryTest {
     @Test
     void loadsVersionedNodeSequence() throws Exception {
         String json;
-        try (var input = getClass().getResourceAsStream("/pipelines/archive-delivery-v1.json")) {
+        try (var input = getClass().getResourceAsStream("/pipelines/archive-delivery-v3.json")) {
             json = new String(input.readAllBytes(), StandardCharsets.UTF_8);
         }
         PipelineDefinition definition = new PipelineRepository(new ObjectMapper()).read(new ObjectMapper().readTree(json));

@@ -31,11 +31,6 @@ archive:
   delivery-cutoff-time: "02:00"
   group-size: 5
   max-ticks: 250
-  oss-source-endpoint: ${OSS_SOURCE_ENDPOINT:https://oss-cn-hangzhou.aliyuncs.com}
-  oss-source-access-key-id: ${OSS_SOURCE_ACCESS_KEY_ID:}
-  oss-source-access-key-secret: ${OSS_SOURCE_ACCESS_KEY_SECRET:}
-  oss-source-bucket: ${OSS_SOURCE_BUCKET:junflow-ysai-source-hz-20260906}
-  oss-source-prefix: ${OSS_SOURCE_PREFIX:_derived/ysai-sftp-20261027/delivery_plan_0005/}
   local-source-dir: ${ARCHIVE_LOCAL_SOURCE_DIR:/samples}
   work-root: ${ARCHIVE_WORK_ROOT:/data/work}
   hz-root: ${ARCHIVE_HZ_ROOT:/data/hz-oss}
