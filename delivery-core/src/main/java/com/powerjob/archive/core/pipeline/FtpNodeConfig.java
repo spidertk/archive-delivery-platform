@@ -2,6 +2,7 @@ package com.powerjob.archive.core.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Base64;
 import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -25,7 +26,8 @@ public record FtpNodeConfig(Map<String, Line> lines) {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Line(String host, String user, String key, String jumpHost, String jumpUser, String jumpKey,
-                       String remoteRoot, String downloadScript, String publishScript) {
+                       String hostKey, String jumpHostKey, String remoteRoot,
+                       String downloadScript, String publishScript) {
         void validate() {
             if (blank(host) || blank(user) || blank(key)) {
                 throw new IllegalArgumentException("FTP host/user/key are required");
@@ -36,9 +38,27 @@ public record FtpNodeConfig(Map<String, Line> lines) {
             if (blank(downloadScript) || blank(publishScript)) {
                 throw new IllegalArgumentException("FTP scripts are required");
             }
-            if (!blank(jumpHost) && (blank(jumpUser) || blank(jumpKey))) {
-                throw new IllegalArgumentException("FTP jumpUser/jumpKey are required with jumpHost");
+            validateHostKey(hostKey);
+            if (!blank(jumpHost)) {
+                if (blank(jumpUser) || blank(jumpKey)) {
+                    throw new IllegalArgumentException("FTP jumpUser/jumpKey are required with jumpHost");
+                }
+                validateHostKey(jumpHostKey);
             }
+        }
+    }
+
+    static String validateHostKey(String value) {
+        try {
+            String[] fields = value.split("\\s+");
+            if (fields.length != 3 || fields[0].isBlank()
+                    || !(fields[1].startsWith("ssh-") || fields[1].startsWith("ecdsa-") || fields[1].startsWith("sk-"))) {
+                throw new IllegalArgumentException("Invalid SSH host public key");
+            }
+            Base64.getDecoder().decode(fields[2]);
+            return value;
+        } catch (RuntimeException e) {
+            throw new IllegalArgumentException("Invalid SSH host public key");
         }
     }
 

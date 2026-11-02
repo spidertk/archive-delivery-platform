@@ -98,6 +98,7 @@ class SshCommandRunnerTest {
     private static com.powerjob.archive.core.pipeline.FtpNodeConfig.Line line() {
         return new com.powerjob.archive.core.pipeline.FtpNodeConfig.Line(
                 "ftp.example.com", "archive", "/keys/archive", null, null, null,
+                "ftp.example.com ssh-ed25519 AAAA", null,
                 "/srv/maas-sftp/maasData/archive", "/opt/archive-delivery/bin/sg_download.sh",
                 "/opt/archive-delivery/bin/publish_package.sh");
     }

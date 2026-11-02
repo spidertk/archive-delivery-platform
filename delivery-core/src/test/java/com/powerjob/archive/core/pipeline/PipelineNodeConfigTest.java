@@ -42,10 +42,21 @@ class PipelineNodeConfigTest {
     }
 
     @Test
+    void validatesSshHostPublicKeys() {
+        String valid = "sg-1 ssh-ed25519 AAAA";
+        assertThat(FtpNodeConfig.validateHostKey(valid)).isSameAs(valid);
+        for (String invalid : new String[]{null, "", "sg-1 ssh-ed25519", "sg-1 not-a-key AAAA",
+                "sg-1 ssh-ed25519 AAAA\nother ssh-ed25519 AAAA"}) {
+            assertThatThrownBy(() -> FtpNodeConfig.validateHostKey(invalid))
+                    .isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Test
     void requiresAllThreeFtpLines() throws Exception {
         NodeDefinition ftpNode = node("publish", "ssh.publish", """
                 {"lines":{"1":{"host":"sg-1","user":"root","key":"/run/secrets/line-1-id_ed25519",
-                "remoteRoot":"/srv/maas-sftp/maasData/archive",
+                "hostKey":"sg-1 ssh-ed25519 AAAA","remoteRoot":"/srv/maas-sftp/maasData/archive",
                 "downloadScript":"/opt/archive-delivery/bin/sg_download.sh",
                 "publishScript":"/opt/archive-delivery/bin/publish_package.sh"}}}
                 """);
@@ -65,6 +76,7 @@ class PipelineNodeConfigTest {
             json.append('"').append(line).append("\":{")
                     .append("\"host\":\"").append(line == 1 ? firstHost : "sg-" + line).append("\",")
                     .append("\"user\":\"root\",\"key\":\"/run/secrets/line-").append(line).append("-id_ed25519\",")
+                    .append("\"hostKey\":\"sg-").append(line).append(" ssh-ed25519 AAAA\",")
                     .append("\"remoteRoot\":\"/srv/maas-sftp/maasData/archive\",")
                     .append("\"downloadScript\":\"/opt/archive-delivery/bin/sg_download.sh\",")
                     .append("\"publishScript\":\"/opt/archive-delivery/bin/publish_package.sh\"}");

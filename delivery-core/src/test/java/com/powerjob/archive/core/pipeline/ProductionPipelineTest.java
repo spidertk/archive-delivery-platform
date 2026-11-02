@@ -73,6 +73,7 @@ class ProductionPipelineTest {
                 for (long line = 1; line <= 3; line++) {
                     lines.putObject(Long.toString(line)).put("host", "sg-" + line).put("user", "root")
                             .put("key", "/run/secrets/line-" + line + "-id_ed25519")
+                            .put("hostKey", "sg-" + line + " ssh-ed25519 AAAA")
                             .put("remoteRoot", "/srv/maas-sftp/maasData/archive")
                             .put("downloadScript", "/opt/archive-delivery/bin/sg_download.sh")
                             .put("publishScript", "/opt/archive-delivery/bin/publish_package.sh");
