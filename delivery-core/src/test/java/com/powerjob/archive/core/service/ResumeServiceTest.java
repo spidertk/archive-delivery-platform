@@ -67,12 +67,21 @@ class ResumeServiceTest {
         assertThatThrownBy(() -> resumes.resume(runId, "hzUpload", List.of(sgVerify), "rollback"))
                 .isInstanceOf(ResumeConflictException.class);
 
+        long stale = output("batch_00005.tar.gz", "GROUPED", "hzUpload", null, true, false);
+        jdbc.update("UPDATE output_package SET run_status='RUNNING',lease_until=now()-interval '1 minute' WHERE id=?", stale);
+        assertThat(resumes.resume(runId, "hzUpload", List.of(stale), "expired worker lease")).isEqualTo(1);
+        assertThat(runStatus(stale)).isEqualTo("READY");
+        long active = output("batch_00006.tar.gz", "GROUPED", "hzUpload", null, true, false);
+        jdbc.update("UPDATE output_package SET run_status='RUNNING',lease_until=now()+interval '5 minutes' WHERE id=?", active);
+        assertThatThrownBy(() -> resumes.resume(runId, "hzUpload", List.of(active), "active worker"))
+                .isInstanceOf(ResumeConflictException.class);
+
         jdbc.update("UPDATE output_package SET run_status='BLOCKED',fence=7 WHERE id=?", sgDownload);
         resumes.retry(sgDownload, 7, "network recovered");
         assertThat(runStatus(sgDownload)).isEqualTo("READY");
         assertThatThrownBy(() -> resumes.retry(sgDownload, 7, "stale fence"))
                 .isInstanceOf(ResumeConflictException.class);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM operation_audit", Integer.class)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM operation_audit", Integer.class)).isEqualTo(5);
     }
 
     private static long output(String name, String status, String node, String pathKind,

@@ -31,7 +31,7 @@ public class ResumeService {
     public int resume(long runId, String fromNode, List<Long> packageIds, String reason) {
         if (!NODES.contains(fromNode)) throw new ResumeConflictException("Unsupported resume node");
         if (reason == null || reason.isBlank()) throw new IllegalArgumentException("reason is required");
-        String sql = "SELECT p.id,p.status,p.run_status,p.current_node,p.fence,p.manifest::text AS manifest," +
+        String sql = "SELECT p.id,p.status,p.run_status,p.current_node,p.fence,p.lease_until,p.manifest::text AS manifest," +
                 "p.hz_path,p.sg_source_path,p.sg_download_path,p.published_path,s.run_id,a.sha256 " +
                 "FROM output_package p JOIN source_package s ON s.id=p.source_package_id " +
                 "JOIN output_artifact a ON a.output_package_id=p.id AND a.artifact_seq=1 WHERE s.run_id=?";
@@ -75,7 +75,10 @@ public class ResumeService {
     private void resumeOne(long runId, String fromNode, Map<String, Object> output, String reason) {
         long packageId = ((Number) output.get("id")).longValue();
         long fence = ((Number) output.get("fence")).longValue();
-        if (!fromNode.equals(output.get("current_node")) || "RUNNING".equals(output.get("run_status"))) {
+        Object leaseUntil = output.get("lease_until");
+        boolean activeRunning = "RUNNING".equals(output.get("run_status")) && leaseUntil != null
+                && ((java.sql.Timestamp) leaseUntil).toInstant().isAfter(java.time.Instant.now());
+        if (!fromNode.equals(output.get("current_node")) || activeRunning) {
             throw new ResumeConflictException("Package is not resumable from " + fromNode);
         }
         verifyPrerequisites(fromNode, output);
