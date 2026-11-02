@@ -3,7 +3,9 @@ package com.powerjob.archive.server.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powerjob.archive.core.domain.DiscoveredObject;
 import com.powerjob.archive.core.repository.DeliveryRunRepository;
+import com.powerjob.archive.core.repository.OperationAuditRepository;
 import com.powerjob.archive.core.repository.SourcePackageRepository;
+import com.powerjob.archive.core.service.DeliveryRolloverService;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -26,6 +28,9 @@ class DashboardQueryServiceTest {
     private static final String OSS = "oss://junflow-ysai-source-hz-20260906/_derived/ysai-sftp-20261027/delivery_plan_0005/";
     @Container static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:16-alpine");
     static DashboardQueryService dashboard;
+    static DeliveryRunRepository runs;
+    static SourcePackageRepository sources;
+    static DeliveryRolloverService rollovers;
     static long runId;
 
     @BeforeAll
@@ -36,8 +41,10 @@ class DashboardQueryServiceTest {
                 .defaultSchema("archive_delivery").load().migrate();
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
         TransactionTemplate transactions = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
-        DeliveryRunRepository runs = new DeliveryRunRepository(jdbc, transactions);
-        SourcePackageRepository sources = new SourcePackageRepository(jdbc, transactions, new ObjectMapper());
+        runs = new DeliveryRunRepository(jdbc, transactions);
+        sources = new SourcePackageRepository(jdbc, transactions, new ObjectMapper());
+        rollovers = new DeliveryRolloverService(jdbc, transactions, new OperationAuditRepository(jdbc),
+                new ObjectMapper(), java.time.Clock.systemUTC());
         dashboard = new DashboardQueryService(jdbc);
         runId = runs.create(OSS, "dashboard-test", LocalDate.of(2026, 10, 30), 2);
         long first = sources.upsertDiscovered(runId, object(1));
@@ -72,6 +79,27 @@ class DashboardQueryServiceTest {
         assertThat(dashboard.timeline(1).get("nodes")).asList().hasSize(1);
         assertThat(dashboard.timeline(1).get("events")).asList().hasSize(1);
         assertThat(dashboard.run(runId)).containsEntry("pipelineVersion", 2);
+    }
+
+    @Test
+    void dashboardShowsRolledOverPackagesAfterControlledReplay() {
+        long rolloverRun = runs.create(OSS, "dashboard-rollover", LocalDate.of(2026, 10, 30), 2);
+        long source = sources.upsertDiscovered(rolloverRun, object(3));
+        jdbcForTest().update("UPDATE source_package SET production_line_id=1,process_date='2026-10-30' WHERE id=?", source);
+        output(jdbcForTest(), source, "batch_00003.tar.gz", "GROUPED", "BLOCKED", 3);
+
+        assertThat(rollovers.rolloverRun(rolloverRun, LocalDate.of(2026, 10, 30), "看板跨日复盘")).isEqualTo(1);
+        var filter = new DashboardQueryService.Filter(rolloverRun, null, null, null, true);
+        Map<String, Object> summary = dashboard.summary(filter);
+        assertThat(summary.get("rolledover")).isEqualTo(1L);
+        assertThat(summary.get("blocked")).isEqualTo(1L);
+        assertThat(dashboard.packages(filter, null, null, 0, 10).get("total")).isEqualTo(1L);
+    }
+
+    private static JdbcTemplate jdbcForTest() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource(
+                POSTGRES.getJdbcUrl() + "&currentSchema=archive_delivery", POSTGRES.getUsername(), POSTGRES.getPassword());
+        return new JdbcTemplate(dataSource);
     }
 
     private static DiscoveredObject object(int index) {

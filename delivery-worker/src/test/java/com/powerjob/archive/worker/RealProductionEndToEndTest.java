@@ -49,6 +49,33 @@ class RealProductionEndToEndTest {
         assertThat(packages.stream().filter(p -> ((Number) p.get("production_line_id")).longValue() == 1)).hasSize(4);
         assertThat(packages.stream().filter(p -> ((Number) p.get("production_line_id")).longValue() == 2)).hasSize(3);
         assertThat(packages.stream().filter(p -> ((Number) p.get("production_line_id")).longValue() == 3)).hasSize(3);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM source_package s JOIN delivery_run r ON r.id=s.run_id " +
+                "WHERE s.run_id=? AND s.status='REPAIRED' AND s.process_date<>r.job_date",
+                Integer.class, runId)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM output_package p JOIN source_package s ON s.id=p.source_package_id " +
+                "WHERE s.run_id=? AND (p.current_node<>'receipt' OR p.archive_date<>p.delivery_date)",
+                Integer.class, runId)).isZero();
+        for (String node : List.of("hzUpload", "sgVerify", "sgDownload", "publish", "receipt")) {
+            assertThat(jdbc.queryForObject("SELECT count(DISTINCT p.id) FROM output_package p " +
+                    "JOIN source_package s ON s.id=p.source_package_id JOIN package_node_run n ON n.output_package_id=p.id " +
+                    "WHERE s.run_id=? AND n.node_id=? AND n.status='SUCCEEDED'", Integer.class, runId, node)).isEqualTo(10);
+        }
+        int crrWaitSeconds = definition.intConfig("crrWaitSeconds");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM output_package p JOIN source_package s ON s.id=p.source_package_id " +
+                "WHERE s.run_id=? AND (SELECT min(n.started_at) FROM package_node_run n " +
+                "WHERE n.output_package_id=p.id AND n.node_id='sgVerify' AND n.attempt>1) " +
+                "< p.hz_uploaded_at + (? * interval '1 second')",
+                Integer.class, runId, crrWaitSeconds)).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM package_node_run a JOIN package_node_run b ON b.id>a.id " +
+                "JOIN source_package sa ON sa.id=a.source_package_id JOIN source_package sb ON sb.id=b.source_package_id " +
+                "WHERE sa.run_id=? AND sb.run_id=? AND sa.production_line_id=sb.production_line_id " +
+                "AND a.started_at < b.finished_at AND b.started_at < a.finished_at", Integer.class, runId, runId)).isZero();
+        assertThat(jdbc.queryForObject("WITH node_run AS (SELECT n.* FROM package_node_run n " +
+                "JOIN output_package p ON p.id=n.output_package_id JOIN source_package s ON s.id=p.source_package_id " +
+                "WHERE s.run_id=?), events AS (SELECT started_at AS at,1 AS delta FROM node_run UNION ALL " +
+                "SELECT finished_at,-1 FROM node_run), slots AS (SELECT at,sum(delta) OVER (ORDER BY at,delta DESC) " +
+                "AS concurrent FROM events) SELECT coalesce(max(concurrent),0) FROM slots", Integer.class, runId))
+                .isLessThanOrEqualTo(10);
         assertThat(jdbc.queryForObject("SELECT count(*) FROM (SELECT rm.new_request_id FROM request_mapping rm " +
                 "JOIN source_member sm ON sm.id=rm.source_member_id JOIN source_package s ON s.id=sm.source_package_id " +
                 "WHERE s.run_id=? GROUP BY rm.new_request_id HAVING count(*)>1) duplicates", Integer.class, runId)).isZero();

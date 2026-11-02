@@ -24,8 +24,8 @@ while IFS='|' read -r line host user key jump_host jump_user jump_key; do
     args+=(-o "ProxyCommand=ssh -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1 -o IdentitiesOnly=yes -i $jump_key -W %h:%p $jump_user@$jump_host")
   fi
   if [[ "$MODE" == "check" ]]; then
-    ssh "${args[@]}" "$user@$host" 'command -v ossutil64 >/dev/null'
-    echo "OK LINE-$line SSH and remote ossutil64"
+    ssh "${args[@]}" "$user@$host" 'command -v ossutil64 >/dev/null && test -x /opt/archive-delivery/bin/sg_download.sh && test -x /opt/archive-delivery/bin/publish_package.sh'
+    echo "OK LINE-$line SSH, remote ossutil64 and fixed delivery scripts"
     continue
   fi
   provider="june"

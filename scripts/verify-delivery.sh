@@ -17,6 +17,11 @@ set -a
 source "$ROOT/deploy/.env"
 set +a
 export ARCHIVE_DB_URL="${ARCHIVE_DB_URL:-jdbc:postgresql://host.docker.internal:55432/archive_delivery}"
+if [[ "$ARCHIVE_DB_URL" != *currentSchema=* ]]; then
+  separator='?'
+  [[ "$ARCHIVE_DB_URL" == *\?* ]] && separator='&'
+  export ARCHIVE_DB_URL="${ARCHIVE_DB_URL}${separator}currentSchema=archive_delivery"
+fi
 export ARCHIVE_VERIFY_RUN_ID="$RUN_ID"
 export ARCHIVE_REAL_E2E=true
 DOCKER_SOCK="${DOCKER_SOCK:-$HOME/.docker/run/docker.sock}"
@@ -31,4 +36,4 @@ docker run --rm --env-file "$ROOT/deploy/.env" \
   -v "$HOME/.ssh/archive-delivery-mvp/line-2-id_ed25519:/run/secrets/line-2-id_ed25519:ro" \
   -v "$HOME/.ssh/archive-delivery-mvp/line-3-id_ed25519:/run/secrets/line-3-id_ed25519:ro" \
   -v "$ROOT/../old/sample":/samples:ro -w /workspace \
-  archive-delivery-maven:test mvn -q -pl delivery-worker -Dtest=RealProductionEndToEndTest test
+  archive-delivery-maven:test mvn -q -pl delivery-worker -am -Dsurefire.failIfNoSpecifiedTests=false -Dtest=RealProductionEndToEndTest test
