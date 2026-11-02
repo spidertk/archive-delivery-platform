@@ -16,11 +16,6 @@ public class MvpProperties {
     private String deliveryCutoffTime = "02:00";
     private int groupSize = 5;
     private int maxTicks = 250;
-    private String ossSourceEndpoint;
-    private String ossSourceAccessKeyId;
-    private String ossSourceAccessKeySecret;
-    private String ossSourceBucket;
-    private String ossSourcePrefix;
     private String localSourceDir = "/samples";
     private String workRoot = "/data/work";
     private String hzRoot = "/data/hz-oss";
@@ -49,16 +44,6 @@ public class MvpProperties {
     public void setGroupSize(int groupSize) { this.groupSize = groupSize; }
     public int getMaxTicks() { return maxTicks; }
     public void setMaxTicks(int maxTicks) { this.maxTicks = maxTicks; }
-    public String getOssSourceEndpoint() { return ossSourceEndpoint; }
-    public void setOssSourceEndpoint(String ossSourceEndpoint) { this.ossSourceEndpoint = ossSourceEndpoint; }
-    public String getOssSourceAccessKeyId() { return ossSourceAccessKeyId; }
-    public void setOssSourceAccessKeyId(String ossSourceAccessKeyId) { this.ossSourceAccessKeyId = ossSourceAccessKeyId; }
-    public String getOssSourceAccessKeySecret() { return ossSourceAccessKeySecret; }
-    public void setOssSourceAccessKeySecret(String ossSourceAccessKeySecret) { this.ossSourceAccessKeySecret = ossSourceAccessKeySecret; }
-    public String getOssSourceBucket() { return ossSourceBucket; }
-    public void setOssSourceBucket(String ossSourceBucket) { this.ossSourceBucket = ossSourceBucket; }
-    public String getOssSourcePrefix() { return ossSourcePrefix; }
-    public void setOssSourcePrefix(String ossSourcePrefix) { this.ossSourcePrefix = ossSourcePrefix; }
     public String getLocalSourceDir() { return localSourceDir; }
     public void setLocalSourceDir(String localSourceDir) { this.localSourceDir = localSourceDir; }
     public String getWorkRoot() { return workRoot; }

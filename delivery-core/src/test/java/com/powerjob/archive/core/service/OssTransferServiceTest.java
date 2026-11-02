@@ -3,7 +3,7 @@ package com.powerjob.archive.core.service;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
-import com.powerjob.archive.core.config.OssDeliveryProperties;
+import com.powerjob.archive.core.pipeline.OssNodeConfig;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -27,15 +27,16 @@ class OssTransferServiceTest {
         String sha = new FileTransferService().sha256(artifact);
         OSS client = mock(OSS.class);
         when(client.doesObjectExist(anyString(), anyString())).thenReturn(false);
-        ObjectMetadata uploaded = metadata(artifact, sha);
-        when(client.getObjectMetadata(anyString(), anyString())).thenReturn(uploaded);
-        OssTransferService service = new OssTransferService(properties(), client);
-        assertThat(service.uploadHz(artifact, "june/date/batch_00001.tar.gz", sha, 1, 2).uploaded()).isTrue();
+        when(client.getObjectMetadata(anyString(), anyString())).thenReturn(metadata(artifact, sha));
+        OssTransferService service = new OssTransferService(client);
+        assertThat(service.uploadHz(config(), artifact, "june/date/batch_00001.tar.gz", sha, 1, 2).uploaded()).isTrue();
         verify(client).putObject(any(PutObjectRequest.class));
 
         when(client.doesObjectExist(anyString(), anyString())).thenReturn(true);
-        assertThat(service.uploadHz(artifact, "june/date/batch_00001.tar.gz", sha, 1, 2).uploaded()).isFalse();
+        assertThat(service.uploadHz(config(), artifact, "june/date/batch_00001.tar.gz", sha, 1, 2).uploaded()).isFalse();
         verify(client).putObject(any(PutObjectRequest.class));
+        assertThat(service.hzUri(config(), "june/date/batch_00001.tar.gz"))
+                .isEqualTo("oss://hz-bucket/june/date/batch_00001.tar.gz");
     }
 
     @Test
@@ -45,8 +46,8 @@ class OssTransferServiceTest {
         OSS client = mock(OSS.class);
         when(client.doesObjectExist(anyString(), anyString())).thenReturn(true);
         when(client.getObjectMetadata(anyString(), anyString())).thenReturn(metadata(artifact, "different"));
-        OssTransferService service = new OssTransferService(properties(), client);
-        assertThatThrownBy(() -> service.uploadHz(artifact, "june/date/batch_00001.tar.gz",
+        OssTransferService service = new OssTransferService(client);
+        assertThatThrownBy(() -> service.uploadHz(config(), artifact, "june/date/batch_00001.tar.gz",
                 new FileTransferService().sha256(artifact), 1, 2)).isInstanceOf(RemoteConflictException.class);
         verify(client, never()).putObject(any(PutObjectRequest.class));
     }
@@ -58,9 +59,7 @@ class OssTransferServiceTest {
         return metadata;
     }
 
-    private static OssDeliveryProperties properties() {
-        OssDeliveryProperties properties = new OssDeliveryProperties();
-        properties.getHz().setBucket("hz-bucket");
-        return properties;
+    private static OssNodeConfig config() {
+        return new OssNodeConfig("https://oss-cn-hangzhou.aliyuncs.com", "hz-bucket", null, "id", "secret");
     }
 }

@@ -21,7 +21,7 @@ public class OutputPackageRepository {
         this.transactions = transactions;
         this.mapper = (rs, rowNum) -> new OutputPackage(
                 rs.getLong("id"), rs.getLong("source_package_id"), rs.getLong("pipeline_version_id"),
-                JdbcJson.read(objectMapper, rs.getString("definition_snapshot")),
+                JdbcJson.read(objectMapper, rs.getString("pipeline_definition")),
                 rs.getLong("production_group_id"), rs.getLong("production_line_id"),
                 rs.getString("archive_date"), rs.getString("delivery_date"), rs.getInt("group_seq"),
                 rs.getString("new_package_name"), rs.getString("status"), rs.getString("run_status"),
@@ -42,15 +42,15 @@ public class OutputPackageRepository {
                     " production_group_id,group_seq FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS (" +
                     " UPDATE output_package p SET run_status='RUNNING',lease_owner=?,lease_until=now()+interval '90 seconds'," +
                     " fence=p.fence+1,updated_at=now() FROM candidate c WHERE p.id=c.id RETURNING p.*) " +
-                    "SELECT c.*,sp.definition_snapshot FROM claimed c " +
-                    "JOIN source_package sp ON sp.id=c.source_package_id", mapper, lineId, workerId);
+                    "SELECT c.*,pv.definition AS pipeline_definition FROM claimed c " +
+                    "JOIN pipeline_version pv ON pv.id=c.pipeline_version_id", mapper, lineId, workerId);
             return result.stream().findFirst();
         });
     }
 
     public Optional<OutputPackage> findById(long id) {
-        return jdbc.query("SELECT op.*,sp.definition_snapshot FROM output_package op " +
-                "JOIN source_package sp ON sp.id=op.source_package_id WHERE op.id=?", mapper, id).stream().findFirst();
+        return jdbc.query("SELECT op.*,pv.definition AS pipeline_definition FROM output_package op " +
+                "JOIN pipeline_version pv ON pv.id=op.pipeline_version_id WHERE op.id=?", mapper, id).stream().findFirst();
     }
 
     public void complete(long id, long fence, String workerId, String businessStatus,

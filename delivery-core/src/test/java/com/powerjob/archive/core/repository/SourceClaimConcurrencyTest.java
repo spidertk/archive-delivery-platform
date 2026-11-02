@@ -40,11 +40,10 @@ class SourceClaimConcurrencyTest {
 
     @Test
     void permitsOneRunningSourcePerLineWithoutBlockingOtherLines() throws Exception {
-        String snapshot = sourcesSnapshot();
         for (int index = 0; index < 2; index++) {
-            sources.upsertPlanned(object(index, 1), snapshot, "2026-10-30");
+            sources.upsertPlanned(object(index, 1), 1L, "2026-10-30");
         }
-        sources.upsertPlanned(object(2, 2), snapshot, "2026-10-30");
+        sources.upsertPlanned(object(2, 2), 1L, "2026-10-30");
         CountDownLatch start = new CountDownLatch(1);
         var pool = Executors.newFixedThreadPool(3);
         try {

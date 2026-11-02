@@ -42,7 +42,7 @@ public class DeliveryRolloverService {
 
     public int autoRollover() {
         return transactions.execute(status -> rolloverDue("p.cutoff_at<=now() AND " +
-                "sp.definition_snapshot->'config'->>'autoRollover'='true'", new Object[]{}, null, "automatic"));
+                "pv.definition->'config'->>'autoRollover'='true'", new Object[]{}, null, "automatic"));
     }
 
     private int rolloverDue(String selector, Object[] args, Long auditRunId, String actor) {
@@ -50,6 +50,7 @@ public class DeliveryRolloverService {
                 "p.group_seq,p.new_package_name,((p.delivery_date+2+l.delivery_cutoff_time) " +
                 "AT TIME ZONE l.business_timezone) AS next_cutoff FROM output_package p " +
                 "JOIN production_line l ON l.id=p.production_line_id JOIN source_package sp ON sp.id=p.source_package_id " +
+                "JOIN pipeline_version pv ON pv.id=p.pipeline_version_id " +
                 "WHERE " + selector + " AND p.status<>'DELIVERED' AND p.run_status<>'CANCELLED' " +
                 "ORDER BY p.delivery_date,p.id FOR UPDATE OF p SKIP LOCKED LIMIT 500";
         List<Map<String, Object>> due = jdbc.queryForList(sql, args);

@@ -51,10 +51,11 @@ public class PipelineEngine {
     }
 
     private void executeSource(SourcePackage source, String workerId) {
-        NodeDefinition node = pipelines.read(source.pipelineSnapshot()).node(source.currentNode());
+        PipelineDefinition pipeline = pipelines.read(source.pipelineDefinition());
+        NodeDefinition node = pipeline.node(source.currentNode());
         long runId = runs.start(source.id(), null, node.id(), node.type(), source.fence(), workerId);
         try {
-            NodeResult result = handler(node).execute(new NodeContext(source, null, node, runId, source.fence(), workerId));
+            NodeResult result = handler(node).execute(new NodeContext(source, null, node, pipeline, runId, source.fence(), workerId));
             boolean terminal = result.nextNode() == null;
             sources.complete(source.id(), source.fence(), workerId, result.businessStatus(),
                     terminal ? node.id() : result.nextNode(),
@@ -69,10 +70,11 @@ public class PipelineEngine {
     }
 
     private void executeOutput(OutputPackage output, String workerId) {
-        NodeDefinition node = pipelines.read(output.pipelineSnapshot()).node(output.currentNode());
+        PipelineDefinition pipeline = pipelines.read(output.pipelineDefinition());
+        NodeDefinition node = pipeline.node(output.currentNode());
         long runId = runs.start(null, output.id(), node.id(), node.type(), output.fence(), workerId);
         try {
-            NodeResult result = handler(node).execute(new NodeContext(null, output, node, runId, output.fence(), workerId));
+            NodeResult result = handler(node).execute(new NodeContext(null, output, node, pipeline, runId, output.fence(), workerId));
             if (result.kind() == NodeResult.ResultKind.WAITING) {
                 outputs.markWaiting(output.id(), output.fence(), workerId,
                         result.manifest() == null ? null : result.manifest().toString(), result.nextPoll());

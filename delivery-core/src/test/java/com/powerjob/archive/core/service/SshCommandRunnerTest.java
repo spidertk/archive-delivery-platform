@@ -1,6 +1,5 @@
 package com.powerjob.archive.core.service;
 
-import com.powerjob.archive.core.config.FtpDeliveryProperties;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
@@ -19,7 +18,7 @@ class SshCommandRunnerTest {
             assertThatThrownBy(() -> SshCommandRunner.validateHost(value)).isInstanceOf(IllegalArgumentException.class);
             assertThatThrownBy(() -> SshCommandRunner.validateArgument(value)).isInstanceOf(IllegalArgumentException.class);
         }
-        assertThatThrownBy(() -> new SshCommandRunner(properties(), "ssh").run(1,
+        assertThatThrownBy(() -> new SshCommandRunner("ssh").run(line(),
                 "/tmp/arbitrary.sh", List.of("false"), Duration.ofSeconds(1))).isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -29,8 +28,8 @@ class SshCommandRunnerTest {
         Path fakeSsh = Files.createTempFile("fake-ssh", ".sh");
         Files.writeString(fakeSsh, "#!/usr/bin/env bash\nprintf '%s\\n' \"$@\" > \"" + log + "\"\n");
         fakeSsh.toFile().setExecutable(true);
-        SshCommandRunner runner = new SshCommandRunner(properties(), fakeSsh.toString());
-        runner.run(1, "/opt/archive-delivery/bin/sg_download.sh",
+        SshCommandRunner runner = new SshCommandRunner(fakeSsh.toString());
+        runner.run(line(), "/opt/archive-delivery/bin/sg_download.sh",
                 List.of("oss://sg/june/date/batch_00001.tar.gz", "a".repeat(64),
                         "/srv/maas-sftp/maasData/archive/.archive-mvp-staging/run-1", "batch_00001.tar.gz", "false"),
                 Duration.ofSeconds(2));
@@ -43,8 +42,8 @@ class SshCommandRunnerTest {
         Path fakeSsh = Files.createTempFile("fake-ssh-timeout", ".sh");
         Files.writeString(fakeSsh, "#!/usr/bin/env bash\nsleep 5\n");
         fakeSsh.toFile().setExecutable(true);
-        SshCommandRunner runner = new SshCommandRunner(properties(), fakeSsh.toString());
-        assertThatThrownBy(() -> runner.run(1, "/opt/archive-delivery/bin/sg_download.sh",
+        SshCommandRunner runner = new SshCommandRunner(fakeSsh.toString());
+        assertThatThrownBy(() -> runner.run(line(), "/opt/archive-delivery/bin/sg_download.sh",
                 List.of("false"), Duration.ofMillis(50))).isInstanceOf(java.net.SocketTimeoutException.class)
                 .hasMessageContaining("timed out");
     }
@@ -96,13 +95,10 @@ class SshCommandRunnerTest {
         assertThat(downloadScript + publishScript).doesNotContain("rm -rf", "rsync --delete", "rm -f -- *");
     }
 
-    private static FtpDeliveryProperties properties() {
-        FtpDeliveryProperties properties = new FtpDeliveryProperties();
-        FtpDeliveryProperties.Line line = new FtpDeliveryProperties.Line();
-        line.setHost("ftp.example.com");
-        line.setUser("archive");
-        line.setKey("/keys/archive");
-        properties.getLines().put(1L, line);
-        return properties;
+    private static com.powerjob.archive.core.pipeline.FtpNodeConfig.Line line() {
+        return new com.powerjob.archive.core.pipeline.FtpNodeConfig.Line(
+                "ftp.example.com", "archive", "/keys/archive", null, null, null,
+                "/srv/maas-sftp/maasData/archive", "/opt/archive-delivery/bin/sg_download.sh",
+                "/opt/archive-delivery/bin/publish_package.sh");
     }
 }

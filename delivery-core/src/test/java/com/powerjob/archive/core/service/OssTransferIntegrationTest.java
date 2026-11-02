@@ -1,7 +1,7 @@
 package com.powerjob.archive.core.service;
 
 import com.aliyun.oss.OSSClientBuilder;
-import com.powerjob.archive.core.config.OssDeliveryProperties;
+import com.powerjob.archive.core.pipeline.OssNodeConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
@@ -15,25 +15,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 class OssTransferIntegrationTest {
     @Test
     void realHzObjectIsPutOnlyOnceAndDeletedAfterProbe() throws Exception {
-        OssDeliveryProperties properties = new OssDeliveryProperties();
-        properties.getHz().setEndpoint(required("OSS_HZ_ENDPOINT"));
-        properties.getHz().setBucket(required("OSS_HZ_BUCKET"));
-        properties.getHz().setAccessKeyId(required("OSS_HZ_ACCESS_KEY_ID"));
-        properties.getHz().setAccessKeySecret(required("OSS_HZ_ACCESS_KEY_SECRET"));
+        OssNodeConfig config = new OssNodeConfig(required("OSS_HZ_ENDPOINT"), required("OSS_HZ_BUCKET"), null,
+                required("OSS_HZ_ACCESS_KEY_ID"), required("OSS_HZ_ACCESS_KEY_SECRET"));
         Path artifact = Files.createTempFile("archive-hz-it", ".txt");
         Files.writeString(artifact, "archive-mvp-integration");
         String sha = new FileTransferService().sha256(artifact);
         String prefix = System.getenv().getOrDefault("HZ_OSS_TEST_PREFIX", ".archive-mvp-it/");
         String key = prefix + UUID.randomUUID() + "/batch_00001.tar.gz";
-        OssTransferService service = new OssTransferService(properties);
+        OssTransferService service = new OssTransferService();
         try {
-            assertThat(service.uploadHz(artifact, key, sha, 1, 1).uploaded()).isTrue();
-            assertThat(service.uploadHz(artifact, key, sha, 1, 1).uploaded()).isFalse();
+            assertThat(service.uploadHz(config, artifact, key, sha, 1, 1).uploaded()).isTrue();
+            assertThat(service.uploadHz(config, artifact, key, sha, 1, 1).uploaded()).isFalse();
         } finally {
-            var client = new OSSClientBuilder().build(properties.getHz().getEndpoint(),
-                    properties.getHz().getAccessKeyId(), properties.getHz().getAccessKeySecret());
+            var client = new OSSClientBuilder().build(config.endpoint(), config.accessKeyId(), config.accessKeySecret());
             try {
-                client.deleteObject(properties.getHz().getBucket(), key);
+                client.deleteObject(config.bucket(), key);
             } finally {
                 client.shutdown();
                 Files.deleteIfExists(artifact);

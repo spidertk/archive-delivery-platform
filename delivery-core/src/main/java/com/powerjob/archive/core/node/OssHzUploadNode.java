@@ -18,13 +18,16 @@ public class OssHzUploadNode implements NodeHandler {
     private final RemotePathService paths;
     private final OutputPackageRepository outputs;
     private final JdbcTemplate jdbc;
+    private final com.powerjob.archive.core.pipeline.PipelineNodeConfig configs;
 
     public OssHzUploadNode(OssTransferService transfers, RemotePathService paths,
-                           OutputPackageRepository outputs, JdbcTemplate jdbc) {
+                           OutputPackageRepository outputs, JdbcTemplate jdbc,
+                           com.powerjob.archive.core.pipeline.PipelineNodeConfig configs) {
         this.transfers = transfers;
         this.paths = paths;
         this.outputs = outputs;
         this.jdbc = jdbc;
+        this.configs = configs;
     }
 
     @Override
@@ -36,9 +39,10 @@ public class OssHzUploadNode implements NodeHandler {
         String key = paths.objectKey(context.output().id());
         long runId = jdbc.queryForObject("SELECT s.run_id FROM source_package s WHERE s.id=?",
                 Long.class, context.output().sourcePackageId());
-        OssTransferService.UploadResult result = transfers.uploadHz(Path.of(artifact.required("path").asText()),
+        var config = configs.oss(context.node(), false);
+        OssTransferService.UploadResult result = transfers.uploadHz(config, Path.of(artifact.required("path").asText()),
                 key, artifact.required("sha256").asText(), runId, context.output().id());
-        String uri = transfers.hzUri(key);
+        String uri = transfers.hzUri(config, key);
         outputs.updatePath(context.output().id(), "hz_path", uri);
         outputs.updateArtifactPath(context.output().id(), "hz_path", uri);
         jdbc.update("UPDATE output_package SET hz_uploaded_at=COALESCE(hz_uploaded_at,now()),updated_at=now() WHERE id=?",

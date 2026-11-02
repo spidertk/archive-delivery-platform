@@ -2,6 +2,7 @@ package com.powerjob.archive.core.service;
 
 import com.aliyun.oss.OSS;
 import com.powerjob.archive.core.domain.SourcePackage;
+import com.powerjob.archive.core.pipeline.OssNodeConfig;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
@@ -19,8 +20,8 @@ public class OssSourceDownloader implements SourceDownloader {
     }
 
     @Override
-    public void download(SourcePackage source, Path destination) throws Exception {
-        OSS client = clients.create();
+    public void download(SourcePackage source, OssNodeConfig config, Path destination) throws Exception {
+        OSS client = clients.create(config);
         try {
             var metadata = client.getObjectMetadata(source.bucketName(), source.objectKey());
             if (metadata.getContentLength() != source.sourceSize()) {

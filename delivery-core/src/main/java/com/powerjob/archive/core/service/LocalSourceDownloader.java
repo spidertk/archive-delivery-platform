@@ -17,7 +17,8 @@ public class LocalSourceDownloader implements SourceDownloader {
     }
 
     @Override
-    public void download(SourcePackage source, Path destination) throws Exception {
+    public void download(SourcePackage source, com.powerjob.archive.core.pipeline.OssNodeConfig config,
+                         Path destination) throws Exception {
         try (var input = Files.newInputStream(Path.of(source.objectKey()))) {
             files.copyStream(input, destination);
         }

@@ -25,13 +25,16 @@ public class OssSgVerifyNode implements NodeHandler {
     private final OutputPackageRepository outputs;
     private final JdbcTemplate jdbc;
     private final Clock clock;
+    private final com.powerjob.archive.core.pipeline.PipelineNodeConfig configs;
 
     public OssSgVerifyNode(OssTransferService transfers, OutputPackageRepository outputs,
-                           JdbcTemplate jdbc, Clock clock) {
+                           JdbcTemplate jdbc, Clock clock,
+                           com.powerjob.archive.core.pipeline.PipelineNodeConfig configs) {
         this.transfers = transfers;
         this.outputs = outputs;
         this.jdbc = jdbc;
         this.clock = clock;
+        this.configs = configs;
     }
 
     @Override
@@ -46,14 +49,15 @@ public class OssSgVerifyNode implements NodeHandler {
         if (uploaded == null) throw new IllegalStateException("hz_uploaded_at is required before SG verification");
         Instant uploadedAt = uploaded.toInstant();
         Instant now = clock.instant();
-        int waitSeconds = context.output().pipelineSnapshot().required("config").required("crrWaitSeconds").asInt();
+        int waitSeconds = context.pipeline().intConfig("crrWaitSeconds");
         Instant firstCheck = uploadedAt.plusSeconds(waitSeconds);
         if (now.isBefore(firstCheck)) {
             return NodeResult.waiting("sgVerify", context.output().manifest(), Duration.between(now, firstCheck));
         }
         int pollSeconds = ((Number) context.node().config().getOrDefault("pollSeconds", 30)).intValue();
         int maxWaitSeconds = ((Number) context.node().config().getOrDefault("maxWaitSeconds", 7200)).intValue();
-        var remote = transfers.headSg(key);
+        var config = configs.oss(context.node(), false);
+        var remote = transfers.headSg(config, key);
         if (remote.isEmpty()) {
             if (!now.isBefore(uploadedAt.plusSeconds(maxWaitSeconds))) throw new CrrWaitTimeoutException();
             return NodeResult.waiting("sgVerify", context.output().manifest(), Duration.ofSeconds(pollSeconds));
@@ -65,7 +69,7 @@ public class OssSgVerifyNode implements NodeHandler {
                 || !artifact.required("sha256").asText().equals(remoteSha)) {
             throw new RemoteConflictException("SG OSS size or SHA differs from HZ artifact: " + key);
         }
-        String uri = transfers.sgUri(key);
+        String uri = transfers.sgUri(config, key);
         outputs.updatePath(context.output().id(), "sg_source_path", uri);
         outputs.updateArtifactPath(context.output().id(), "sg_path", uri);
         JsonNode manifest = context.output().manifest().deepCopy();

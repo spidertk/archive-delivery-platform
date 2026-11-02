@@ -24,13 +24,13 @@ public class MvpSeedService {
     }
 
     public List<Long> seed() {
-        String snapshot = jdbc.queryForObject("SELECT definition::text FROM pipeline_version WHERE id=1", String.class);
+        long pipelineVersionId = 1L;
         List<DiscoveredObject> objects = discovery.discover();
         return java.util.stream.IntStream.range(0, objects.size()).mapToObj(index -> {
             DiscoveredObject object = objects.get(index);
             long lineId = index < 4 ? 1L : index < 7 ? 2L : 3L;
             return sources.upsertPlanned(new DiscoveredObject(object.bucketName(), object.objectKey(),
-                    object.objectVersion(), object.etag(), object.size(), lineId), snapshot, properties.getArchiveDate());
+                    object.objectVersion(), object.etag(), object.size(), lineId), pipelineVersionId, properties.getArchiveDate());
         }).toList();
     }
 }

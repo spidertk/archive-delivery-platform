@@ -7,6 +7,8 @@ import com.powerjob.archive.core.domain.OutputPackage;
 import com.powerjob.archive.core.pipeline.NodeContext;
 import com.powerjob.archive.core.pipeline.NodeDefinition;
 import com.powerjob.archive.core.pipeline.NodeResult;
+import com.powerjob.archive.core.pipeline.PipelineDefinition;
+import com.powerjob.archive.core.pipeline.PipelineNodeConfig;
 import com.powerjob.archive.core.repository.OutputPackageRepository;
 import com.powerjob.archive.core.service.CrrWaitTimeoutException;
 import com.powerjob.archive.core.service.OssTransferService;
@@ -39,7 +41,7 @@ class OssSgVerifyNodeTest {
         NodeResult result = fixture.execute();
         assertThat(result.kind()).isEqualTo(NodeResult.ResultKind.WAITING);
         assertThat(result.nextPoll()).hasSeconds(1);
-        verify(fixture.transfers, never()).headSg(anyString());
+        verify(fixture.transfers, never()).headSg(org.mockito.ArgumentMatchers.any(), anyString());
         fixture = new Fixture(T0.plusSeconds(180), T0, 180);
         fixture.remote = Optional.of(metadata(7, "sha"));
         assertThat(fixture.execute().businessStatus()).isEqualTo("SG_VERIFIED");
@@ -52,8 +54,8 @@ class OssSgVerifyNodeTest {
         assertThat(first.execute().kind()).isEqualTo(NodeResult.ResultKind.SUCCEEDED);
         Fixture second = new Fixture(T0.plusSeconds(180), T0.plusSeconds(60), 180);
         assertThat(second.execute().nextPoll()).hasSeconds(60);
-        verify(first.transfers).headSg(anyString());
-        verify(second.transfers, never()).headSg(anyString());
+        verify(first.transfers).headSg(org.mockito.ArgumentMatchers.any(), anyString());
+        verify(second.transfers, never()).headSg(org.mockito.ArgumentMatchers.any(), anyString());
 
         Fixture immediate = new Fixture(T0, T0, 0);
         immediate.remote = Optional.of(metadata(7, "sha"));
@@ -93,15 +95,21 @@ class OssSgVerifyNodeTest {
             this.wait = wait;
             when(jdbc.queryForObject(anyString(), org.mockito.ArgumentMatchers.eq(Timestamp.class), anyLong()))
                     .thenReturn(Timestamp.from(uploaded));
-            when(transfers.headSg(anyString())).thenAnswer(invocation -> remote);
-            when(transfers.sgUri(anyString())).thenReturn("oss://sg/june/date/batch_00001.tar.gz");
+            when(transfers.headSg(org.mockito.ArgumentMatchers.any(), anyString())).thenAnswer(invocation -> remote);
+            when(transfers.sgUri(org.mockito.ArgumentMatchers.any(), anyString()))
+                    .thenReturn("oss://sg/june/date/batch_00001.tar.gz");
         }
 
         NodeResult execute() {
-            return new OssSgVerifyNode(transfers, outputs, jdbc, clock)
-                    .execute(new NodeContext(null, output(wait),
-                            new NodeDefinition("sgVerify", "OUTPUT", "oss.sg-verify",
-                                    Map.of("pollSeconds", 30, "maxWaitSeconds", 7200)), 1, 1, "worker"));
+            NodeDefinition node = new NodeDefinition("sgVerify", "OUTPUT", "oss.sg-verify", Map.of(
+                    "endpoint", "https://oss-ap-southeast-1.aliyuncs.com", "bucket", "sg-bucket",
+                    "accessKeyId", "id", "accessKeySecret", "secret",
+                    "pollSeconds", 30, "maxWaitSeconds", 7200));
+            PipelineDefinition pipeline = new PipelineDefinition("archive-delivery", 3,
+                    Map.of("crrWaitSeconds", wait), java.util.List.of());
+            return new OssSgVerifyNode(transfers, outputs, jdbc, clock,
+                    new PipelineNodeConfig(new ObjectMapper()))
+                    .execute(new NodeContext(null, output(wait), node, pipeline, 1, 1, "worker"));
         }
     }
 

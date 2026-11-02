@@ -34,7 +34,7 @@ class OssSourceDownloaderTest {
     void setUp() throws Exception {
         clients = mock(OssClientFactory.class);
         client = mock(OSS.class);
-        when(clients.create()).thenReturn(client);
+        when(clients.create(org.mockito.ArgumentMatchers.any())).thenReturn(client);
         downloader = new OssSourceDownloader(clients, files);
         destination = Files.createTempDirectory("archive-download").resolve("batch_00001.tar.gz");
     }
@@ -46,7 +46,7 @@ class OssSourceDownloaderTest {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(body.length);
         when(client.getObjectMetadata(anyString(), anyString())).thenReturn(metadata);
-        downloader.download(source(body.length, files.sha256(destination)), destination);
+        downloader.download(source(body.length, files.sha256(destination)), config(), destination);
         verify(client, never()).getObject(anyString(), anyString());
     }
 
@@ -60,7 +60,7 @@ class OssSourceDownloaderTest {
         OSSObject object = new OSSObject();
         object.setObjectContent(new ByteArrayInputStream(body));
         when(client.getObject(anyString(), anyString())).thenReturn(object);
-        downloader.download(source(body.length, null), destination);
+        downloader.download(source(body.length, null), config(), destination);
         assertThat(Files.readAllBytes(destination)).isEqualTo(body);
         assertThat(destination.resolveSibling(destination.getFileName() + ".partial")).doesNotExist();
     }
@@ -78,8 +78,13 @@ class OssSourceDownloaderTest {
             }
         });
         when(client.getObject(anyString(), anyString())).thenReturn(object);
-        assertThatThrownBy(() -> downloader.download(source(100, null), destination)).isInstanceOf(IOException.class);
+        assertThatThrownBy(() -> downloader.download(source(100, null), config(), destination)).isInstanceOf(IOException.class);
         assertThat(destination).doesNotExist();
+    }
+
+    private static com.powerjob.archive.core.pipeline.OssNodeConfig config() {
+        return new com.powerjob.archive.core.pipeline.OssNodeConfig(
+                "https://oss-cn-hangzhou.aliyuncs.com", "bucket", "prefix/", "id", "secret");
     }
 
     private static SourcePackage source(long size, String sha) {

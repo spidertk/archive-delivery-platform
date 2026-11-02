@@ -5,7 +5,7 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.ClientBuilderConfiguration;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
-import com.powerjob.archive.core.config.OssDeliveryProperties;
+import com.powerjob.archive.core.pipeline.OssNodeConfig;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -16,25 +16,23 @@ import java.util.Base64;
 
 @Service
 public class OssTransferService {
-    private final OssDeliveryProperties properties;
     private final OSS hzOverride;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    public OssTransferService(OssDeliveryProperties properties) {
-        this(properties, null);
+    public OssTransferService() {
+        this(null);
     }
 
-    OssTransferService(OssDeliveryProperties properties, OSS hzOverride) {
-        this.properties = properties;
+    OssTransferService(OSS hzOverride) {
         this.hzOverride = hzOverride;
     }
 
-    public UploadResult uploadHz(Path artifact, String key, String expectedSha, long runId, long packageId) throws Exception {
+    public UploadResult uploadHz(OssNodeConfig config, Path artifact, String key, String expectedSha,
+                                 long runId, long packageId) throws Exception {
         RemotePathService.validatePackageName(Path.of(key).getFileName().toString());
-        OSS client = hzOverride == null ? client(properties.getHz()) : hzOverride;
+        OSS client = hzOverride == null ? client(config) : hzOverride;
         boolean close = hzOverride == null;
         try {
-            String bucket = properties.getHz().getBucket();
+            String bucket = config.bucket();
             if (client.doesObjectExist(bucket, key)) {
                 ObjectMetadata existing = client.getObjectMetadata(bucket, key);
                 if (existing.getContentLength() == Files.size(artifact)
@@ -63,32 +61,31 @@ public class OssTransferService {
         }
     }
 
-    public String hzUri(String key) {
-        return "oss://" + properties.getHz().getBucket() + "/" + key;
+    public String hzUri(OssNodeConfig config, String key) {
+        return "oss://" + config.bucket() + "/" + key;
     }
 
-    public java.util.Optional<ObjectMetadata> headSg(String key) {
-        OSS client = client(properties.getSg());
+    public java.util.Optional<ObjectMetadata> headSg(OssNodeConfig config, String key) {
+        OSS client = client(config);
         try {
-            String bucket = properties.getSg().getBucket();
-            return client.doesObjectExist(bucket, key)
-                    ? java.util.Optional.of(client.getObjectMetadata(bucket, key)) : java.util.Optional.empty();
+            return client.doesObjectExist(config.bucket(), key)
+                    ? java.util.Optional.of(client.getObjectMetadata(config.bucket(), key)) : java.util.Optional.empty();
         } finally {
             client.shutdown();
         }
     }
 
-    public String sgUri(String key) {
-        return "oss://" + properties.getSg().getBucket() + "/" + key;
+    public String sgUri(OssNodeConfig config, String key) {
+        return "oss://" + config.bucket() + "/" + key;
     }
 
-    private static OSS client(OssDeliveryProperties.Endpoint endpoint) {
+    private static OSS client(OssNodeConfig config) {
         ClientBuilderConfiguration configuration = new ClientBuilderConfiguration();
         configuration.setConnectionTimeout(10_000);
         configuration.setSocketTimeout(60_000);
         configuration.setMaxErrorRetry(2);
-        return new OSSClientBuilder().build(endpoint.getEndpoint(), endpoint.getAccessKeyId(),
-                endpoint.getAccessKeySecret(), configuration);
+        return new OSSClientBuilder().build(config.endpoint(), config.accessKeyId(),
+                config.accessKeySecret(), configuration);
     }
 
     private static String contentMd5(Path artifact) throws Exception {

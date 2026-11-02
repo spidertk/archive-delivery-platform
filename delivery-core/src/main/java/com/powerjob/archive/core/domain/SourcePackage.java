@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 public record SourcePackage(
         long id,
         long pipelineVersionId,
-        JsonNode pipelineSnapshot,
+        JsonNode pipelineDefinition,
         String bucketName,
         String objectKey,
         String objectVersion,

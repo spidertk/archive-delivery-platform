@@ -60,8 +60,9 @@ class PlanningServiceTest {
         assertThat(jdbc.queryForObject("SELECT count(*) FROM source_package WHERE production_line_id=3", Integer.class)).isEqualTo(3);
         assertThat(jdbc.queryForObject("SELECT count(DISTINCT process_date) FROM source_package WHERE status='PLANNED'", Integer.class))
                 .isEqualTo(1);
-        assertThat(jdbc.queryForObject("SELECT count(*) FROM source_package WHERE " +
-                "definition_snapshot->'config'->>'crrWaitSeconds'='180'", Integer.class)).isEqualTo(12);
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM source_package p " +
+                "JOIN pipeline_version pv ON pv.id=p.pipeline_version_id " +
+                "WHERE pv.definition->'config'->>'crrWaitSeconds'='180'", Integer.class)).isEqualTo(12);
         assertThat(planning.plan(runId, null)).containsExactly(
                 java.util.Map.entry("LINE-1", 0), java.util.Map.entry("LINE-2", 0), java.util.Map.entry("LINE-3", 0));
     }

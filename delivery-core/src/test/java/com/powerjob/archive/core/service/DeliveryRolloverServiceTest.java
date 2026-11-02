@@ -81,14 +81,15 @@ class DeliveryRolloverServiceTest {
 
         jdbc.update("INSERT INTO output_package(source_package_id,pipeline_version_id,production_group_id,production_line_id," +
                 "archive_date,delivery_date,cutoff_at,group_seq,new_package_name,status,run_status,current_node,manifest) " +
-                "VALUES (?,2,1,1,'2026-10-30','2026-10-31','2026-11-02 02:00+08',6,'batch_00006.tar.gz'," +
+                "VALUES (?,2,1,1,'2026-10-30','2026-10-31','2099-11-02 02:00+08',6,'batch_00006.tar.gz'," +
                 "'GROUPED','READY','hzUpload','{}')", sourceId);
         OutputPackage first = outputs.claimNext(1, "worker").orElseThrow();
         assertThat(first.id()).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT rollover_count FROM output_package WHERE id=1", Integer.class))
                 .isEqualTo(1);
 
-        jdbc.update("UPDATE source_package SET definition_snapshot=jsonb_set(definition_snapshot,'{config,autoRollover}','true')");
+        jdbc.update("UPDATE pipeline_version SET definition=jsonb_set(definition,'{config,autoRollover}','true') WHERE id=2");
+        assertThat(rollovers.autoRollover()).isEqualTo(4);
         assertThat(rollovers.autoRollover()).isEqualTo(4);
         assertThat(rollovers.autoRollover()).isZero();
     }

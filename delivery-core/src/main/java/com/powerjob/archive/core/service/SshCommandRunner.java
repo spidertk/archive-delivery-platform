@@ -1,6 +1,6 @@
 package com.powerjob.archive.core.service;
 
-import com.powerjob.archive.core.config.FtpDeliveryProperties;
+import com.powerjob.archive.core.pipeline.FtpNodeConfig;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
@@ -15,31 +15,27 @@ public class SshCommandRunner {
     private static final Pattern HOST = Pattern.compile("[A-Za-z0-9._-]+");
     private static final Pattern USER = Pattern.compile("[A-Za-z_][A-Za-z0-9_-]*");
     private static final Pattern ARGUMENT = Pattern.compile("/?[A-Za-z0-9][A-Za-z0-9._:/-]*");
-    private final FtpDeliveryProperties properties;
     private final String sshExecutable;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    public SshCommandRunner(FtpDeliveryProperties properties) {
-        this(properties, "ssh");
+    public SshCommandRunner() {
+        this("ssh");
     }
 
-    SshCommandRunner(FtpDeliveryProperties properties, String sshExecutable) {
-        this.properties = properties;
+    SshCommandRunner(String sshExecutable) {
         this.sshExecutable = sshExecutable;
     }
 
-    public String run(long lineId, String script, List<String> arguments, Duration timeout) throws Exception {
-        FtpDeliveryProperties.Line line = properties.line(lineId);
-        if (!script.equals(line.getDownloadScript()) && !script.equals(line.getPublishScript())) {
+    public String run(FtpNodeConfig.Line line, String script, List<String> arguments, Duration timeout) throws Exception {
+        if (!script.equals(line.downloadScript()) && !script.equals(line.publishScript())) {
             throw new IllegalArgumentException("Only fixed FTP scripts are allowed");
         }
-        validateHost(line.getHost());
-        validateUser(line.getUser());
-        validateKey(line.getKey());
-        if (line.getJumpHost() != null && !line.getJumpHost().isBlank()) {
-            validateHost(line.getJumpHost());
-            validateUser(line.getJumpUser());
-            validateKey(line.getJumpKey());
+        validateHost(line.host());
+        validateUser(line.user());
+        validateKey(line.key());
+        if (line.jumpHost() != null && !line.jumpHost().isBlank()) {
+            validateHost(line.jumpHost());
+            validateUser(line.jumpUser());
+            validateKey(line.jumpKey());
         }
         arguments.forEach(SshCommandRunner::validateArgument);
         List<String> command = new ArrayList<>();
@@ -53,14 +49,14 @@ public class SshCommandRunner {
         command.add("-o");
         command.add("IdentitiesOnly=yes");
         command.add("-i");
-        command.add(line.getKey());
-        if (line.getJumpHost() != null && !line.getJumpHost().isBlank()) {
+        command.add(line.key());
+        if (line.jumpHost() != null && !line.jumpHost().isBlank()) {
             command.add("-o");
             command.add("ProxyCommand=ssh -o BatchMode=yes -o ConnectTimeout=10 -o ConnectionAttempts=1 " +
-                    "-o IdentitiesOnly=yes -i " + line.getJumpKey() + " -W %h:%p " +
-                    line.getJumpUser() + "@" + line.getJumpHost());
+                    "-o IdentitiesOnly=yes -i " + line.jumpKey() + " -W %h:%p " +
+                    line.jumpUser() + "@" + line.jumpHost());
         }
-        command.add(line.getUser() + "@" + line.getHost());
+        command.add(line.user() + "@" + line.host());
         command.add(script);
         arguments.forEach(command::add);
         Process process = new ProcessBuilder(command).redirectErrorStream(true).start();

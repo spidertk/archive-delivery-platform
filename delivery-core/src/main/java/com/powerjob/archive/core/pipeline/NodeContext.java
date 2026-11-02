@@ -7,6 +7,7 @@ public record NodeContext(
         SourcePackage source,
         OutputPackage output,
         NodeDefinition node,
+        PipelineDefinition pipeline,
         long runId,
         long fence,
         String workerId) {

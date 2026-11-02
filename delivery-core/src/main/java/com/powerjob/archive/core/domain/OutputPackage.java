@@ -6,7 +6,7 @@ public record OutputPackage(
         long id,
         long sourcePackageId,
         long pipelineVersionId,
-        JsonNode pipelineSnapshot,
+        JsonNode pipelineDefinition,
         long productionGroupId,
         long productionLineId,
         String archiveDate,

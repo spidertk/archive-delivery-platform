@@ -22,7 +22,7 @@ public class SourcePackageRepository {
         this.transactions = transactions;
         this.mapper = (rs, rowNum) -> new SourcePackage(
                 rs.getLong("id"), rs.getLong("pipeline_version_id"),
-                JdbcJson.read(objectMapper, rs.getString("definition_snapshot")),
+                JdbcJson.read(objectMapper, rs.getString("pipeline_definition")),
                 rs.getString("bucket_name"), rs.getString("object_key"), rs.getString("object_version"),
                 rs.getLong("source_size"), rs.getString("source_sha256"), rs.getString("status"), rs.getString("run_status"),
                 rs.getLong("production_line_id"), rs.getString("current_node"),
@@ -30,13 +30,13 @@ public class SourcePackageRepository {
                 JdbcJson.read(objectMapper, rs.getString("manifest")));
     }
 
-    public long upsertPlanned(DiscoveredObject object, String snapshot, String processDate) {
+    public long upsertPlanned(DiscoveredObject object, long pipelineVersionId, String processDate) {
         List<Long> inserted = jdbc.query("INSERT INTO source_package " +
-                "(source_id,pipeline_version_id,definition_snapshot,bucket_name,object_key,object_version," +
+                "(source_id,pipeline_version_id,bucket_name,object_key,object_version," +
                 "object_etag,source_size,status,run_status,production_line_id,process_date,planned_at) " +
-                "VALUES (1,1,?::jsonb,?,?,?,?,?,'PLANNED','READY',?,?::date,now()) " +
+                "VALUES (1,?,?,?,?,?,?,'PLANNED','READY',?,?::date,now()) " +
                 "ON CONFLICT(bucket_name,object_key,object_version) DO NOTHING RETURNING id",
-                (rs, n) -> rs.getLong(1), snapshot, object.bucketName(), object.objectKey(),
+                (rs, n) -> rs.getLong(1), pipelineVersionId, object.bucketName(), object.objectKey(),
                 object.objectVersion(), object.etag(), object.size(), object.productionLineId(), processDate);
         if (!inserted.isEmpty()) return inserted.get(0);
         return jdbc.queryForObject("SELECT id FROM source_package WHERE bucket_name=? AND object_key=? AND object_version=?",
@@ -45,10 +45,10 @@ public class SourcePackageRepository {
 
     public long upsertDiscovered(long runId, DiscoveredObject object) {
         List<Long> inserted = jdbc.query("INSERT INTO source_package " +
-                        "(source_id,pipeline_version_id,definition_snapshot,bucket_name,object_key,object_version," +
+                        "(source_id,pipeline_version_id,bucket_name,object_key,object_version," +
                         "object_etag,source_size,status,run_status,run_id) " +
-                        "SELECT s.id,r.pipeline_version_id,pv.definition,?,?,?,?,?,'DISCOVERED','READY',r.id " +
-                        "FROM delivery_run r JOIN pipeline_version pv ON pv.id=r.pipeline_version_id " +
+                        "SELECT s.id,r.pipeline_version_id,?,?,?,?,?,'DISCOVERED','READY',r.id " +
+                        "FROM delivery_run r " +
                         "JOIN ingest_source s ON s.bucket_ref=r.bucket_name AND s.object_prefix=r.object_prefix " +
                         "WHERE r.id=? ON CONFLICT(bucket_name,object_key,object_version) DO NOTHING RETURNING id",
                 (rs, n) -> rs.getLong(1), object.bucketName(), object.objectKey(), object.objectVersion(),
@@ -69,13 +69,15 @@ public class SourcePackageRepository {
                     " ORDER BY process_date,id FOR UPDATE SKIP LOCKED LIMIT 1), claimed AS (" +
                     " UPDATE source_package p SET run_status='RUNNING',lease_owner=?,lease_until=now()+interval '90 seconds'," +
                     " fence=p.fence+1,updated_at=now() FROM candidate c WHERE p.id=c.id RETURNING p.*) " +
-                    "SELECT * FROM claimed", mapper, lineId, workerId);
+                    "SELECT claimed.*,pv.definition AS pipeline_definition FROM claimed " +
+                    "JOIN pipeline_version pv ON pv.id=claimed.pipeline_version_id", mapper, lineId, workerId);
             return result.stream().findFirst();
         });
     }
 
     public Optional<SourcePackage> findById(long id) {
-        return jdbc.query("SELECT * FROM source_package WHERE id=?", mapper, id).stream().findFirst();
+        return jdbc.query("SELECT p.*,pv.definition AS pipeline_definition FROM source_package p " +
+                "JOIN pipeline_version pv ON pv.id=p.pipeline_version_id WHERE p.id=?", mapper, id).stream().findFirst();
     }
 
     public void complete(long id, long fence, String workerId, String businessStatus,

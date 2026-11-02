@@ -19,14 +19,17 @@ public class DownloadNode implements NodeHandler {
     private final MvpProperties properties;
     private final ObjectMapper mapper;
     private final JdbcTemplate jdbc;
+    private final com.powerjob.archive.core.pipeline.PipelineNodeConfig configs;
 
     public DownloadNode(SourceDownloader downloader, FileTransferService files, MvpProperties properties,
-                        ObjectMapper mapper, JdbcTemplate jdbc) {
+                        ObjectMapper mapper, JdbcTemplate jdbc,
+                        com.powerjob.archive.core.pipeline.PipelineNodeConfig configs) {
         this.downloader = downloader;
         this.files = files;
         this.properties = properties;
         this.mapper = mapper;
         this.jdbc = jdbc;
+        this.configs = configs;
     }
 
     @Override
@@ -36,7 +39,8 @@ public class DownloadNode implements NodeHandler {
     public NodeResult execute(NodeContext context) throws Exception {
         String fileName = Path.of(context.source().objectKey()).getFileName().toString();
         Path target = Path.of(properties.getWorkRoot(), "source-" + context.source().id(), "input", fileName);
-        downloader.download(context.source(), target);
+        var config = "oss".equals(properties.getDiscoveryMode()) ? configs.oss(context.node(), true) : null;
+        downloader.download(context.source(), config, target);
         String sha = files.sha256(target);
         if (target.toFile().length() != context.source().sourceSize()) {
             throw new IllegalStateException("Downloaded size does not match source metadata");
