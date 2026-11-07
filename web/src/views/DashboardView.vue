@@ -1,141 +1,137 @@
 <template>
   <main class="dashboard">
-    <h1>归档交付 MVP 看板</h1>
-    <el-form inline class="filters">
-      <el-form-item label="Run"><el-input-number v-model="filters.runId" :min="1" /></el-form-item>
-      <el-form-item label="交付日"><el-date-picker v-model="filters.deliveryDate" type="date" value-format="YYYY-MM-DD" /></el-form-item>
-      <el-form-item label="归档日"><el-date-picker v-model="filters.archiveDate" type="date" value-format="YYYY-MM-DD" /></el-form-item>
-      <el-form-item label="生产线"><el-select v-model="filters.lineId" clearable style="width: 110px"><el-option v-for="line in [1,2,3]" :key="line" :label="`LINE-${line}`" :value="line" /></el-select></el-form-item>
-      <el-form-item label="已流转"><el-checkbox v-model="rolledOnly" /></el-form-item>
-      <el-form-item label="状态"><el-input v-model="filters.status" clearable placeholder="BLOCKED" /></el-form-item>
-      <el-form-item label="关键字"><el-input v-model="filters.keyword" clearable placeholder="包名 / 路径" /></el-form-item>
+    <h1>归档交付看板</h1>
+    <el-form inline class="filters" @submit.prevent>
+      <el-form-item label="Delivery ID"><el-input-number v-model="deliveryId" :min="1" /></el-form-item>
       <el-button type="primary" @click="refresh">刷新</el-button>
     </el-form>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
+    <el-card class="submit-card">
+      <template #header>提交三个交付实体目标（每个目标一个产物）</template>
+      <el-form inline @submit.prevent>
+        <el-form-item label="来源 ID"><el-input-number v-model="submission.sourceId" :min="1" /></el-form-item>
+        <el-form-item label="PipelineVersion"><el-input-number v-model="submission.pipelineVersionId" :min="1" /></el-form-item>
+        <el-form-item label="交付日"><el-date-picker v-model="submission.deliveryDate" type="date" value-format="YYYY-MM-DD" /></el-form-item>
+        <el-form-item label="截止时间"><el-date-picker v-model="submission.cutoffAt" type="datetime" value-format="YYYY-MM-DDTHH:mm:ssZ" /></el-form-item>
+        <el-form-item label="交付批次"><el-input v-model="submission.deliveryBatch" /></el-form-item>
+        <el-form-item v-for="(target, index) in submission.targets" :key="index" :label="`目标 ${index + 1} 实体`">
+          <el-input-number v-model="target.deliveryEntityId" :min="1" />
+        </el-form-item>
+        <el-button type="primary" :loading="submitting" @click="submit">提交交付</el-button>
+      </el-form>
+    </el-card>
     <section class="cards">
       <el-card v-for="card in cards" :key="card.label"><span>{{ card.label }}</span><strong>{{ card.value }}</strong></el-card>
     </section>
     <el-card>
-      <template #header>三线 4/3/3 与六阶段</template>
-      <div v-for="group in summary.groups" :key="group.lineId" class="group-row">
-        <b>LINE-{{ group.lineId }}</b><span>{{ group.delivered }}/{{ group.outputTotal }} DELIVERED</span>
-        <span v-if="group.blocked">BLOCKED {{ group.blocked }}</span><span v-if="group.retrying">RETRY {{ group.retrying }}</span>
-        <span v-if="group.waiting">WAITING {{ group.waiting }}</span>
-        <div class="stage-bar">
-          <span v-for="stage in stages(group)" :key="stage.name" :style="{ width: stage.percent + '%' }" :title="stage.name + ': ' + stage.count" />
-        </div>
-        <small>GROUPED {{ group.grouped }} · HZ {{ group.hzUploaded }} · SG {{ group.sgVerified }} · FTP {{ group.sgDownloaded }} · PUBLISHED {{ group.published }}</small>
+      <template #header>交付目标与厂商实体</template>
+      <div v-for="target in summary.targets" :key="target.deliveryEntityId" class="target-row">
+        <b>实体 {{ target.deliveryEntityId }}</b><span>{{ target.vendorCode }} / {{ target.entityName }}</span>
+        <span>{{ target.accountName }}</span><strong>{{ target.completedCount }}/{{ target.targetCount }}</strong><span>{{ target.status }}</span>
       </div>
     </el-card>
     <el-card>
-      <template #header>输出包（{{ total }}）</template>
-      <el-table :data="packages" size="small">
-        <el-table-column prop="packageName" label="包名" min-width="150" />
-        <el-table-column prop="lineId" label="线" width="70" />
-        <el-table-column prop="status" label="业务状态" width="130" />
-        <el-table-column prop="runStatus" label="运行状态" width="120" />
-        <el-table-column prop="currentNode" label="节点" width="110" />
+      <template #header>最新有效任务（{{ total }}）</template>
+      <el-table :data="tasks" size="small">
+        <el-table-column prop="taskId" label="Task ID" width="90" />
+        <el-table-column prop="entityName" label="交付实体" width="140" />
+        <el-table-column prop="newFileName" label="产物" min-width="150" />
+        <el-table-column prop="deliveryDate" label="交付日" width="110" />
+        <el-table-column prop="stageCode" label="Pipeline 阶段" width="130" />
+        <el-table-column prop="executionStatus" label="执行状态" width="120" />
         <el-table-column prop="retryCount" label="重试" width="70" />
-        <el-table-column prop="rolloverCount" label="流转" width="70" />
-        <el-table-column label="操作" width="190">
+        <el-table-column label="操作" width="200">
           <template #default="scope">
-            <el-button link @click="open(scope.row)">复盘</el-button>
-            <el-button link @click="retry(scope.row)">重试</el-button>
-            <el-button link @click="resume(scope.row)">续跑</el-button>
+            <el-button link @click="open(scope.row)">时间轴</el-button>
+            <el-button v-if="['BLOCKED','RETRY_WAIT'].includes(scope.row.executionStatus)" link @click="retry(scope.row)">重试</el-button>
+            <el-button v-if="!['SUCCEEDED','EXPIRED','RUNNING'].includes(scope.row.executionStatus)" link @click="resume(scope.row)">续跑</el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-card>
-    <el-drawer v-model="drawer" size="55%" :title="selected?.packageName">
+    <el-drawer v-model="drawer" size="58%" :title="selected ? `Task ${selected.taskId} · ${selected.newFileName}` : '任务时间轴'">
       <el-descriptions v-if="selected" :column="1" border>
-        <el-descriptions-item label="SHA-256">{{ selected.artifactSha }}</el-descriptions-item>
-        <el-descriptions-item label="HZ">{{ selected.hzPath }}</el-descriptions-item>
-        <el-descriptions-item label="SG">{{ selected.sgPath }}</el-descriptions-item>
-        <el-descriptions-item label="FTP">{{ selected.publishedPath }}</el-descriptions-item>
-        <el-descriptions-item v-for="mapping in requestMappings" :key="mapping.newRequestId" label="原 / 新 requestId">
-          {{ mapping.originalRequestId }} → {{ mapping.newRequestId }}
-        </el-descriptions-item>
-        <el-descriptions-item label="错误">{{ selected.errorCode }}</el-descriptions-item>
+        <el-descriptions-item label="Data / Artifact">{{ selected.dataId }} / {{ selected.artifactSeq }}</el-descriptions-item>
+        <el-descriptions-item label="SHA-256">{{ selected.sha256 }}</el-descriptions-item>
+        <el-descriptions-item label="Size / Token">{{ selected.sizeBytes }} / {{ selected.tokenCount }}</el-descriptions-item>
+        <el-descriptions-item label="请求映射">{{ selected.artifacts?.[0]?.file_mapping }}</el-descriptions-item>
+        <el-descriptions-item label="错误">{{ selected.lastErrorCode }}</el-descriptions-item>
       </el-descriptions>
-      <PackageTimeline v-if="timeline" :timeline="timeline" />
+      <DeliveryTaskTimeline v-if="timeline" :timeline="timeline" />
     </el-drawer>
   </main>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
-import { getPackageDetail, getPackages, getSummary, getTimeline, resumeRun, retryPackage } from '../api'
-import PackageTimeline from '../components/PackageTimeline.vue'
-import type { Filters, GroupProgress, PackageItem, Summary, Timeline } from '../types'
+import { getSummary, getTasks, getTimeline, resumeDelivery, retryTask, submitDelivery } from '../api'
+import DeliveryTaskTimeline from '../components/DeliveryTaskTimeline.vue'
+import type { DeliveryTask, SubmitDelivery, Summary, Timeline } from '../types'
 
-const filters = reactive<Filters>({ runId: 1 })
-const rolledOnly = ref(false)
-const emptySummary: Summary = { discovered: 0, planned: 0, repaired: 0, outputTotal: 0, delivered: 0,
-  blocked: 0, retrying: 0, waiting: 0, rolledOver: 0, backlog: 0, ungrouped: 0,
-  activeSourceSlots: 0, activeOutputSlots: 0, groups: [] }
+const deliveryId = ref(1)
+const today = new Date().toISOString().slice(0, 10)
+const submission = reactive<SubmitDelivery>({ sourceId: 1, pipelineVersionId: 1, deliveryDate: today,
+  cutoffAt: `${today}T18:00:00+08:00`, deliveryBatch: `BATCH-${Date.now()}`, idempotencyKey: '',
+  targets: [1, 2, 3].map(index => ({ targetCount: 1, deliveryEntityId: index })) })
+const submitting = ref(false)
+const emptySummary: Summary = { deliveryStatus: 'SUBMITTED', taskTotal: 0, targetTotal: 0, succeeded: 0,
+  blocked: 0, retrying: 0, waiting: 0, expired: 0, targets: [] }
 const summary = ref<Summary>({ ...emptySummary })
-const packages = ref<PackageItem[]>([])
+const tasks = ref<DeliveryTask[]>([])
 const total = ref(0)
 const error = ref('')
 const drawer = ref(false)
-const selected = ref<PackageItem>()
+const selected = ref<DeliveryTask>()
 const timeline = ref<Timeline>()
-const detail = ref<Record<string, unknown>>()
-const requestMappings = computed(() => {
-  if (!detail.value?.manifest) return []
-  const manifest = typeof detail.value.manifest === 'string'
-    ? JSON.parse(detail.value.manifest) : detail.value.manifest
-  return (manifest.mappings || []) as Array<{ originalRequestId?: string; newRequestId: string }>
-})
 let timer: ReturnType<typeof setInterval> | undefined
 
 const cards = computed(() => [
-  { label: '发现', value: summary.value.discovered }, { label: '计划', value: summary.value.planned },
-  { label: '输出', value: summary.value.outputTotal }, { label: '已交付', value: summary.value.delivered },
-  { label: 'BLOCKED', value: summary.value.blocked }, { label: 'RETRY', value: summary.value.retrying },
-  { label: 'WAITING', value: summary.value.waiting }, { label: 'Backlog', value: summary.value.backlog },
-  { label: '未分组', value: summary.value.ungrouped }, { label: '源槽位', value: summary.value.activeSourceSlots },
-  { label: '输出槽位', value: summary.value.activeOutputSlots }, { label: '已流转', value: summary.value.rolledOver }
+  { label: '聚合状态', value: summary.value.deliveryStatus }, { label: '有效任务', value: summary.value.taskTotal },
+  { label: '已交付', value: summary.value.succeeded }, { label: 'BLOCKED', value: summary.value.blocked },
+  { label: 'RETRY', value: summary.value.retrying }, { label: 'WAITING', value: summary.value.waiting },
+  { label: '超期历史', value: summary.value.expired }
 ])
 
 async function refresh() {
   try {
-    const current = { ...filters, rolledOver: rolledOnly.value ? true : undefined }
-    const [nextSummary, nextPackages] = await Promise.all([getSummary(current), getPackages(current)])
+    const [nextSummary, nextTasks] = await Promise.all([getSummary(deliveryId.value), getTasks(deliveryId.value)])
     summary.value = nextSummary
-    packages.value = nextPackages.items
-    total.value = nextPackages.total
+    tasks.value = nextTasks.items
+    total.value = nextTasks.total
     error.value = ''
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : String(cause)
   }
 }
 
-function stages(group: GroupProgress) {
-  const values = [group.grouped, group.hzUploaded, group.sgVerified, group.sgDownloaded, group.published, group.delivered]
-  const names = ['GROUPED', 'HZ_UPLOADED', 'SG_VERIFIED', 'SG_DOWNLOADED', 'PUBLISHED', 'DELIVERED']
-  return values.map((count, index) => ({ name: names[index], count, percent: group.outputTotal ? count * 100 / group.outputTotal : 0 }))
+async function submit() {
+  submitting.value = true
+  try {
+    const result = await submitDelivery({ ...submission, idempotencyKey: `web-${Date.now()}` })
+    deliveryId.value = result.deliveryId
+    await refresh()
+  } catch (cause) {
+    error.value = cause instanceof Error ? cause.message : String(cause)
+  } finally {
+    submitting.value = false
+  }
 }
 
-function open(item: PackageItem) {
+async function open(item: DeliveryTask) {
   selected.value = item
+  timeline.value = undefined
   drawer.value = true
-  getTimeline(item.id).then(value => { timeline.value = value }).catch(cause => { error.value = String(cause) })
-  getPackageDetail(item.id).then(value => { detail.value = value }).catch(cause => { error.value = String(cause) })
+  try { timeline.value = await getTimeline(item.taskId) } catch (cause) { error.value = String(cause) }
 }
 
-function reason(action: string): string | undefined {
-  return window.prompt(`请填写${action}原因`) || undefined
-}
-
-function retry(item: PackageItem) {
+function reason(action: string): string | undefined { return window.prompt(`请填写${action}原因`) || undefined }
+function retry(item: DeliveryTask) {
   const value = reason('重试')
-  if (value) retryPackage(item.id, item.fence, value).then(refresh).catch(cause => { error.value = String(cause) })
+  if (value) retryTask(item.taskId, item.fence, value).then(refresh).catch(cause => { error.value = String(cause) })
 }
-
-function resume(item: PackageItem) {
+function resume(item: DeliveryTask) {
   const value = reason('续跑')
-  if (value) resumeRun(item.runId, item.currentNode, [item.id], value).then(refresh).catch(cause => { error.value = String(cause) })
+  if (value) resumeDelivery(item.deliveryId, item.currentNodeId, [item.taskId], value).then(refresh).catch(cause => { error.value = String(cause) })
 }
 
 onMounted(() => { refresh(); timer = setInterval(refresh, 15000) })
@@ -146,16 +142,9 @@ defineExpose({ refresh })
 <style scoped>
 .dashboard { max-width: 1500px; margin: 20px auto; padding: 0 16px; }
 .filters { margin-bottom: 12px; }
-.cards { display: grid; grid-template-columns: repeat(6, minmax(100px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.cards { display: grid; grid-template-columns: repeat(7, minmax(100px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .cards .el-card { text-align: center; }
-.cards strong { display: block; font-size: 26px; margin-top: 6px; }
-.group-row { margin: 14px 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-.stage-bar { width: 100%; height: 14px; display: flex; background: #eee; }
-.stage-bar span { display: block; height: 100%; background: #409eff; }
-.stage-bar span:nth-child(2) { background: #67c23a; }
-.stage-bar span:nth-child(3) { background: #9c27b0; }
-.stage-bar span:nth-child(4) { background: #e6a23c; }
-.stage-bar span:nth-child(5) { background: #795548; }
-.stage-bar span:nth-child(6) { background: #2e7d32; }
+.cards strong { display: block; font-size: 22px; margin-top: 6px; }
+.target-row { margin: 10px 0; display: flex; gap: 20px; align-items: center; }
 pre { white-space: pre-wrap; }
 </style>

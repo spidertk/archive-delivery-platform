@@ -58,7 +58,8 @@ def stable_member(member):
     return member
 
 
-def repair(source, target, archive_date, provider_code, start_number, manifest_path):
+def repair(source, target, delivery_date, delivery_account, start_number, manifest_path):
+    """修复仅消费 Java 提供的日期、账户和号段，输出确定性产物及严格七字段 artifact。"""
     source = Path(source).resolve()
     target = Path(target).resolve()
     target.mkdir(parents=True, exist_ok=True)
@@ -71,13 +72,13 @@ def repair(source, target, archive_date, provider_code, start_number, manifest_p
     try:
         safe_extract(source, temp_dir)
         mappings = []
-        date_part = archive_date.replace("-", "")
+        date_part = delivery_date.replace("-", "")
         for offset, old_name in enumerate(names):
             new_request_id = "req_{}_{:09d}".format(date_part, start_number + offset)
             old_path = temp_dir / old_name
             new_path = temp_dir / new_request_id
             old_path.rename(new_path)
-            original_request_id = fix_request(new_path, new_request_id, archive_date, provider_code)
+            original_request_id = fix_request(new_path, new_request_id, delivery_date, delivery_account)
             mappings.append({
                 "memberKey": old_name,
                 "originalPath": old_name,
@@ -87,7 +88,7 @@ def repair(source, target, archive_date, provider_code, start_number, manifest_p
             })
         match = BATCH_PATTERN.search(source.name)
         batch_name = (match.group(1) if match else "batch_00001") + ".tar.gz"
-        artifact = target / batch_name
+        artifact_path = target / batch_name
         temporary_artifact = target / (batch_name + ".tmp")
         try:
             with temporary_artifact.open("wb") as raw:
@@ -98,22 +99,27 @@ def repair(source, target, archive_date, provider_code, start_number, manifest_p
                                         arcname=mapping["newRequestId"], filter=stable_member)
             if temporary_artifact.stat().st_size > MAX_ARTIFACT_BYTES:
                 raise ValueError("Output artifact exceeds 100 MiB")
-            verify_output(temporary_artifact, archive_date, provider_code)
-            os.replace(temporary_artifact, artifact)
+            verify_output(temporary_artifact, delivery_date, delivery_account)
+            os.replace(temporary_artifact, artifact_path)
         except Exception:
             temporary_artifact.unlink(missing_ok=True)
             raise
+        size_bytes = artifact_path.stat().st_size
+        artifact = {
+            "artifactSeq": 1,
+            "originalFileName": source.name,
+            "newFileName": batch_name,
+            "sizeBytes": size_bytes,
+            "sha256": sha256(artifact_path),
+            "token": size_bytes,
+            "file_mapping": {mapping["memberKey"]: mapping["newRequestId"] for mapping in mappings}
+        }
         manifest = {
             "protocolVersion": 1,
-            "sourceFile": str(source),
             "requestCount": len(mappings),
             "mappings": mappings,
-            "artifacts": [{
-                "path": str(artifact),
-                "name": batch_name,
-                "bytes": artifact.stat().st_size,
-                "sha256": sha256(artifact)
-            }]
+            "artifactPath": str(artifact_path),
+            "artifacts": [artifact]
         }
         manifest_path = Path(manifest_path).resolve()
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
@@ -132,8 +138,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--source", required=True)
     parser.add_argument("--target")
-    parser.add_argument("--archive-date")
-    parser.add_argument("--provider-code")
+    parser.add_argument("--delivery-date")
+    parser.add_argument("--delivery-account")
     parser.add_argument("--start-number", type=int)
     parser.add_argument("--manifest")
     parser.add_argument("--inspect", action="store_true")
@@ -141,11 +147,11 @@ def main():
     if args.inspect:
         result = {"requestCount": len(request_directories(Path(args.source)))}
     else:
-        missing = [name for name in ("target", "archive_date", "provider_code", "start_number", "manifest")
+        missing = [name for name in ("target", "delivery_date", "delivery_account", "start_number", "manifest")
                    if getattr(args, name) is None]
         if missing:
             parser.error("Missing repair arguments: " + ", ".join(missing))
-        result = repair(args.source, args.target, args.archive_date, args.provider_code,
+        result = repair(args.source, args.target, args.delivery_date, args.delivery_account,
                         args.start_number, args.manifest)
     print(json.dumps(result, ensure_ascii=False), flush=True)
 

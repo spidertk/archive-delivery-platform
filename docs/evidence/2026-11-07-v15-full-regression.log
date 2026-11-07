@@ -1,0 +1,308 @@
+test_correct_delivered_sample_matches_golden_protocol (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_golden_rules_and_deterministic_repair (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_inspect_real_sample (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_missing_metadata_does_not_publish_manifest (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_missing_protocol_files_do_not_publish_output (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_missing_request_time_uses_midnight (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_repairs_real_sample_and_preserves_lineage (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+
+----------------------------------------------------------------------
+Ran 7 tests in 3.016s
+
+OK
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.test
+#1 transferring dockerfile: 211B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.1ms.run/library/maven:3.9-eclipse-temurin-17
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584
+#4 resolve docker.1ms.run/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584 0.0s done
+#4 DONE 0.0s
+
+#5 [2/2] RUN apt-get update && apt-get install -y --no-install-recommends python3     && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 exporting to image
+#6 exporting layers done
+#6 exporting manifest sha256:cd3207aa54996d1278f3a22d6ead31d96c2e3cfe02a4acafcc87240d67f6875b done
+#6 exporting config sha256:44f7ebc97ceec576e5edd7cdb234d2964854ac2eef23c0a03e701135dc0bbca3 done
+#6 exporting attestation manifest sha256:4905838f675097f3fb5802dcccb07def2cdf66f6af3be475cf98ed2c040792e8 0.0s done
+#6 exporting manifest list sha256:ea97934aebac7e79364288d68bd365c2bd9d8ef4ceb401d64216e4ed90999b12 0.0s done
+#6 naming to docker.io/library/archive-delivery-maven:test done
+#6 unpacking to docker.io/library/archive-delivery-maven:test 0.0s done
+#6 DONE 0.2s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/i5f41cqo203yy4iys9j9f6b7t
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO]
+[INFO] archive-delivery-platform                                          [pom]
+[INFO] delivery-core                                                      [jar]
+[INFO] delivery-worker                                                    [jar]
+[INFO] delivery-server                                                    [jar]
+[INFO]
+[INFO] -----------< com.powerjob.archive:archive-delivery-platform >-----------
+[INFO] Building archive-delivery-platform 1.0.0-SNAPSHOT                  [1/4]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO]
+[INFO] -----------------< com.powerjob.archive:delivery-core >-----------------
+[INFO] Building delivery-core 1.0.0-SNAPSHOT                              [2/4]
+[INFO]   from delivery-core/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.4.0:resources (default-resources) @ delivery-core ---
+[INFO] Copying 15 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.15.0:compile (default-compile) @ delivery-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ delivery-core ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ delivery-core ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.2.5:test (default-test) @ delivery-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.powerjob.archive.core.pipeline.PipelineNodeConfigTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.489 s -- in com.powerjob.archive.core.pipeline.PipelineNodeConfigTest
+[INFO] Running com.powerjob.archive.core.pipeline.PipelineRepositoryTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 s -- in com.powerjob.archive.core.pipeline.PipelineRepositoryTest
+[INFO] Running com.powerjob.archive.core.config.JacksonConfigurationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.101 s -- in com.powerjob.archive.core.config.JacksonConfigurationTest
+14:09:37.095 INFO  o.t.d.DockerClientProviderStrategy - Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+14:09:37.113 INFO  o.testcontainers.DockerClientFactory - Docker host IP address is host.docker.internal
+14:09:37.168 INFO  o.testcontainers.DockerClientFactory - Connected to docker:
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 7937 MB
+14:09:37.176 WARN  o.t.utility.ResourceReaper -
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+14:09:37.188 INFO  o.testcontainers.DockerClientFactory - Checking the system...
+14:09:37.189 INFO  o.testcontainers.DockerClientFactory - ✔︎ Docker server version should be at least 1.6.0
+[INFO] Running com.powerjob.archive.core.service.ArchiveModelIntegrationTest
+14:09:37.246 INFO  org.testcontainers.images.PullPolicy - Image pull policy will be performed by: DefaultPullPolicy()
+14:09:37.253 INFO  o.t.utility.ImageNameSubstitutor - Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+14:09:37.643 INFO  tc.postgres:16-alpine - Creating container for image: postgres:16-alpine
+14:09:37.652 INFO  o.t.utility.RegistryAuthLocator - Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: postgres:16-alpine, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+14:09:37.954 INFO  tc.postgres:16-alpine - Container postgres:16-alpine is starting: ce1dc813c05c79e2ab5a07bbd26e2c385e8709b22bf8a633416490c667937968
+14:09:41.297 INFO  tc.postgres:16-alpine - Container postgres:16-alpine started in PT3.654442661S
+14:09:41.299 INFO  tc.postgres:16-alpine - Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:58102/archive_delivery?loggerLevel=OFF)
+14:09:41.402 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+14:09:41.403 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+14:09:41.403 INFO  o.f.c.i.license.VersionPrinter -
+14:09:41.451 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+14:09:41.884 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+14:09:41.911 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:58102/archive_delivery (PostgreSQL 16.15)
+14:09:41.928 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+14:09:42.017 INFO  o.f.c.internal.database.base.Schema - Creating schema "archive_delivery" ...
+14:09:42.032 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "archive_delivery"."flyway_schema_history" ...
+14:09:42.162 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": null
+14:09:42.209 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "1 - mvp schema"
+14:09:42.228 WARN  o.f.c.i.s.DefaultSqlScriptExecutor - DB: schema "archive_delivery" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+14:09:42.482 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "2 - mvp pipeline"
+14:09:42.511 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 2      |
++--------+
+
+14:09:42.513 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 2      |
++--------+
+
+14:09:42.515 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 1      |
++--------+
+
+14:09:42.519 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 1      |
++--------+
+
+14:09:42.521 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 1      |
++--------+
+
+14:09:42.523 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 1      |
++--------+
+
+14:09:42.558 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "3 - local production mvp"
+14:09:42.617 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 3      |
++--------+
+
+14:09:42.620 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 3      |
++--------+
+
+14:09:42.650 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "4 - production pipeline v2"
+14:09:42.660 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 2      |
++--------+
+
+14:09:42.681 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "5 - pipeline version config"
+14:09:42.692 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 3      |
++--------+
+
+14:09:42.717 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "6 - explicit pipeline v3"
+14:09:42.756 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "7 - local test pipeline config"
+14:09:42.793 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "8 - scope source objects to run"
+14:09:42.836 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "9 - scope production groups to run"
+14:09:42.875 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "10 - scope output packages to run"
+14:09:42.978 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "11 - corrected delivery task model"
+14:09:43.172 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 1      |
++--------+
+
+14:09:43.262 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: constraint "package_node_run_check" of relation "delivery_node_task" does not exist, skipping
+14:09:43.269 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: index "uk_source_node_attempt" does not exist, skipping
+14:09:43.271 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: index "uk_output_node_attempt" does not exist, skipping
+14:09:43.633 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "12 - three package oss mvp pipelines"
+14:09:43.643 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - +--------+
+| setval |
++--------+
+| 5      |
++--------+
+
+14:09:43.695 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "13 - archive delivery upgrade"
+14:09:43.910 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 2 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 4 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 2 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to constraint source_request_allocation_id_fkey on table source_request
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 6 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 5 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 5 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 2 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 4 other objects
+14:09:43.911 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: sequence "request_id_sequence" does not exist, skipping
+14:09:44.757 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 13 migrations to schema "archive_delivery", now at version v13 (execution time 00:02.625s)
+14:09:44.782 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+14:09:44.794 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+14:09:44.802 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+14:09:44.803 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+14:09:44.803 INFO  o.f.c.i.license.VersionPrinter -
+14:09:44.809 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Starting...
+14:09:44.859 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Start completed.
+14:09:44.863 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:58102/archive_delivery (PostgreSQL 16.15)
+14:09:44.877 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+14:09:44.945 INFO  o.f.core.internal.command.DbValidate - Successfully validated 16 migrations (execution time 00:00.059s)
+14:09:44.957 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": 13
+14:09:45.025 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "14 - entity target delivery model"
+14:09:45.561 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to constraint pipeline_version_pipeline_id_fkey on table pipeline_version
+14:09:45.561 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 2 other objects
+14:09:45.561 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 2 other objects
+14:09:45.561 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 5 other objects
+14:09:45.561 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 2 other objects
+14:09:45.561 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 3 other objects
+14:09:45.562 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to 2 other objects
+14:09:45.562 INFO  o.f.c.i.s.DefaultSqlScriptExecutor - DB: drop cascades to constraint delivery_event_process_id_fkey on table delivery_event
+14:09:46.317 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "15 - partially delivered rollover status"
+14:09:46.370 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 2 migrations to schema "archive_delivery", now at version v15 (execution time 00:01.421s)
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 10.90 s -- in com.powerjob.archive.core.service.ArchiveModelIntegrationTest
+[INFO]
+[INFO] Results:
+[INFO]
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0
+[INFO]
+[INFO]
+[INFO] ----------------< com.powerjob.archive:delivery-worker >----------------
+[INFO] Building delivery-worker 1.0.0-SNAPSHOT                            [3/4]
+[INFO]   from delivery-worker/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.4.0:resources (default-resources) @ delivery-worker ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.15.0:compile (default-compile) @ delivery-worker ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ delivery-worker ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO]
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ delivery-worker ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.2.5:test (default-test) @ delivery-worker ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO]
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.powerjob.archive.worker.RealExternalVerificationTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2, Time elapsed: 0.436 s -- in com.powerjob.archive.worker.RealExternalVerificationTest
+[INFO]
+[INFO] Results:
+[INFO]
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 2
+[INFO]
+[INFO]
+[INFO] ----------------< com.powerjob.archive:delivery-server >----------------
+[INFO] Building delivery-server 1.0.0-SNAPSHOT                            [4/4]
+[INFO]   from delivery-server/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- resources:3.4.0:resources (default-resources) @ delivery-server ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO]
+[INFO] --- compiler:3.15.0:compile (default-compile) @ delivery-server ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ delivery-server ---
+[INFO] skip non existing resourceDirectory /workspace/delivery-server/src/test/resources
+[INFO]
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ delivery-server ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO]
+[INFO] --- surefire:3.2.5:test (default-test) @ delivery-server ---
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for archive-delivery-platform 1.0.0-SNAPSHOT:
+[INFO]
+[INFO] archive-delivery-platform .......................... SUCCESS [  0.004 s]
+[INFO] delivery-core ...................................... SUCCESS [ 17.932 s]
+[INFO] delivery-worker .................................... SUCCESS [  3.308 s]
+[INFO] delivery-server .................................... SUCCESS [  0.486 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  22.290 s
+[INFO] Finished at: 2026-11-07T14:09:52Z
+[INFO] ------------------------------------------------------------------------

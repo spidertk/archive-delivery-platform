@@ -11,6 +11,6 @@ public class JacksonConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        return new ObjectMapper().findAndRegisterModules();
     }
 }

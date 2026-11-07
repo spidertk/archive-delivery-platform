@@ -1,7 +1,6 @@
 package com.powerjob.archive.core.service;
 
 import org.springframework.stereotype.Service;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,45 +26,43 @@ public class FileTransferService {
         }
     }
 
-    public Path copyVerified(Path source, Path targetRoot, String relativePath, String expectedSha) throws IOException {
-        Path target = targetRoot.resolve(relativePath).normalize();
-        if (!target.startsWith(targetRoot.normalize())) throw new IOException("Invalid target path");
+    /** 受控交付路径同 SHA 幂等，不同 SHA 冲突；临时文件校验成功后才原子封存。 */
+    public Path copyVerified(Path source, Path target, String expectedSha) throws IOException {
+        if (Files.isRegularFile(target)) {
+            if (Files.size(target) == Files.size(source) && sha256(target).equals(expectedSha)) return target;
+            throw new RemoteConflictException("Target exists with different size or SHA: " + target.getFileName());
+        }
         Files.createDirectories(target.getParent());
         Path partial = target.resolveSibling(target.getFileName() + ".partial");
         Files.copy(source, partial, StandardCopyOption.REPLACE_EXISTING);
-        String actual = sha256(partial);
-        if (!actual.equals(expectedSha)) {
+        if (!sha256(partial).equals(expectedSha)) {
             Files.deleteIfExists(partial);
             throw new IOException("Artifact SHA-256 mismatch");
         }
-        moveAtomically(partial, target);
+        moveAtomically(partial, target, false);
         return target;
-    }
-
-    public Path publishAtomically(Path source, Path targetRoot, String relativePath, String expectedSha) throws IOException {
-        return copyVerified(source, targetRoot, relativePath, expectedSha);
-    }
-
-    private void moveAtomically(Path source, Path target) throws IOException {
-        try {
-            Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-        } catch (AtomicMoveNotSupportedException e) {
-            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
-        }
     }
 
     public void copyStream(InputStream input, Path destination) throws IOException {
         Files.createDirectories(destination.getParent());
         Path partial = destination.resolveSibling(destination.getFileName() + ".partial");
-        try (var channel = java.nio.channels.FileChannel.open(partial,
-                java.nio.file.StandardOpenOption.CREATE,
-                java.nio.file.StandardOpenOption.TRUNCATE_EXISTING,
-                java.nio.file.StandardOpenOption.WRITE);
+        try (var channel = java.nio.channels.FileChannel.open(partial, java.nio.file.StandardOpenOption.CREATE,
+                java.nio.file.StandardOpenOption.TRUNCATE_EXISTING, java.nio.file.StandardOpenOption.WRITE);
              OutputStream output = java.nio.channels.Channels.newOutputStream(channel)) {
             input.transferTo(output);
             output.flush();
             channel.force(true);
         }
-        moveAtomically(partial, destination);
+        moveAtomically(partial, destination, true);
+    }
+
+    private void moveAtomically(Path source, Path target, boolean replace) throws IOException {
+        try {
+            if (replace) Files.move(source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            else Files.move(source, target, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            if (replace) Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+            else Files.move(source, target);
+        }
     }
 }

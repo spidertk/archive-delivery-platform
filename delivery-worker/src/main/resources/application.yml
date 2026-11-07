@@ -7,6 +7,7 @@ spring:
     password: ${ARCHIVE_DB_PASSWORD:archive_local}
     hikari:
       schema: archive_delivery
+      connection-init-sql: SET archive_delivery.upgrade_authorized = '${ARCHIVE_UPGRADE_AUTHORIZED:}'
   flyway:
     enabled: true
     schemas: archive_delivery
@@ -14,7 +15,7 @@ spring:
 powerjob:
   worker:
     enabled: ${POWERJOB_ENABLED:false}
-    app-name: ${POWERJOB_APP_NAME:archive-delivery-mvp}
+    app-name: ${POWERJOB_APP_NAME:archive-delivery}
     server-address: ${POWERJOB_SERVER_ADDRESS:localhost:7700}
     protocol: http
     port: 27777
@@ -22,22 +23,12 @@ powerjob:
     allow-lazy-connect-server: true
 archive:
   worker-id: ${HOSTNAME:local-worker}
-  line-id: ${ARCHIVE_LINE_ID:0}
-  async-execution: ${ARCHIVE_ASYNC_EXECUTION:false}
-  discovery-mode: ${ARCHIVE_DISCOVERY_MODE:oss}
-  debug-loop: ${ARCHIVE_DEBUG_LOOP:false}
-  archive-date: ${ARCHIVE_DATE:2026-10-30}
-  business-timezone: Asia/Shanghai
-  delivery-cutoff-time: "02:00"
-  group-size: 5
-  max-ticks: 250
-  local-source-dir: ${ARCHIVE_LOCAL_SOURCE_DIR:/samples}
+  max-running-tasks: ${ARCHIVE_MAX_RUNNING_TASKS:3}
   work-root: ${ARCHIVE_WORK_ROOT:/data/work}
-  hz-root: ${ARCHIVE_HZ_ROOT:/data/hz-oss}
-  sg-root: ${ARCHIVE_SG_ROOT:/data/sg-oss}
-  ftp-root: ${ARCHIVE_FTP_ROOT:/data/ftp}
+  ftp-verification-root: ${ARCHIVE_FTP_VERIFY_ROOT:/data/ftp-verify}
   python-command: ${ARCHIVE_PYTHON_COMMAND:python3}
   python-script: ${ARCHIVE_PYTHON_SCRIPT:/app/nodes/python/archive_repair.py}
+  ftp-verify-script: ${ARCHIVE_FTP_VERIFY_SCRIPT:/app/nodes/python/ftp_download_verify.py}
 logging:
   level:
     com.powerjob.archive: INFO

@@ -12,11 +12,19 @@ x-worker-common: &worker-common
     ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
     ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:-archive}
     ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
-    ARCHIVE_DISCOVERY_MODE: oss
-    ARCHIVE_DEBUG_LOOP: "false"
+    ARCHIVE_UPGRADE_AUTHORIZED: ${ARCHIVE_UPGRADE_AUTHORIZED:-}
+    ARCHIVE_MAX_RUNNING_TASKS: "3"
     POWERJOB_ENABLED: "true"
-    POWERJOB_APP_NAME: archive-delivery-mvp
+    POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
     POWERJOB_SERVER_ADDRESS: powerjob-server:7700
+  volumes:
+    - archive_data:/data
+
+x-ftp-common: &ftp-common
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.ftp
+  expose: ["21", "30000-30009"]
 
 services:
   postgres:
@@ -25,10 +33,8 @@ services:
       POSTGRES_DB: archive_delivery
       POSTGRES_USER: ${ARCHIVE_DB_USER:-archive}
       POSTGRES_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
-    ports:
-      - "127.0.0.1:55432:5432"
-    volumes:
-      - archive_pg:/var/lib/postgresql/data
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: [archive_pg:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${ARCHIVE_DB_USER:-archive} -d archive_delivery"]
       interval: 2s
@@ -54,18 +60,14 @@ services:
     environment:
       PARAMS: >-
         --spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-        --spring.datasource.core.username=root
-        --spring.datasource.core.password=powerjob_local
+        --spring.datasource.core.username=root --spring.datasource.core.password=powerjob_local
         --oms.storage.dfs.mysql_series.url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-        --oms.storage.dfs.mysql_series.username=root
-        --oms.storage.dfs.mysql_series.password=powerjob_local
-        --oms.mongodb.enable=false
+        --oms.storage.dfs.mysql_series.username=root --oms.storage.dfs.mysql_series.password=powerjob_local --oms.mongodb.enable=false
       TZ: Asia/Shanghai
     depends_on:
       mysql:
         condition: service_healthy
-    ports:
-      - "127.0.0.1:7700:7700"
+    ports: ["127.0.0.1:7700:7700"]
 
   archive-server:
     build:
@@ -78,45 +80,65 @@ services:
       ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
       ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:-archive}
       ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
-    ports:
-      - "127.0.0.1:8080:8080"
+      ARCHIVE_UPGRADE_AUTHORIZED: ${ARCHIVE_UPGRADE_AUTHORIZED:-}
+    ports: ["127.0.0.1:8080:8080"]
     healthcheck:
       test: ["CMD", "curl", "-fsS", "--connect-timeout", "2", "--max-time", "3", "http://127.0.0.1:8080/actuator/health"]
       interval: 3s
       timeout: 3s
-      retries: 30
+      retries: 40
 
-  worker-line-1:
+  worker-1:
     <<: *worker-common
     environment:
       <<: *worker-environment
-      HOSTNAME: worker-line-1
-      ARCHIVE_LINE_ID: "1"
-    volumes:
-      - archive_data:/data
-      - ${HOME}/.ssh/archive-delivery-mvp/line-1-id_ed25519:/run/secrets/line-1-id_ed25519:ro
-
-  worker-line-2:
+      HOSTNAME: worker-1
+  worker-2:
     <<: *worker-common
     environment:
       <<: *worker-environment
-      HOSTNAME: worker-line-2
-      ARCHIVE_LINE_ID: "2"
-    volumes:
-      - archive_data:/data
-      - ${HOME}/.ssh/archive-delivery-mvp/line-2-id_ed25519:/run/secrets/line-2-id_ed25519:ro
-
-  worker-line-3:
+      HOSTNAME: worker-2
+  worker-3:
     <<: *worker-common
     environment:
       <<: *worker-environment
-      HOSTNAME: worker-line-3
-      ARCHIVE_LINE_ID: "3"
-    volumes:
-      - archive_data:/data
-      - ${HOME}/.ssh/archive-delivery-mvp/line-3-id_ed25519:/run/secrets/line-3-id_ed25519:ro
+      HOSTNAME: worker-3
+
+  ftp-entity-1:
+    <<: *ftp-common
+    environment:
+      FTP_USER_NAME: entity1
+      FTP_USER_PASS: ${LOCAL_FTP_ENTITY_1_PASSWORD:-local_entity1_verify}
+      FTP_USER_HOME: /home/ftpusers/entity1
+      FTP_USER_UID: 1101
+      FTP_USER_GID: 1101
+      PUBLICHOST: ftp-entity-1
+    volumes: [archive_ftp_1:/home/ftpusers/entity1]
+  ftp-entity-2:
+    <<: *ftp-common
+    environment:
+      FTP_USER_NAME: entity2
+      FTP_USER_PASS: ${LOCAL_FTP_ENTITY_2_PASSWORD:-local_entity2_verify}
+      FTP_USER_HOME: /home/ftpusers/entity2
+      FTP_USER_UID: 1102
+      FTP_USER_GID: 1102
+      PUBLICHOST: ftp-entity-2
+    volumes: [archive_ftp_2:/home/ftpusers/entity2]
+  ftp-entity-3:
+    <<: *ftp-common
+    environment:
+      FTP_USER_NAME: entity3
+      FTP_USER_PASS: ${LOCAL_FTP_ENTITY_3_PASSWORD:-local_entity3_verify}
+      FTP_USER_HOME: /home/ftpusers/entity3
+      FTP_USER_UID: 1103
+      FTP_USER_GID: 1103
+      PUBLICHOST: ftp-entity-3
+    volumes: [archive_ftp_3:/home/ftpusers/entity3]
 
 volumes:
   archive_pg:
   powerjob_mysql:
   archive_data:
+  archive_ftp_1:
+  archive_ftp_2:
+  archive_ftp_3:

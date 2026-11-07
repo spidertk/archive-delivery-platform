@@ -1,10 +1,10 @@
 package com.powerjob.archive.server.service;
 
+import com.powerjob.archive.core.repository.DeliveryEventRepository;
+import com.powerjob.archive.core.repository.DeliveryNodeRepository;
+import com.powerjob.archive.core.repository.DeliveryTaskRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,128 +12,96 @@ import java.util.Map;
 @Service
 public class DashboardQueryService {
     private final JdbcTemplate jdbc;
+    private final DeliveryTaskRepository tasks;
+    private final DeliveryNodeRepository nodes;
+    private final DeliveryEventRepository events;
 
-    public DashboardQueryService(JdbcTemplate jdbc) {
+    public DashboardQueryService(JdbcTemplate jdbc, DeliveryTaskRepository tasks,
+                                 DeliveryNodeRepository nodes, DeliveryEventRepository events) {
         this.jdbc = jdbc;
+        this.tasks = tasks;
+        this.nodes = nodes;
+        this.events = events;
         this.jdbc.setResultsMapCaseInsensitive(true);
     }
 
-    public Map<String, Object> summary(Filter filter) {
-        Map<String, Object> result = new LinkedHashMap<>();
-        String outputWhere = outputWhere(filter);
-        result.putAll(jdbc.queryForMap("SELECT count(*) AS \"outputTotal\"," +
-                "count(*) FILTER (WHERE p.status='DELIVERED') AS delivered," +
-                "count(*) FILTER (WHERE p.run_status='BLOCKED') AS blocked," +
-                "count(*) FILTER (WHERE p.run_status='RETRY_WAIT') AS retrying," +
-                "count(*) FILTER (WHERE p.run_status='WAITING') AS waiting," +
-                "count(*) FILTER (WHERE p.rollover_count>0) AS rolledOver," +
-                "count(*) FILTER (WHERE p.run_status='RUNNING' AND p.lease_until>=now()) AS \"activeOutputSlots\"," +
-                "min(p.cutoff_at) FILTER (WHERE p.status<>'DELIVERED') AS \"nextCutoff\" " +
-                "FROM output_package p JOIN source_package s ON s.id=p.source_package_id " + outputWhere));
-        result.putAll(jdbc.queryForMap("SELECT count(*) AS discovered," +
-                "count(*) FILTER (WHERE s.status='PLANNED') AS planned," +
-                "count(*) FILTER (WHERE s.status='REPAIRED') AS repaired," +
-                "count(*) FILTER (WHERE s.status='DISCOVERED') AS backlog," +
-                "count(*) FILTER (WHERE s.status IN ('PLANNED','DOWNLOADED','REPAIRED') AND NOT EXISTS " +
-                "(SELECT 1 FROM output_package o WHERE o.source_package_id=s.id)) AS ungrouped," +
-                "count(*) FILTER (WHERE s.run_status='RUNNING' AND s.lease_until>=now()) AS \"activeSourceSlots\" " +
-                "FROM source_package s " + sourceWhere(filter)));
-        result.put("groups", groups(filter));
+    /** 看板只统计最新有效任务，交付目标直接从提交快照和任务事实派生，不维护组状态。 */
+    public Map<String, Object> summary(long deliveryId) {
+        Map<String, Object> result = new LinkedHashMap<>(jdbc.queryForMap("SELECT s.status AS \"deliveryStatus\"," +
+                "count(t.task_id) FILTER(WHERE t.execution_status NOT IN('EXPIRED','CANCELLED')) AS \"taskTotal\"," +
+                "count(t.task_id) FILTER(WHERE t.execution_status='SUCCEEDED') AS succeeded," +
+                "count(t.task_id) FILTER(WHERE t.execution_status='BLOCKED') AS blocked," +
+                "count(t.task_id) FILTER(WHERE t.execution_status='RETRY_WAIT') AS retrying," +
+                "count(t.task_id) FILTER(WHERE t.execution_status='WAITING') AS waiting," +
+                "count(t.task_id) FILTER(WHERE t.execution_status='EXPIRED') AS expired," +
+                "(SELECT COALESCE(sum((target->>'targetCount')::int),0) FROM jsonb_array_elements(s.target_strategy->'targets') target) AS \"targetTotal\" " +
+                "FROM delivery_submit s LEFT JOIN delivery_task t ON t.delivery_id=s.delivery_id " +
+                "WHERE s.delivery_id=? GROUP BY s.delivery_id,s.status,s.target_strategy", deliveryId));
+        result.put("targets", targets(deliveryId));
         return result;
     }
 
-    public List<Map<String, Object>> groups(Filter filter) {
-        return jdbc.queryForList("SELECT p.production_line_id AS lineId," +
-                "count(*) AS outputTotal," +
-                "count(*) FILTER (WHERE p.status='GROUPED') AS grouped," +
-                "count(*) FILTER (WHERE p.status='HZ_UPLOADED') AS hzUploaded," +
-                "count(*) FILTER (WHERE p.status='SG_VERIFIED') AS sgVerified," +
-                "count(*) FILTER (WHERE p.status='SG_DOWNLOADED') AS sgDownloaded," +
-                "count(*) FILTER (WHERE p.status='PUBLISHED') AS published," +
-                "count(*) FILTER (WHERE p.status='DELIVERED') AS delivered," +
-                "count(*) FILTER (WHERE p.run_status='RETRY_WAIT') AS retrying," +
-                "count(*) FILTER (WHERE p.run_status='WAITING') AS waiting," +
-                "count(*) FILTER (WHERE p.run_status='BLOCKED') AS blocked " +
-                "FROM output_package p JOIN source_package s ON s.id=p.source_package_id " + outputWhere(filter) +
-                " GROUP BY p.production_line_id ORDER BY p.production_line_id");
+    public List<Map<String, Object>> targets(long deliveryId) {
+        return jdbc.queryForList("WITH requested AS (SELECT s.delivery_id,(target.value->>'deliveryEntityId')::bigint AS delivery_entity_id," +
+                "(target.value->>'targetCount')::int AS target_count,target.target_order FROM delivery_submit s " +
+                "CROSS JOIN LATERAL jsonb_array_elements(s.target_strategy->'targets') WITH ORDINALITY AS target(value,target_order) WHERE s.delivery_id=?) " +
+                "SELECT r.delivery_entity_id AS \"deliveryEntityId\",r.target_count AS \"targetCount\"," +
+                "count(t.task_id) FILTER(WHERE t.task_id IS NOT NULL) AS \"assignedCount\"," +
+                "count(t.task_id) FILTER(WHERE t.execution_status='SUCCEEDED') AS \"completedCount\"," +
+                "CASE WHEN r.target_count=count(t.task_id) FILTER(WHERE t.execution_status='SUCCEEDED') THEN 'DELIVERED' " +
+                "WHEN EXISTS(SELECT 1 FROM delivery_task h WHERE h.delivery_id=r.delivery_id AND h.delivery_entity_id=r.delivery_entity_id " +
+                "AND h.execution_status='EXPIRED') THEN 'PARTIALLY_DELIVERED' " +
+                "WHEN count(t.task_id) FILTER(WHERE t.execution_status='BLOCKED')>0 THEN 'BLOCKED' " +
+                "WHEN count(t.task_id)>0 THEN 'RUNNING' ELSE 'FILLING' END AS status," +
+                "e.vendor_code AS \"vendorCode\",e.entity_code AS \"entityCode\",e.entity_name AS \"entityName\"," +
+                "e.protocol,e.account_name AS \"accountName\",e.endpoint_locator AS \"endpointLocator\" FROM requested r " +
+                "JOIN delivery_entity e ON e.delivery_entity_id=r.delivery_entity_id " +
+                "LEFT JOIN delivery_task t ON t.delivery_id=r.delivery_id AND t.delivery_entity_id=r.delivery_entity_id " +
+                "AND t.execution_status NOT IN('EXPIRED','CANCELLED') " +
+                "GROUP BY r.delivery_entity_id,r.target_count,r.target_order,e.delivery_entity_id ORDER BY r.target_order", deliveryId);
     }
 
-    public Map<String, Object> packages(Filter filter, String status, String keyword, int page, int size) {
-        int safePage = Math.max(0, page);
-        int safeSize = Math.min(100, Math.max(1, size));
-        String where = outputWhere(filter);
-        List<Object> args = new ArrayList<>();
-        if (status != null && !status.isBlank()) {
-            where += " AND (p.status=? OR p.run_status=?)";
-            args.add(status);
-            args.add(status);
-        }
-        if (keyword != null && !keyword.isBlank()) {
-            where += " AND (p.new_package_name ILIKE ? OR p.hz_path ILIKE ? OR p.sg_source_path ILIKE ?)";
-            String pattern = "%" + keyword + "%";
-            args.add(pattern);
-            args.add(pattern);
-            args.add(pattern);
-        }
-        long total = jdbc.queryForObject("SELECT count(*) FROM output_package p JOIN source_package s ON s.id=p.source_package_id " + where,
-                Long.class, args.toArray());
-        args.add(safeSize);
-        args.add(safePage * safeSize);
-        List<Map<String, Object>> items = jdbc.queryForList("SELECT p.id,p.status,p.run_status AS runStatus," +
-                "p.current_node AS currentNode,p.new_package_name AS packageName,p.delivery_date AS deliveryDate," +
-                "p.archive_date AS archiveDate,p.production_line_id AS lineId,p.retry_count AS retryCount,p.fence," +
-                "p.rollover_count AS rolloverCount,p.hz_path AS hzPath,p.sg_source_path AS sgPath," +
-                "p.sg_download_path AS stagingPath,p.published_path AS publishedPath,p.last_error_code AS errorCode," +
-                "s.run_id AS runId,a.sha256 AS artifactSha FROM output_package p JOIN source_package s ON s.id=p.source_package_id " +
-                "JOIN output_artifact a ON a.output_package_id=p.id AND a.artifact_seq=1 " + where +
-                " ORDER BY p.delivery_date,p.production_line_id,p.production_group_id,p.group_seq LIMIT ? OFFSET ?", args.toArray());
-        return Map.of("items", items, "page", safePage, "size", safeSize, "total", total);
+    public Map<String, Object> delivery(long deliveryId) {
+        Map<String, Object> result = new LinkedHashMap<>(jdbc.queryForMap("SELECT s.delivery_id AS \"deliveryId\"," +
+                "s.delivery_batch AS \"deliveryBatch\",s.delivery_date AS \"deliveryDate\",s.cutoff_at AS \"cutoffAt\"," +
+                "s.status,s.source_id AS \"sourceId\",i.oss_uri AS \"sourceUri\",s.pipeline_version_id AS \"pipelineVersionId\"," +
+                "pv.version_no AS \"pipelineVersion\",s.target_strategy AS \"targetStrategy\",s.submitted_at AS \"submittedAt\"," +
+                "s.discovery_completed_at AS \"discoveryCompletedAt\",s.completed_at AS \"completedAt\" FROM delivery_submit s " +
+                "JOIN ingest_source i ON i.source_id=s.source_id JOIN pipeline_version pv ON pv.pipeline_version_id=s.pipeline_version_id " +
+                "WHERE s.delivery_id=?", deliveryId));
+        result.put("targets", targets(deliveryId));
+        return result;
     }
 
-    public Map<String, Object> packageDetail(long id) {
-        return jdbc.queryForMap("SELECT p.*,s.run_id,a.sha256 AS artifact_sha FROM output_package p " +
-                "JOIN source_package s ON s.id=p.source_package_id JOIN output_artifact a ON a.output_package_id=p.id " +
-                "WHERE p.id=? AND a.artifact_seq=1", id);
+    public Map<String, Object> tasks(long deliveryId, boolean includeHistory) {
+        String history = includeHistory ? "" : " AND t.execution_status NOT IN('EXPIRED','CANCELLED')";
+        List<Map<String, Object>> items = jdbc.queryForList(taskSelect() + " WHERE t.delivery_id=?" + history +
+                " ORDER BY t.delivery_date,t.delivery_entity_id,t.target_seq,t.task_id", deliveryId);
+        return Map.of("items", items, "total", items.size());
     }
 
-    public Map<String, Object> timeline(long id) {
-        List<Map<String, Object>> nodes = jdbc.queryForList("SELECT id,node_id AS nodeId,node_type AS nodeType,attempt," +
-                "status,worker_instance_id AS workerId,started_at AS startedAt,finished_at AS finishedAt," +
-                "error_code AS errorCode,error_detail AS errorDetail,input_manifest AS inputManifest," +
-                "output_manifest AS outputManifest FROM package_node_run WHERE output_package_id=? ORDER BY started_at,id", id);
-        List<Map<String, Object>> events = jdbc.queryForList("SELECT e.run_id AS nodeRunId,e.event_type AS eventType," +
-                "e.event_time AS eventTime,e.message,e.payload FROM package_event e JOIN package_node_run r ON r.id=e.run_id " +
-                "WHERE r.output_package_id=? ORDER BY e.event_time,e.id", id);
-        List<Map<String, Object>> audits = jdbc.queryForList("SELECT action,reason,before_content AS beforeContent," +
-                "after_content AS afterContent,created_at AS createdAt FROM operation_audit WHERE output_package_id=? ORDER BY id", id);
-        return Map.of("nodes", nodes, "events", events, "audits", audits);
+    public Map<String, Object> taskDetail(long taskId) { return jdbc.queryForMap(taskSelect() + " WHERE t.task_id=?", taskId); }
+
+    /** 时间轴同时返回 delivery_node 与不可变 event，locator 已由执行内核做 Secret/签名 URL 检查。 */
+    public Map<String, Object> timeline(long taskId) {
+        var task = tasks.findById(taskId).orElseThrow();
+        return Map.of("taskId", taskId, "nodes", nodes.timeline(taskId), "events", events.timeline(task.deliveryId(), taskId));
     }
 
-    public Map<String, Object> run(long runId) {
-        return jdbc.queryForMap("SELECT r.id AS runId,r.run_code AS runCode,r.oss_uri AS ossUri,r.status," +
-                "r.job_date AS jobDate,r.pipeline_version_id AS pipelineVersionId,pv.version_no AS pipelineVersion," +
-                "r.created_at AS createdAt,r.updated_at AS updatedAt FROM delivery_run r " +
-                "JOIN pipeline_version pv ON pv.id=r.pipeline_version_id WHERE r.id=?", runId);
-    }
-
-    private static String outputWhere(Filter filter) {
-        return "WHERE s.run_id=" + filter.runId() +
-                (filter.deliveryDate() == null ? "" : " AND p.delivery_date='" + filter.deliveryDate() + "'") +
-                (filter.archiveDate() == null ? "" : " AND p.archive_date='" + filter.archiveDate() + "'") +
-                (filter.lineId() == null ? "" : " AND p.production_line_id=" + filter.lineId()) +
-                (filter.rolledOver() == null ? "" : " AND (p.rollover_count>0)=" + filter.rolledOver());
-    }
-
-    private static String sourceWhere(Filter filter) {
-        return "WHERE s.run_id=" + filter.runId() +
-                (filter.deliveryDate() == null ? "" : " AND s.process_date='" + filter.deliveryDate() + "'") +
-                (filter.archiveDate() == null ? "" : " AND s.process_date='" + filter.archiveDate() + "'") +
-                (filter.lineId() == null ? "" : " AND s.production_line_id=" + filter.lineId());
-    }
-
-    public record Filter(long runId, LocalDate deliveryDate, LocalDate archiveDate, Long lineId, Boolean rolledOver) {
-        Object[] args() {
-            return new Object[]{runId};
-        }
+    private static String taskSelect() {
+        return "SELECT t.task_id AS \"taskId\",t.delivery_id AS \"deliveryId\",t.data_id AS \"dataId\"," +
+                "t.delivery_entity_id AS \"deliveryEntityId\",t.target_seq AS \"targetSeq\",e.vendor_code AS \"vendorCode\"," +
+                "e.entity_name AS \"entityName\",e.account_name AS \"accountName\",t.artifact_seq AS \"artifactSeq\"," +
+                "t.delivery_date AS \"deliveryDate\",t.cutoff_at AS \"cutoffAt\",t.original_file_name AS \"originalFileName\"," +
+                "t.new_file_name AS \"newFileName\",t.size_bytes AS \"sizeBytes\",t.token_count AS \"tokenCount\",t.sha256," +
+                "t.current_node_id AS \"currentNodeId\",t.execution_status AS \"executionStatus\",t.fence,t.retry_count AS \"retryCount\"," +
+                "t.next_retry_at AS \"nextRetryAt\",t.last_error_code AS \"lastErrorCode\",t.superseded_by_task_id AS \"supersededByTaskId\"," +
+                "t.invalidated_at AS \"invalidatedAt\",t.invalidation_reason AS \"invalidationReason\",t.completed_at AS \"completedAt\"," +
+                "sd.qualification,sd.artifacts,node.stage_code AS \"stageCode\",node.display_name AS \"displayName\" " +
+                "FROM delivery_task t JOIN delivery_entity e ON e.delivery_entity_id=t.delivery_entity_id " +
+                "JOIN source_data sd ON sd.data_id=t.data_id JOIN delivery_submit s ON s.delivery_id=t.delivery_id " +
+                "JOIN pipeline_version pv ON pv.pipeline_version_id=s.pipeline_version_id " +
+                "CROSS JOIN LATERAL(SELECT n->>'stageCode' AS stage_code,n->>'displayName' AS display_name " +
+                "FROM jsonb_array_elements(pv.definition->'nodes') n WHERE n->>'id'=t.current_node_id) node";
     }
 }

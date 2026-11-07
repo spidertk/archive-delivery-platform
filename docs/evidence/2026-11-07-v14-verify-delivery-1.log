@@ -1,0 +1,36 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.test
+#1 transferring dockerfile: 211B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.1ms.run/library/maven:3.9-eclipse-temurin-17
+#2 DONE 0.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584
+#4 resolve docker.1ms.run/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584 0.1s done
+#4 DONE 0.1s
+
+#5 [2/2] RUN apt-get update && apt-get install -y --no-install-recommends python3     && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 exporting to image
+#6 exporting layers 0.0s done
+#6 exporting manifest sha256:cd3207aa54996d1278f3a22d6ead31d96c2e3cfe02a4acafcc87240d67f6875b done
+#6 exporting config sha256:44f7ebc97ceec576e5edd7cdb234d2964854ac2eef23c0a03e701135dc0bbca3 done
+#6 exporting attestation manifest sha256:294a298972cc1233ea2abebb3e46ff43395c2c71a9d27267490132363fe95b84 0.0s done
+#6 exporting manifest list sha256:b4e0dce6289096e524e7e27bf7f00963557c3a4efd14236f1110c8265da1e86a 0.0s done
+#6 naming to docker.io/library/archive-delivery-maven:test
+#6 naming to docker.io/library/archive-delivery-maven:test done
+#6 unpacking to docker.io/library/archive-delivery-maven:test 0.0s done
+#6 DONE 0.2s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/2za7vc3d1drkhqympi6tjqek7
+REAL VERIFIED taskId=1 deliveryEntityId=1 size=54139210 sha256=b7a42241087212a445d6674a7e8900e004dd70243603cc4acd0f44f424a0dfbf
+REAL VERIFIED taskId=4 deliveryEntityId=2 size=13145240 sha256=62f813169b82993df9d77d44a29aab17a7003bad617307b1b1227e14899a9187
+REAL VERIFIED taskId=5 deliveryEntityId=3 size=40223988 sha256=a1bd488fcc610a4b15696f20c6b4d9d24d6cb63308d94f42f2e93895a4027130
+REAL E2E PASSED deliveryId=1 tasks=3 retry>=1 rollover>=1 OSS/FTP SHA verified

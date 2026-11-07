@@ -10,6 +10,7 @@ spring:
     password: ${ARCHIVE_DB_PASSWORD:archive_local}
     hikari:
       schema: archive_delivery
+      connection-init-sql: SET archive_delivery.upgrade_authorized = '${ARCHIVE_UPGRADE_AUTHORIZED:}'
   flyway:
     enabled: true
     schemas: archive_delivery
@@ -22,8 +23,3 @@ management:
     web:
       exposure:
         include: health
-archive:
-  discovery-mode: oss
-  debug-loop: false
-  business-timezone: Asia/Shanghai
-  delivery-cutoff-time: "02:00"

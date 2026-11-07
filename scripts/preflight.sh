@@ -1,40 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-ENV_FILE="$ROOT/deploy/.env"
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "FAIL deploy/.env is missing; copy deploy/env.example and provide local settings." >&2
-  exit 1
-fi
 set -a
-source "$ENV_FILE"
+source "$ROOT/deploy/.env"
 set +a
-
-docker info --format '{{.ServerVersion}}' >/dev/null
-echo "OK Docker daemon"
-docker compose version >/dev/null
-echo "OK Docker Compose"
-ARCHIVE_DB_USER="${ARCHIVE_DB_USER:-archive}"
-docker compose -f "$ROOT/deploy/docker-compose.yml" --env-file "$ENV_FILE" exec -T postgres \
-  pg_isready -U "$ARCHIVE_DB_USER" -d archive_delivery >/dev/null
-echo "OK PostgreSQL archive_delivery"
-BOUND="$(docker compose -f "$ROOT/deploy/docker-compose.yml" --env-file "$ENV_FILE" exec -T postgres \
-  psql -U "$ARCHIVE_DB_USER" -d archive_delivery -Atc \
-  "SELECT count(*) FROM archive_delivery.source_pipeline_binding b JOIN archive_delivery.pipeline_version pv ON pv.id=b.pipeline_version_id WHERE b.effective_to IS NULL AND pv.status='PUBLISHED'")"
-if [[ "$BOUND" -eq 0 ]]; then
-  echo "FAIL no published Pipeline binding; run scripts/configure-pipeline.sh first" >&2
-  exit 1
-fi
-
+COMPOSE=(docker compose -f "$ROOT/deploy/docker-compose.yml" --env-file "$ROOT/deploy/.env")
+"${COMPOSE[@]}" exec -T postgres pg_isready -U "${ARCHIVE_DB_USER:-archive}" -d archive_delivery >/dev/null
+PUBLISHED="$("${COMPOSE[@]}" exec -T postgres psql -U "${ARCHIVE_DB_USER:-archive}" -d archive_delivery -Atc \
+  "SELECT count(*) FROM archive_delivery.pipeline_version WHERE status='PUBLISHED'")"
+[[ "$PUBLISHED" -gt 0 ]] || { echo "FAIL no published PipelineVersion; run configure-pipeline.sh" >&2; exit 1; }
 docker build -t archive-delivery-maven:test -f "$ROOT/deploy/Dockerfile.test" "$ROOT/deploy" >/dev/null
-docker run --rm --network host -e ARCHIVE_PREFLIGHT=true \
-  -e ARCHIVE_DB_URL='jdbc:postgresql://127.0.0.1:55432/archive_delivery?currentSchema=archive_delivery' \
-  -e ARCHIVE_DB_USER="$ARCHIVE_DB_USER" -e ARCHIVE_DB_PASSWORD="${ARCHIVE_DB_PASSWORD:-archive_local}" \
-  -v "$ROOT":/workspace -v "$HOME/.m2":/root/.m2 -w /workspace \
-  -v "$HOME/.ssh/archive-delivery-mvp/line-1-id_ed25519:/run/secrets/line-1-id_ed25519:ro" \
-  -v "$HOME/.ssh/archive-delivery-mvp/line-2-id_ed25519:/run/secrets/line-2-id_ed25519:ro" \
-  -v "$HOME/.ssh/archive-delivery-mvp/line-3-id_ed25519:/run/secrets/line-3-id_ed25519:ro" \
-  archive-delivery-maven:test mvn -q -pl delivery-core -Dtest=ProductionPreflightTest test
-"$ROOT/scripts/ftp-inspect.sh" check
-
-echo "Preflight passed. No delivery data was modified."
+run_preflight() {
+  docker run --rm --network deploy_default \
+    -e ARCHIVE_PREFLIGHT=true \
+    -e ARCHIVE_DB_URL='jdbc:postgresql://postgres:5432/archive_delivery?currentSchema=archive_delivery' \
+    -e ARCHIVE_DB_USER="${ARCHIVE_DB_USER:-archive}" -e ARCHIVE_DB_PASSWORD="${ARCHIVE_DB_PASSWORD:-archive_local}" \
+    -v "$ROOT":/workspace -v "$HOME/.m2":/root/.m2 -w /workspace \
+    archive-delivery-maven:test mvn -q -pl delivery-worker -am -Dsurefire.failIfNoSpecifiedTests=false \
+    '-Dtest=RealExternalVerificationTest#preflight' test
+}
+# FTP 容器首次初始化账户需要短暂时间；其他预检失败也在有界次数后停止，不进入真实交付。
+for attempt in $(seq 1 12); do
+  if run_preflight; then
+    echo "Preflight passed: direct source/target OSS and three local FTP accounts verified."
+    exit 0
+  fi
+  [[ "$attempt" -lt 12 ]] || break
+  sleep 5
+done
+echo "Preflight failed; real delivery was not submitted." >&2
+exit 1

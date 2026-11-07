@@ -1,68 +1,111 @@
 export interface Summary {
-  discovered: number
-  planned: number
-  repaired: number
-  outputTotal: number
-  delivered: number
+  deliveryStatus: string
+  taskTotal: number
+  targetTotal: number
+  succeeded: number
   blocked: number
   retrying: number
   waiting: number
-  rolledOver: number
-  backlog: number
-  ungrouped: number
-  activeSourceSlots: number
-  activeOutputSlots: number
-  nextCutoff?: string
-  groups: GroupProgress[]
+  expired: number
+  targets: DeliveryTarget[]
 }
 
-export interface GroupProgress {
-  lineId: number
-  outputTotal: number
-  grouped: number
-  hzUploaded: number
-  sgVerified: number
-  sgDownloaded: number
-  published: number
-  delivered: number
-  blocked: number
-  retrying: number
-  waiting: number
-}
-
-export interface PackageItem {
-  id: number
-  runId: number
+export interface DeliveryTarget {
+  targetCount: number
+  assignedCount: number
+  completedCount: number
   status: string
-  runStatus: string
-  currentNode: string
-  packageName: string
-  lineId: number
-  retryCount: number
+  deliveryEntityId: number
+  vendorCode: string
+  entityName: string
+  protocol: string
+  accountName: string
+}
+
+export interface Artifact {
+  artifactSeq: number
+  originalFileName: string
+  newFileName: string
+  sizeBytes: number
+  sha256: string
+  token: number
+  file_mapping: Record<string, string>
+}
+
+export interface DeliveryTask {
+  taskId: number
+  deliveryId: number
+  dataId: number
+  deliveryEntityId: number
+  targetSeq: number
+  vendorCode: string
+  entityName: string
+  accountName: string
+  artifactSeq: number
+  deliveryDate: string
+  cutoffAt: string
+  originalFileName: string
+  newFileName: string
+  sizeBytes: number
+  tokenCount: number
+  sha256?: string
+  currentNodeId: string
+  executionStatus: string
+  stageCode: string
+  displayName: string
   fence: number
-  rolloverCount: number
-  artifactSha: string
-  hzPath?: string
-  sgPath?: string
-  stagingPath?: string
-  publishedPath?: string
+  retryCount: number
+  lastErrorCode?: string
+  supersededByTaskId?: number
+  artifacts: Artifact[]
+}
+
+export interface NodeItem {
+  processId: number
+  taskId: number
+  nodeId: string
+  nodeType: string
+  stageCode: string
+  attempt: number
+  status: string
+  workerInstanceId?: string
+  outputLocator: Record<string, unknown>
   errorCode?: string
+  errorDetail?: string
+  startedAt: string
+  finishedAt?: string
+}
+
+export interface DeliveryEvent {
+  eventId: number
+  taskId?: number
+  processId?: number
+  deliveryEntityId?: number
+  eventType: string
+  severity: string
+  reasonCode?: string
+  message?: string
+  payload: Record<string, unknown>
+  occurredAt: string
 }
 
 export interface Timeline {
-  nodes: Array<Record<string, unknown>>
-  events: Array<Record<string, unknown>>
-  audits: Array<Record<string, unknown>>
+  taskId: number
+  nodes: NodeItem[]
+  events: DeliveryEvent[]
 }
 
-export interface Filters {
-  runId: number
-  deliveryDate?: string
-  archiveDate?: string
-  lineId?: number
-  rolledOver?: boolean
-  status?: string
-  keyword?: string
-  page?: number
-  size?: number
+export interface SubmitTarget {
+  targetCount: number
+  deliveryEntityId: number
+}
+
+export interface SubmitDelivery {
+  sourceId: number
+  pipelineVersionId: number
+  deliveryDate: string
+  cutoffAt: string
+  deliveryBatch: string
+  idempotencyKey: string
+  targets: SubmitTarget[]
 }

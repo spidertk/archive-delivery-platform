@@ -1,60 +1,54 @@
-# 本地生产 MVP 安装指南
+# Archive Delivery 安装指南
 
-## 前置条件
+## 1. 当前基线
 
-- macOS 与 Docker Desktop（支持 Compose v2）。
-- Python 3.11；本机不需要安装 Maven 或 JDK，Java 17 由 `scripts/mvn.sh` 的构建容器提供。
-- Node.js 24 与 npm，仅看板构建需要。
-- 可用磁盘至少为源包总量的 3 倍，并额外预留 PostgreSQL、PowerJob MySQL 和 Docker 镜像空间。工作目录包含 10 个源包、repair 解压临时文件及输出包，不能使用系统临时目录空间不足的旧默认路径。
-- 源 OSS 只读凭据、HZ/SG 凭据、三条线的跳板/FTP SSH 私钥。私钥只读挂载，不能写入镜像、数据库或 Git。
+当前基线为 2026-11-07 实体目标升级版、V14 单向清空重建及 V15 部分交付状态。核心链路为杭州源 OSS 直下载并保留文件、本地 repair/qualify、三个实体各一个任务、另一 OSS Bucket 上传、三个本地 FTP 账户下载核验。跨日未完成主单为 PARTIALLY_DELIVERED，指定次日继续且全部成功后 DELIVERED。
 
-## 配置
+需要 macOS、Docker Desktop/Compose v2、Python 3.11 和 Node.js 24/npm。Java 17/Maven 由构建容器提供。准备源 OSS 只读凭据、交付 OSS 读写凭据和三个仅用于本地验证的 FTP 密码；Secret 不进入 Git、日志、看板或对话。
+
+## 2. 本地配置
 
 ```bash
-cd archive-delivery-platform
 cp deploy/env.example deploy/.env
-chmod 600 deploy/.env
+cp deploy/pipeline.example.json deploy/pipeline.local.json
+chmod 600 deploy/.env deploy/pipeline.local.json
 ```
 
-`deploy/.env` 只保留数据库、PowerJob 和本地运行配置。OSS/FTP 连接信息维护在 `deploy/pipeline-v3.local.json`：`download` 配置源 OSS，`hzUpload` 配置杭州 OSS，`sgVerify` 配置新加坡 OSS，`sgDownload/publish` 配置三线 SSH 与跳板。每条线还必须填写经管理员核对的 `hostKey`，使用跳板时填写 `jumpHostKey`，值为标准 OpenSSH `known_hosts` 公钥行；Worker 目标和 ProxyCommand 均使用严格主机校验，不读取宿主机 `known_hosts`，禁止配置 `StrictHostKeyChecking=no`。该文件已被 Git 忽略，执行 `chmod 600 deploy/pipeline-v3.local.json`，禁止提交其中的 AK/SK。私钥内容不写入 JSON，只使用 `/run/secrets/line-N-id_ed25519` 容器路径。
+编辑 deploy/.env 的数据库、PowerJob 和 LOCAL_FTP_ENTITY_1/2/3_PASSWORD。编辑 pipeline.local.json 的 sourceDownload/targetUpload OSS 配置，以及 ftpDownloadVerify.ftpCredential 的 entity1/entity2/entity3 密码。源 prefix 至少包含三份非空 `.tar.gz`，所有 `replace-` 占位必须移除。该文件已被 Git 忽略，不得打印或提交。
 
-## 启动与预检
+## 3. 构建、升级与启动
+
+普通启动：
 
 ```bash
 ./scripts/mvp-up.sh
 ./scripts/bootstrap-powerjob.sh
-./scripts/configure-pipeline.sh deploy/pipeline-v3.local.json
+./scripts/configure-pipeline.sh
 ./scripts/preflight.sh
 curl -f http://127.0.0.1:8080/actuator/health
 ```
 
-初始化脚本从最新版本复制草稿（或直接修改未上线草稿），上线后原子切换 active binding；已上线版本不可原地修改。预检从当前绑定版本读取节点配置，检查 Docker、Compose、本地 PG、源 OSS List/Head/1 字节 Range Get、HZ 测试前缀 Put/Head/Delete、SG List/Head，以及三线 SSH 和远端 `ossutil64`。任何 403、SSH/跳板失败或对象缺失都会非零退出；此时不得开始真实 10 包 E2E。
-
-服务地址：
-
-- 业务 API 与看板：`http://127.0.0.1:8080`
-- PowerJob 控制台：`http://127.0.0.1:7700`
-- 本地 PG：`jdbc:postgresql://127.0.0.1:55432/archive_delivery`，schema 为 `archive_delivery`，账号密码取 `ARCHIVE_DB_USER/PASSWORD`。
-- 三个 Worker 分别绑定 LINE-1/2/3，容器内端口均为 27777，不向宿主机发布。
-
-干净机器按以下顺序验证，无需读取旧项目密码，也无需本机安装 Maven：
+只有明确放弃旧数据后才允许 V14 升级：
 
 ```bash
-cp deploy/env.example deploy/.env
-# 编辑 deploy/.env 和 deploy/pipeline-v3.local.json 后：
-./scripts/mvp-up.sh
-./scripts/bootstrap-powerjob.sh
-./scripts/configure-pipeline.sh deploy/pipeline-v3.local.json
-./scripts/preflight.sh
-curl -f http://127.0.0.1:8080/actuator/health
+ARCHIVE_UPGRADE_AUTHORIZED=2026-11-07 ./scripts/mvp-up.sh
 ```
 
-## 测试
+V14 删除旧业务表并重建，不回填、不保留旧 ID、不创建兼容视图。未授权连接执行 V14 会失败，防止普通启动隐式清库。迁移完成后无需继续携带该变量。V15 随后增加 PARTIALLY_DELIVERED 状态，不清空 V14 之后的交付事实。
+
+`configure-pipeline.sh` 发布集中 nodeDefinitions/ruleSets/DAG/执行配置的不可变 PipelineVersion，登记 OSS 来源并创建三个 FTP 实体；没有来源 binding 步骤。预检实际读取源 OSS、检查目标 Bucket 并登录三个 FTP 账户，失败不得提交。
+
+## 4. 服务与测试
+
+- API/看板：`http://127.0.0.1:8080`
+- PowerJob：`http://127.0.0.1:7700`
+- PG：`jdbc:postgresql://127.0.0.1:55432/archive_delivery`，schema `archive_delivery`
+- 三个 Worker 只提供执行槽；FTP 服务不向宿主机开放端口。
 
 ```bash
-python3 -m unittest nodes/python/test_archive_repair.py -v
 ./scripts/mvp-test.sh
 cd web && npm ci && npm run test && npm run build
+bash -n scripts/*.sh
 ```
 
-真实 OSS 写测试只有显式设置 `ARCHIVE_TEST_REAL_OSS=true` 且凭据齐全时才运行。测试 skipped 不得写成生产验收通过。
+Testcontainers 使用独立临时 PG。真实 OSS/FTP 测试只有 real-e2e-test.sh、preflight.sh 和 verify-delivery.sh 显式入口启用；标准测试中的 skipped 不代表外部通过。完整验收见 docs/mvp-runbook.md。

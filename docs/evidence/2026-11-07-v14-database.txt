@@ -1,0 +1,36 @@
+ delivery_id |  status   | target_strategy
+-------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           1 | DELIVERED | {"targets": [{"targetCount": 1, "deliveryEntityId": 1}, {"targetCount": 1, "deliveryEntityId": 2}, {"targetCount": 1, "deliveryEntityId": 3}], "schemaVersion": 1}
+(1 row)
+
+ task_id | delivery_entity_id | target_seq | delivery_date | execution_status | size_bytes |                              sha256                              | superseded_by_task_id
+---------+--------------------+------------+---------------+------------------+------------+------------------------------------------------------------------+-----------------------
+       1 |                  1 |          1 | 2026-11-07    | SUCCEEDED        |   54139210 | b7a42241087212a445d6674a7e8900e004dd70243603cc4acd0f44f424a0dfbf |
+       2 |                  2 |          1 | 2026-11-07    | EXPIRED          |   13145240 | 62f813169b82993df9d77d44a29aab17a7003bad617307b1b1227e14899a9187 |                     4
+       3 |                  3 |          1 | 2026-11-07    | EXPIRED          |   40223988 | a1bd488fcc610a4b15696f20c6b4d9d24d6cb63308d94f42f2e93895a4027130 |                     5
+       4 |                  2 |          1 | 2026-11-08    | SUCCEEDED        |   13145240 | 62f813169b82993df9d77d44a29aab17a7003bad617307b1b1227e14899a9187 |
+       5 |                  3 |          1 | 2026-11-08    | SUCCEEDED        |   40223988 | a1bd488fcc610a4b15696f20c6b4d9d24d6cb63308d94f42f2e93895a4027130 |
+(5 rows)
+
+ task_id |      node_type      | attempt |  status   |                                                   uri                                                   |                                    local_path                                    |                       download_path                       | size_bytes |                              sha256
+---------+---------------------+---------+-----------+---------------------------------------------------------------------------------------------------------+----------------------------------------------------------------------------------+-----------------------------------------------------------+------------+------------------------------------------------------------------
+       1 | ftp.download-verify |       2 | SUCCEEDED | ftp://ftp-entity-1/1/2026-11-07/entity-1/batch_00001.tar.gz                                             |                                                                                  | /data/ftp-verify/1/2026-11-07/entity-1/batch_00001.tar.gz | 54139210   | b7a42241087212a445d6674a7e8900e004dd70243603cc4acd0f44f424a0dfbf
+       1 | oss.download        |       1 | SUCCEEDED | oss://junflow-ysai-source-hz-20260906/_derived/ysai-sftp-20261027/delivery_plan_0005/batch_00001.tar.gz | /data/work/delivery-1/data-1/source/batch_00001.tar.gz                           |                                                           | 56050498   | 828275e0f38dc001f6616ee8c5e9a88e125094dd2f1ddad71fd3e6dbb44c54e0
+       1 | oss.upload          |       1 | SUCCEEDED | oss://hz-storage-20261013-6vmlk/archive-delivery/1/entity-1/2026-11-07/batch_00001.tar.gz               | /data/work/delivery-1/data-1/oss-verified/2026-11-07/entity-1/batch_00001.tar.gz |                                                           | 54139210   | b7a42241087212a445d6674a7e8900e004dd70243603cc4acd0f44f424a0dfbf
+       2 | oss.download        |       1 | SUCCEEDED | oss://junflow-ysai-source-hz-20260906/_derived/ysai-sftp-20261027/delivery_plan_0005/batch_00002.tar.gz | /data/work/delivery-1/data-2/source/batch_00002.tar.gz                           |                                                           | 13461328   | 881a27fc478c38a62438343e21d0ab0d55fb51ac82209a7d63328217fb9ef1ef
+       2 | oss.upload          |       1 | SUCCEEDED | oss://hz-storage-20261013-6vmlk/archive-delivery/1/entity-2/2026-11-07/batch_00002.tar.gz               | /data/work/delivery-1/data-2/oss-verified/2026-11-07/entity-2/batch_00002.tar.gz |                                                           | 13145240   | 62f813169b82993df9d77d44a29aab17a7003bad617307b1b1227e14899a9187
+       3 | oss.download        |       1 | SUCCEEDED | oss://junflow-ysai-source-hz-20260906/_derived/ysai-sftp-20261027/delivery_plan_0005/batch_00003.tar.gz | /data/work/delivery-1/data-3/source/batch_00003.tar.gz                           |                                                           | 42221409   | b5c0225909b64219eb13c9797ca2966d673f0848dc88e1b4ac0771571abe40c1
+       4 | ftp.download-verify |       1 | SUCCEEDED | ftp://ftp-entity-2/1/2026-11-08/entity-2/batch_00002.tar.gz                                             |                                                                                  | /data/ftp-verify/1/2026-11-08/entity-2/batch_00002.tar.gz | 13145240   | 62f813169b82993df9d77d44a29aab17a7003bad617307b1b1227e14899a9187
+       4 | oss.upload          |       1 | SUCCEEDED | oss://hz-storage-20261013-6vmlk/archive-delivery/1/entity-2/2026-11-08/batch_00002.tar.gz               | /data/work/delivery-1/data-2/oss-verified/2026-11-08/entity-2/batch_00002.tar.gz |                                                           | 13145240   | 62f813169b82993df9d77d44a29aab17a7003bad617307b1b1227e14899a9187
+       5 | ftp.download-verify |       1 | SUCCEEDED | ftp://ftp-entity-3/1/2026-11-08/entity-3/batch_00003.tar.gz                                             |                                                                                  | /data/ftp-verify/1/2026-11-08/entity-3/batch_00003.tar.gz | 40223988   | a1bd488fcc610a4b15696f20c6b4d9d24d6cb63308d94f42f2e93895a4027130
+       5 | oss.upload          |       1 | SUCCEEDED | oss://hz-storage-20261013-6vmlk/archive-delivery/1/entity-3/2026-11-08/batch_00003.tar.gz               | /data/work/delivery-1/data-3/oss-verified/2026-11-08/entity-3/batch_00003.tar.gz |                                                           | 40223988   | a1bd488fcc610a4b15696f20c6b4d9d24d6cb63308d94f42f2e93895a4027130
+(10 rows)
+
+    event_type    | task_id |   reason_code
+------------------+---------+-----------------
+ TASK_RETRIED     |       1 | MANUAL_RETRY
+ TASK_EXPIRED     |       2 | CUTOFF_EXCEEDED
+ TASK_REGENERATED |       4 | CUTOFF_EXCEEDED
+ TASK_EXPIRED     |       3 | CUTOFF_EXCEEDED
+ TASK_REGENERATED |       5 | CUTOFF_EXCEEDED
+(5 rows)

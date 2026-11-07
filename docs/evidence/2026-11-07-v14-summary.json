@@ -1,0 +1,63 @@
+{
+    "deliveryStatus": "DELIVERED",
+    "taskTotal": 3,
+    "succeeded": 3,
+    "blocked": 0,
+    "retrying": 0,
+    "waiting": 0,
+    "expired": 2,
+    "targetTotal": 3,
+    "targets": [
+        {
+            "deliveryEntityId": 1,
+            "targetCount": 1,
+            "assignedCount": 1,
+            "completedCount": 1,
+            "status": "DELIVERED",
+            "vendorCode": "LOCAL-FTP",
+            "entityCode": "ENTITY-1",
+            "entityName": "\u672c\u5730 FTP \u9a8c\u8bc1\u5b9e\u4f53 1",
+            "protocol": "FTP",
+            "accountName": "entity1",
+            "endpointLocator": {
+                "type": "jsonb",
+                "value": "{\"host\": \"ftp-entity-1\", \"port\": 21, \"rootPath\": \"/\", \"schemaVersion\": 1}",
+                "null": false
+            }
+        },
+        {
+            "deliveryEntityId": 2,
+            "targetCount": 1,
+            "assignedCount": 1,
+            "completedCount": 1,
+            "status": "DELIVERED",
+            "vendorCode": "LOCAL-FTP",
+            "entityCode": "ENTITY-2",
+            "entityName": "\u672c\u5730 FTP \u9a8c\u8bc1\u5b9e\u4f53 2",
+            "protocol": "FTP",
+            "accountName": "entity2",
+            "endpointLocator": {
+                "type": "jsonb",
+                "value": "{\"host\": \"ftp-entity-2\", \"port\": 21, \"rootPath\": \"/\", \"schemaVersion\": 1}",
+                "null": false
+            }
+        },
+        {
+            "deliveryEntityId": 3,
+            "targetCount": 1,
+            "assignedCount": 1,
+            "completedCount": 1,
+            "status": "DELIVERED",
+            "vendorCode": "LOCAL-FTP",
+            "entityCode": "ENTITY-3",
+            "entityName": "\u672c\u5730 FTP \u9a8c\u8bc1\u5b9e\u4f53 3",
+            "protocol": "FTP",
+            "accountName": "entity3",
+            "endpointLocator": {
+                "type": "jsonb",
+                "value": "{\"host\": \"ftp-entity-3\", \"port\": 21, \"rootPath\": \"/\", \"schemaVersion\": 1}",
+                "null": false
+            }
+        }
+    ]
+}

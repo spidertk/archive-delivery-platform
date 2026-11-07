@@ -1,11 +1,2 @@
 archive:
-  line-id: ${ARCHIVE_LINE_ID}
-  async-execution: true
-  discovery-mode: oss
-  debug-loop: ${ARCHIVE_DEBUG_LOOP:false}
-  business-timezone: Asia/Shanghai
-  delivery-cutoff-time: "02:00"
-  worker-slots:
-    source-slots-per-line: 1
-    output-slots-global: 10
-    max-attempts: 5
+  max-running-tasks: ${ARCHIVE_MAX_RUNNING_TASKS:3}

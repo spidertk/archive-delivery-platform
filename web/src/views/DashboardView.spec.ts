@@ -2,41 +2,40 @@ import { flushPromises, mount } from '@vue/test-utils'
 import ElementPlus from 'element-plus'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import DashboardView from './DashboardView.vue'
-import { getPackages, getSummary } from '../api'
+import { getSummary, getTasks } from '../api'
 
 vi.mock('../api', () => ({
-  getSummary: vi.fn(),
-  getPackages: vi.fn(),
-  getTimeline: vi.fn(),
-  retryPackage: vi.fn(),
-  resumeRun: vi.fn()
+  getSummary: vi.fn(), getTasks: vi.fn(), getTimeline: vi.fn(), retryTask: vi.fn(), resumeDelivery: vi.fn(), submitDelivery: vi.fn()
 }))
 
 const summary = {
-  discovered: 12, planned: 10, repaired: 10, outputTotal: 10, delivered: 8,
-  blocked: 1, retrying: 1, waiting: 0, rolledOver: 0, backlog: 2, ungrouped: 0,
-  activeSourceSlots: 1, activeOutputSlots: 2,
-  groups: [{ lineId: 1, outputTotal: 4, grouped: 0, hzUploaded: 0, sgVerified: 0,
-    sgDownloaded: 0, published: 0, delivered: 4, blocked: 0, retrying: 0, waiting: 0 }]
+  deliveryStatus: 'BLOCKED', taskTotal: 3, targetTotal: 3, succeeded: 2, blocked: 1,
+  retrying: 0, waiting: 0, expired: 1,
+  targets: [
+    { targetCount: 1, assignedCount: 1, completedCount: 1, status: 'DELIVERED', deliveryEntityId: 1, vendorCode: 'LOCAL-FTP', entityName: '实体 1', protocol: 'FTP', accountName: 'group1' },
+    { targetCount: 1, assignedCount: 1, completedCount: 1, status: 'DELIVERED', deliveryEntityId: 2, vendorCode: 'LOCAL-FTP', entityName: '实体 2', protocol: 'FTP', accountName: 'group2' },
+    { targetCount: 1, assignedCount: 1, completedCount: 0, status: 'BLOCKED', deliveryEntityId: 3, vendorCode: 'LOCAL-FTP', entityName: '实体 3', protocol: 'FTP', accountName: 'group3' }
+  ]
 }
 
 describe('DashboardView', () => {
   beforeEach(() => {
     vi.mocked(getSummary).mockResolvedValue(summary)
-    vi.mocked(getPackages).mockResolvedValue({ items: [], total: 10 })
+    vi.mocked(getTasks).mockResolvedValue({ items: [], total: 3 })
   })
 
-  it('renders real API data and keeps last success on refresh failure', async () => {
+  it('renders delivery targets and retains the last successful facts on refresh failure', async () => {
     const wrapper = mount(DashboardView, { global: { plugins: [ElementPlus] } })
     await flushPromises()
-    expect(wrapper.text()).toContain('12')
-    expect(wrapper.text()).toContain('LINE-1')
-    expect(wrapper.text()).toContain('4/4 DELIVERED')
+    expect(wrapper.text()).toContain('实体 1')
+    expect(wrapper.text()).toContain('LOCAL-FTP')
+    expect(wrapper.text()).toContain('超期历史')
+    expect(wrapper.text()).not.toContain('交付组')
+    expect(wrapper.text()).not.toContain('生产线')
     vi.mocked(getSummary).mockRejectedValueOnce(new Error('offline'))
     await wrapper.vm.refresh()
     await flushPromises()
     expect(wrapper.text()).toContain('offline')
-    expect(wrapper.text()).toContain('12')
-    expect(wrapper.text()).toContain('4/4 DELIVERED')
+    expect(wrapper.text()).toContain('实体 1')
   })
 })

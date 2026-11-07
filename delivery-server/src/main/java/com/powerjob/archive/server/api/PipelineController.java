@@ -23,19 +23,13 @@ import java.util.Map;
 public class PipelineController {
     private final PipelineAdminService pipelines;
 
-    public PipelineController(PipelineAdminService pipelines) {
-        this.pipelines = pipelines;
-    }
+    public PipelineController(PipelineAdminService pipelines) { this.pipelines = pipelines; }
 
     @GetMapping("/pipelines/{code}/versions")
-    public List<PipelineAdminService.VersionView> list(@PathVariable String code) {
-        return pipelines.list(code);
-    }
+    public List<PipelineAdminService.VersionView> list(@PathVariable String code) { return pipelines.list(code); }
 
     @GetMapping("/pipeline-versions/{id}")
-    public PipelineAdminService.VersionView get(@PathVariable long id) {
-        return pipelines.get(id);
-    }
+    public PipelineAdminService.VersionView get(@PathVariable long id) { return pipelines.get(id); }
 
     @PostMapping("/pipelines/{code}/versions")
     @ResponseStatus(HttpStatus.CREATED)
@@ -49,9 +43,7 @@ public class PipelineController {
     }
 
     @PostMapping("/pipeline-versions/{id}/publish")
-    public PipelineAdminService.VersionView publish(@PathVariable long id) {
-        return pipelines.publish(id);
-    }
+    public PipelineAdminService.VersionView publish(@PathVariable long id) { return pipelines.publish(id); }
 
     @ExceptionHandler(PipelineVersionConflictException.class)
     ResponseEntity<Map<String, String>> conflict(RuntimeException error) {

@@ -1,0 +1,9 @@
+ flyway_version
+----------------
+             15
+(1 row)
+
+ delivery_id |  status
+-------------+-----------
+           1 | DELIVERED
+(1 row)

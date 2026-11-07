@@ -1,127 +1,128 @@
-# Archive Delivery Local Production MVP 运维手册
+# Archive Delivery 真实验收手册
 
-## 1. 事实边界
+## 1. 完成口径
 
-本流程由本地 PostgreSQL 唯一记录业务事实，PowerJob 只触发 discovery、package tick 和 rollover。三条生产线目标为 LINE-1/LINE-2/LINE-3 = 4/3/3，legacyBatch/provider 分别为 `3/june`、`4/june-1`、`5/june-2`。
+当前核心 Pipeline DAG：
 
-生产路径：源 OSS → 本机下载/repair/qualify/group → 杭州 OSS → 单包 CRR 等待 → 新加坡 OSS → 跳板 SSH 调 FTP 固定脚本 → 原子发布 → 本地 PG receipt。`Local*Node` 仅用于自动化测试，不能作为真实三地验收证据。
-
-安全约束：
-
-- 每线源执行并发不超过 1，三线共享全局 10 个输出槽。
-- 外部执行至少一次，PG 用 lease + fence 防止过期 Worker 提交。
-- 一个合格源 tar 只产出一个同名输出 tar；缺协议文件进入 BLOCKED，不产空包。
-- `ftpCleanBeforeDownload=false` 不可被提交参数覆盖，禁止清理 FTP 历史目录。
-- 不写旧生产 PG/Redis，不执行旧流程清空目录命令，不修改 PowerJob 核心。
-
-## 2. 安装与启动
-
-详见 `docs/install.md` 和 `docs/deploy.md`。准备 `deploy/.env` 后：
-
-```bash
-./scripts/preflight.sh
-./scripts/mvp-up.sh
-./scripts/bootstrap-powerjob.sh
-curl -f http://127.0.0.1:8080/actuator/health
+```text
+sourceDownload → repair → qualify → targetUpload → ftpDownloadVerify
 ```
 
-预检失败（403、SSH/跳板不可达、CRR 探测对象缺失）不得启动真实 E2E。PowerJob 控制台为 `http://127.0.0.1:7700`，业务 API/看板为 `http://127.0.0.1:8080`。
+该顺序来自 PipelineVersion，不是 Processor 或 Service 的固定分支。必须同时证明：
 
-## 3. 测试与不可混淆的证据
+- 源 OSS 直接下载三份样本且本地文件保留，repair/qualify 成功，请求映射、size/token/SHA 和七字段 artifacts 入库。
+- 三个交付实体各一个有效任务，任务直接保存 delivery_entity_id/target_seq。
+- 三份产物上传到另一 OSS Bucket，外部 size/SHA 与 source_data、任务和 delivery_node 一致。
+- 三个本地 FTP 账户按实体目录完成实际下载，文件保留，size/SHA 一致，无 `.partial`。
+- 最新任务全部 SUCCEEDED，最终 ftpDownloadVerify 成功，delivery_submit 聚合 DELIVERED。
+- 至少一次单任务 retry 和一次跨日新 task_id 接续，下一日 OSS/FTP 路径隔离。
+
+API 接受、PowerJob 绿色实例、Local/fake 节点或 skipped 测试均不是真实交付证据。
+
+## 2. 标准回归
 
 ```bash
 python3 -m unittest nodes/python/test_archive_repair.py -v
-./scripts/mvp-test.sh
+./scripts/mvn.sh test
 cd web && npm ci && npm run test && npm run build
+bash -n scripts/*.sh
 ```
 
-测试覆盖真实 PG 迁移、4/3/3 规划、repair 黄金规则、断点下载、全局并发、包级重试、CRR 等待、续跑、两个跨日 case 和看板聚合。真实预检由预检容器中的 `ARCHIVE_PREFLIGHT=true` 启用，业务 Worker 不读取 OSS/FTP 环境变量；skipped 不是生产通过。最终验收必须同时看到 HZ OSS、SG OSS、FTP 文件和本地 PG 的 10 个 DELIVERED。
+覆盖 V1–V15 迁移、全表全列注释、废弃对象不存在、artifacts 白名单、事件不可变、跨日血缘、集中 Pipeline 和前端。
 
-## 4. 提交历史作业日 run
+核心状态集成案例位于 `ArchiveModelIntegrationTest`：
 
-当前发布 Pipeline 的根级策略固定为 `crrWaitSeconds=180`、`autoRollover=false`、`ftpCleanBeforeDownload=false`；OSS/FTP 连接信息位于各自节点，不再从业务环境变量读取。提交只接受 OSS URI、idempotencyKey 和可选 jobDate，不接受任何节点或策略参数：
+| 案例 | 初始事实 | 跨日操作 | 必须结果 |
+|---|---|---|---|
+| 正向作业单 0001 | 三实体各 2，共 6，截止前全部 SUCCEEDED | 无 | 主单 DELIVERED |
+| 当日逆向作业单 0002 | 每实体 1 成功、第 2 个 READY，共 5/6 | 指定下一交付日 rollover | 三个旧任务 EXPIRED，三个新 taskId 占次日配额，主单 PARTIALLY_DELIVERED |
+| 次日续交作业单 0002 | 每实体 1 个既往成功 + 1 个次日新任务 | 三个新任务全部 SUCCEEDED | 每实体有效任务仍为 2，主单 DELIVERED |
+
+可单独执行：
 
 ```bash
-./scripts/submit-run.sh \
-  'oss://junflow-ysai-source-hz-20260906/_derived/ysai-sftp-20261027/delivery_plan_0005/' \
-  'delivery-plan-0005-local-v1' \
-  '20261030'
+./scripts/mvn.sh -pl delivery-core -Dtest=ArchiveModelIntegrationTest test
 ```
 
-重复提交相同参数返回同一 runId；同键不同 URI/jobDate 返回 409。非法 URI、日期和额外策略字段返回 400。jobDate 省略时 API 使用 Asia/Shanghai 当前业务日期。所有 process/archive/delivery 日期、repair 日期、请求编号 namespace、远端路径和 cutoff 均从 run 的 jobDate 派生。
+## 3. 一键真实验收
 
-规划先分页发现为 DISCOVERED，再按 Key/发现顺序分配三线 4/3/3。未接收对象保持 backlog，不能通过改 `current_node` 伪造进度。
-
-## 5. 包级重试与指定节点续跑
+按 `docs/install.md` 配置后执行：
 
 ```bash
-./scripts/resume-run.sh 1 sgDownload '杭州及CRR已完成，仅继续FTP下载'
-# 指定包时追加逗号分隔 packageId：
-./scripts/resume-run.sh 1 receipt '只补本地回执' 101,102
+./scripts/real-e2e-test.sh
 ```
 
-包级 retry API：
+该入口具有真实 OSS 写副作用，并明确放弃旧本地业务数据。它会：
+
+1. 携带 V14 授权启动新模型并应用 V15，配置通用调度、集中 Pipeline、来源和三个 FTP 实体。
+2. 双确认清理运行事实，保留 Pipeline/实体配置和 OSS/FTP 历史文件。
+3. 真实预检源 OSS、目标 Bucket 和三个 FTP 账户。
+4. 暂时停止两个实体 FTP，提交三个 targets 各一的新交付。
+5. 恢复第一实体 FTP，仅 retry 对应阻塞任务；第二实体保持未完成并 rollover。
+6. 证明旧任务 EXPIRED、新 task_id 按指定下一日接续并占次日配额，主单先 PARTIALLY_DELIVERED，再恢复第二实体。
+7. 有界等待 3/3 DELIVERED，调用 verify-delivery.sh 独立读取 PG、OSS 和 FTP 核验。
+
+任何预检、意外 BLOCKED、超时或 SHA 不一致都会非零停止，不用 SQL 修改状态绕过。
+
+## 4. 分步操作
 
 ```bash
-curl -fsS -H 'Content-Type: application/json' \
-  -d '{"expectedFence":7,"reason":"FTP网络恢复"}' \
-  http://127.0.0.1:8080/api/v1/packages/101/retry
+./scripts/mvp-up.sh
+./scripts/bootstrap-powerjob.sh
+./scripts/configure-pipeline.sh
+./scripts/preflight.sh
+./scripts/submit-delivery.sh <sourceId> <pipelineVersionId> <deliveryDate> <cutoffAt> <deliveryBatch> <idempotencyKey>
+./scripts/verify-delivery.sh <deliveryId>
 ```
 
-只允许从当前失败节点继续。HZ_UPLOADED + 有效 HZ 路径/相同 SHA 可从 sgVerify；SG_VERIFIED + 有效 SG 路径可从 sgDownload；PUBLISHED + 最终路径只允许 receipt。无 repair Manifest 或回退已完成节点返回 409，不触发外部请求。重试只针对当前包当前节点，不重跑 download/repair，不改变 requestId 或映射。
-
-## 6. 单包 CRR 与 FTP 安全
-
-每个包从自己的 `hz_uploaded_at + crrWaitSeconds` 开始首次 SG Head，早完成的包不被同批慢包阻塞。SG 不存在是 WAITING，不增加 retry_count、不占执行槽；size/SHA 不一致立即 BLOCKED，超过节点配置上限报 `CRR_WAIT_TIMEOUT`。
-
-FTP 使用 `ossutil64 cp` 下载到本次 run 专属 staging 的 `.partial`，校验 SHA 后原子 rename，再同文件系统发布。最终文件 SHA 相同可幂等成功，不同则冲突，禁止覆盖其他 run。发布前记录历史文件相对路径、size、mtime，验收后必须完全一致。
-
-## 7. 跨日复盘
-
-Case A：首日 12 个对象只准入 10 个，2 个保持 DISCOVERED；次日最老 backlog 先于新对象获得容量。未完成的 PLANNED 包 process_date 不变并继续占预留。
-
-Case B：到期 READY/RUNNING/WAITING/BLOCKED 包的 deliveryDate/cutoff/rolloverCount 前进一天，DELIVERED 不变；RUNNING 不中断，groupId/groupSeq/包名/映射/currentNode 不变，流转包优先 claim。历史 v3 测试 run 因 `autoRollover=false` 不被真实当前时间自动改写。
-
-人工入口与自动 Processor 调用同一事务：
+retry/resume：
 
 ```bash
-curl -fsS -H 'Content-Type: application/json' \
-  -d '{"expectedDeliveryDate":"2026-10-30","reason":"历史作业日复盘，转入2026-10-31"}' \
-  http://127.0.0.1:8080/api/v1/runs/1/rollover
+curl -H 'Content-Type: application/json' \
+  -d '{"expectedFence":<fence>,"reason":"外部依赖恢复，重试当前任务"}' \
+  http://127.0.0.1:8080/api/v1/tasks/<taskId>/retry
+./scripts/resume-delivery.sh <deliveryId> <fromNode> '前置事实已核验，续跑当前节点' <taskId>
 ```
 
-同一 expectedDeliveryDate 重放返回 0。需要自动流转时发布 `autoRollover=true` 的新 PipelineVersion 并切换绑定；在途 run 继续读取其绑定的旧版本。测试使用可控时钟/显式业务日期，不等待真实午夜，也不修改宿主机时间。
-
-## 8. 看板与 PG 查询
-
-看板提供 run/date/line/rolledOver/status/keyword 筛选、六阶段进度、backlog、活跃槽位、异常列表、包详情、时间轴、retry/resume。每 15 秒刷新，失败保留上次成功数据。
+EXPIRED 任务不能 retry/resume。跨日手工验收调用 `/api/v1/deliveries/<deliveryId>/rollover`，必须携带 expectedDeliveryDate、deliveryDate 和 reason，且新日期晚于原日期；不得直接修改日期或状态。
 
 ```bash
-docker compose -f deploy/docker-compose.yml exec -T postgres \
+curl -H 'Content-Type: application/json' \
+  -d '{"expectedDeliveryDate":"2026-11-07","deliveryDate":"2026-11-08","reason":"截止未完成，次日继续"}' \
+  http://127.0.0.1:8080/api/v1/deliveries/<deliveryId>/rollover
+```
+
+## 5. 只读事实查询
+
+```bash
+docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T postgres \
   psql -U archive -d archive_delivery
 ```
 
 ```sql
 SET search_path TO archive_delivery;
-SELECT production_line_id,status,run_status,current_node,count(*)
-FROM source_package GROUP BY 1,2,3,4 ORDER BY 1,2,3,4;
-SELECT production_line_id,archive_date,delivery_date,status,run_status,count(*)
-FROM output_package GROUP BY 1,2,3,4,5 ORDER BY 1,2,3,4,5;
-SELECT output_package_id,new_file_name,size_bytes,sha256,hz_path,sg_path,published_path
-FROM output_artifact ORDER BY output_package_id,artifact_seq;
-SELECT source_package_id,output_package_id,node_id,attempt,status,error_detail
-FROM package_node_run ORDER BY id;
+SELECT delivery_id,delivery_batch,status,target_strategy,discovery_completed_at,completed_at
+FROM delivery_submit WHERE delivery_id=<deliveryId>;
+SELECT task_id,data_id,delivery_entity_id,target_seq,artifact_seq,delivery_date,current_node_id,
+       execution_status,size_bytes,token_count,sha256,superseded_by_task_id
+FROM delivery_task WHERE delivery_id=<deliveryId> ORDER BY task_id;
+SELECT process_id,task_id,node_id,node_type,stage_code,attempt,status,output_locator,error_code
+FROM delivery_node WHERE delivery_id=<deliveryId> ORDER BY process_id;
+SELECT event_type,task_id,process_id,delivery_entity_id,reason_code,message,payload
+FROM delivery_event WHERE delivery_id=<deliveryId> ORDER BY event_id;
 ```
 
-## 9. 异常处理
+每个目标应有 targetCount 个最新有效任务且最终全部 SUCCEEDED。跨日旧行必须 EXPIRED 并指向下一日新行，新行占次日实体配额；主单未全部成功前为 PARTIALLY_DELIVERED，全部成功后 DELIVERED。
 
-先停止相关 PowerJob 新 claim，再排障；不要清库从头跑。
+## 6. 外部证据与自助复核
 
-- OSS 403：检查对应 bucket/prefix 权限和 Endpoint，保留 runId/packageId/node/错误码。
-- HZ 网络/5xx：当前包进入 GROUPED + RETRY_WAIT，按 5/10/20/40/80 秒退避，第五次 BLOCKED；权限和 SHA 冲突首次即 BLOCKED。
-- CRR 超 2 小时：保留 WAITING/BLOCKED 事实，确认 CRR metadata 后用 resume/retry，不重新 repair。
-- SSH/跳板失败：检查 BatchMode 私钥、跳板、固定脚本与远端 `ossutil64`；恢复后只续跑失败节点。
-- FTP 磁盘不足：停止对应线，保留 staging 与错误，扩容后重试当前包。
-- Stale fence：先停止旧实例并确认 `lease_until` 已过期，再从当前节点 resume；活跃 RUNNING 和未过期租约仍返回 409，禁止强制覆盖新租约。
+`verify-delivery.sh` 在独立容器中读取当前 Pipeline 受控配置，不打印 Secret；它实际 GET 源 OSS 和交付 OSS，重新登录 FTP 下载，并核对 Worker 最终文件和 `.partial`。
 
-最终运行 `./scripts/verify-delivery.sh <runId>`，要求 10/10、无 `.partial`、无重复 requestId、三地 SHA 一致且历史文件不变。AK/SK 按设计只存受控 Pipeline 版本表；版本列表、包详情、timeline、应用日志、manifest 和看板不得泄露 AK/SK 或私钥。SSH 主机公钥保存在每线 `hostKey/jumpHostKey`，目标和跳板机均严格校验。
+Worker 持久卷中的最终 FTP 文件可用以下命令列出并计算 SHA（替换 deliveryId）：
+
+```bash
+docker run --rm -v deploy_archive_data:/data:ro alpine:3.22 \
+  sh -c 'find /data/ftp-verify/<deliveryId> -type f -path "*/entity-*" ! -name "*.partial" -exec sha256sum {} \;'
+```
+
+该命令只读挂载持久卷，不访问 Pipeline Secret，不修改文件。输出应包含三个不同实体路径，且 SHA 与 `delivery_task.sha256` 一致。本次 V14 验收使用 deliveryId=1，实际结果和原始证据见 `2026-11-07-entity-target-v14-verification.md`。

@@ -1,0 +1,10 @@
+.git
+.idea
+.tools
+**/target
+web/node_modules
+web/dist
+deploy/.env
+deploy/*.local.json
+docs/*.tar.gz
+**/__pycache__

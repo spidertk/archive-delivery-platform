@@ -10,4 +10,7 @@ web/node_modules/
 web/dist/
 web/*.tsbuildinfo
 web/vite.config.js
+deploy/pipeline.local.json
 deploy/pipeline-v3.local.json
+deploy/pipeline-v4.local.json
+deploy/pipeline-sg-ftp.local.json

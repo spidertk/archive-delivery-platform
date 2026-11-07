@@ -3,15 +3,14 @@ package com.powerjob.archive.core.repository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-final class JdbcJson {
-    private JdbcJson() {
-    }
+public final class JdbcJson {
+    private JdbcJson() {}
 
-    static JsonNode read(ObjectMapper mapper, String value) {
+    public static JsonNode read(ObjectMapper mapper, String json) {
         try {
-            return value == null ? null : mapper.readTree(value);
+            return json == null ? null : mapper.readTree(json);
         } catch (Exception e) {
-            throw new IllegalStateException("Invalid JSON stored in database", e);
+            throw new IllegalStateException("Invalid JSONB fact", e);
         }
     }
 }

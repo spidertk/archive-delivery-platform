@@ -8,6 +8,8 @@ from pathlib import Path
 
 SCRIPT = Path(__file__).with_name("archive_repair.py")
 SAMPLE = Path(__file__).resolve().parents[3] / "old" / "sample" / "batch_00002.tar.gz"
+DELIVERED_SAMPLE = Path(__file__).resolve().parents[2] / "docs" / "batch_00017.tar.gz"
+ARTIFACT_FIELDS = {"artifactSeq", "originalFileName", "newFileName", "sizeBytes", "sha256", "token", "file_mapping"}
 
 
 class ArchiveRepairTest(unittest.TestCase):
@@ -19,27 +21,50 @@ class ArchiveRepairTest(unittest.TestCase):
         self.temp.cleanup()
 
     def run_script(self, *args, expected=0):
-        result = subprocess.run([sys.executable, str(SCRIPT), *map(str, args)],
-                                capture_output=True, text=True)
+        result = subprocess.run([sys.executable, str(SCRIPT), *map(str, args)], capture_output=True, text=True)
         self.assertEqual(result.returncode, expected, result.stderr)
         return result
+
+    def repair_args(self, target, date="2026-10-30", account="june", start="1", manifest="manifest.json"):
+        return ("--target", target, "--delivery-date", date, "--delivery-account", account,
+                "--start-number", start, "--manifest", manifest)
 
     def test_inspect_real_sample(self):
         result = self.run_script("--source", SAMPLE, "--inspect")
         self.assertEqual(json.loads(result.stdout)["requestCount"], 4)
 
+    def test_correct_delivered_sample_matches_golden_protocol(self):
+        manifest = self.root / "manifest.json"
+        result = self.run_script("--source", DELIVERED_SAMPLE, *self.repair_args(
+            self.root, date="2026-11-03", start="3698", manifest=manifest))
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["requestCount"], 39)
+        self.assertEqual(payload["mappings"][0]["newRequestId"], "req_20261103_000003698")
+        self.assertEqual(payload["mappings"][-1]["newRequestId"], "req_20261103_000003736")
+        with tarfile.open(payload["artifactPath"], "r:gz") as archive:
+            response_counts = {"biz_stream_response.jsonl": 0, "biz_response.json": 0}
+            for mapping in payload["mappings"]:
+                request_id = mapping["newRequestId"]
+                metadata = json.load(archive.extractfile(request_id + "/metadata.json"))
+                self.assertEqual(metadata["requestId"], request_id)
+                self.assertEqual(metadata["requestTime"], "2026-11-03 00:00:00")
+                self.assertIsNotNone(archive.extractfile(request_id + "/biz_request.json"))
+                response_name = next(name for name in response_counts if request_id + "/" + name in archive.getnames())
+                response_counts[response_name] += 1
+            self.assertEqual(response_counts, {"biz_stream_response.jsonl": 34, "biz_response.json": 5})
+
     def test_repairs_real_sample_and_preserves_lineage(self):
         manifest = self.root / "manifest.json"
-        result = self.run_script("--source", SAMPLE, "--target", self.root,
-                                 "--archive-date", "2026-10-30", "--provider-code", "june",
-                                 "--start-number", "1", "--manifest", manifest)
+        result = self.run_script("--source", SAMPLE, *self.repair_args(self.root, manifest=manifest))
         payload = json.loads(result.stdout)
         self.assertEqual(payload["requestCount"], 4)
         self.assertEqual([m["originalRequestId"] for m in payload["mappings"]],
-                         ["req_20261027_0001", "req_20261027_0002",
-                          "req_20261027_0003", "req_20261027_0004"])
-        artifact = Path(payload["artifacts"][0]["path"])
-        with tarfile.open(artifact, "r:gz") as archive:
+                         ["req_20261027_0001", "req_20261027_0002", "req_20261027_0003", "req_20261027_0004"])
+        artifact = payload["artifacts"][0]
+        self.assertEqual(set(artifact), ARTIFACT_FIELDS)
+        self.assertEqual(artifact["token"], artifact["sizeBytes"])
+        self.assertEqual(artifact["file_mapping"], {m["memberKey"]: m["newRequestId"] for m in payload["mappings"]})
+        with tarfile.open(payload["artifactPath"], "r:gz") as archive:
             for index, mapping in enumerate(payload["mappings"], start=1):
                 expected = "req_20261030_{:09d}".format(index)
                 self.assertEqual(mapping["newRequestId"], expected)
@@ -47,8 +72,7 @@ class ArchiveRepairTest(unittest.TestCase):
                 self.assertEqual(metadata["requestId"], expected)
                 self.assertEqual(metadata["providerCode"], "june")
                 self.assertTrue(metadata["requestTime"].startswith("2026-10-30 "))
-                self.assertIsNotNone(archive.extractfile(
-                    expected + "/biz_stream_response.jsonl"))
+                self.assertIsNotNone(archive.extractfile(expected + "/biz_stream_response.jsonl"))
 
     def test_missing_metadata_does_not_publish_manifest(self):
         source = self.root / "batch_00003.tar.gz"
@@ -58,28 +82,24 @@ class ArchiveRepairTest(unittest.TestCase):
             (request / "biz_request.json").write_text("{}", encoding="utf-8")
             archive.add(request, arcname="req_old")
         manifest = self.root / "manifest.json"
-        self.run_script("--source", source, "--target", self.root / "out",
-                        "--archive-date", "2026-10-30", "--provider-code", "june",
-                        "--start-number", "1", "--manifest", manifest, expected=1)
+        self.run_script("--source", source, *self.repair_args(self.root / "out", manifest=manifest), expected=1)
         self.assertFalse(manifest.exists())
 
     def test_missing_request_time_uses_midnight(self):
         source_dir = self.root / "req_old"
         source_dir.mkdir()
-        (source_dir / "metadata.json").write_text(json.dumps({
-            "requestId": "old", "requestMode": "SYNC"
-        }), encoding="utf-8")
+        (source_dir / "metadata.json").write_text(json.dumps({"requestId": "old", "requestMode": "SYNC"}), encoding="utf-8")
         (source_dir / "biz_request.json").write_text("{}", encoding="utf-8")
         (source_dir / "biz_stream_response.jsonl").write_text("{}\n", encoding="utf-8")
         source = self.root / "batch_00004.tar.gz"
         with tarfile.open(source, "w:gz") as archive:
             archive.add(source_dir, arcname="req_old")
         manifest = self.root / "manifest.json"
-        result = self.run_script("--source", source, "--target", self.root / "out",
-                                 "--archive-date", "2026-10-30", "--provider-code", "june-1",
-                                 "--start-number", "9", "--manifest", manifest)
-        new_id = json.loads(result.stdout)["mappings"][0]["newRequestId"]
-        with tarfile.open(json.loads(result.stdout)["artifacts"][0]["path"], "r:gz") as archive:
+        result = self.run_script("--source", source, *self.repair_args(
+            self.root / "out", account="june-1", start="9", manifest=manifest))
+        payload = json.loads(result.stdout)
+        new_id = payload["mappings"][0]["newRequestId"]
+        with tarfile.open(payload["artifactPath"], "r:gz") as archive:
             metadata = json.load(archive.extractfile(new_id + "/metadata.json"))
             self.assertEqual(metadata["requestTime"], "2026-10-30 00:00:00")
             self.assertIsNotNone(archive.extractfile(new_id + "/biz_response.json"))
@@ -93,37 +113,31 @@ class ArchiveRepairTest(unittest.TestCase):
             request = source_dir / name
             request.mkdir()
             (request / "metadata.json").write_text(json.dumps({
-                "requestId": "old-" + name, "requestMode": mode, "requestTime": original_time
-            }), encoding="utf-8")
+                "requestId": "old-" + name, "requestMode": mode, "requestTime": original_time}), encoding="utf-8")
             (request / "biz_request.json").write_text("{}", encoding="utf-8")
             (request / response).write_text("{}\n", encoding="utf-8")
         source = self.root / "batch_00007.tar.gz"
         with tarfile.open(source, "w:gz") as archive:
             archive.add(source_dir / "req_z", arcname="req_z")
             archive.add(source_dir / "req_a", arcname="req_a")
-
         outputs = []
         for run in ("first", "second"):
             target = self.root / run
             manifest = target / "manifest.json"
-            result = self.run_script("--source", source, "--target", target,
-                                     "--archive-date", "2026-11-01", "--provider-code", "june",
-                                     "--start-number", "20", "--manifest", manifest)
+            result = self.run_script("--source", source, *self.repair_args(
+                target, date="2026-11-01", start="20", manifest=manifest))
             payload = json.loads(result.stdout)
-            artifact = Path(payload["artifacts"][0]["path"])
+            artifact = Path(payload["artifactPath"])
             self.assertLessEqual(artifact.stat().st_size, 100 * 1024 * 1024)
             with tarfile.open(artifact, "r:gz") as archive:
-                for index, (mode, original_time) in enumerate(
-                        (("SYNC", "01:02:03"), ("STREAM", "12:34:56")), start=20):
+                for index, (mode, original_time) in enumerate((("SYNC", "01:02:03"), ("STREAM", "12:34:56")), start=20):
                     new_id = "req_20261101_{:09d}".format(index)
                     metadata = json.load(archive.extractfile(new_id + "/metadata.json"))
                     self.assertEqual(metadata["requestId"], new_id)
                     self.assertEqual(metadata["providerCode"], "june")
                     self.assertEqual(metadata["requestTime"], "2026-11-01 " + original_time)
-                    names = [Path(name).name for name in archive.getnames()
-                             if name.startswith(new_id + "/") and "response" in name]
-                    self.assertEqual(names, ["biz_response.json" if mode == "SYNC"
-                                             else "biz_stream_response.jsonl"])
+                    names = [Path(name).name for name in archive.getnames() if name.startswith(new_id + "/") and "response" in name]
+                    self.assertEqual(names, ["biz_response.json" if mode == "SYNC" else "biz_stream_response.jsonl"])
             outputs.append((payload["mappings"], payload["artifacts"][0]["sha256"]))
         self.assertEqual(outputs[0], outputs[1])
 
@@ -133,9 +147,7 @@ class ArchiveRepairTest(unittest.TestCase):
                 case = self.root / missing
                 request = case / "req_old"
                 request.mkdir(parents=True)
-                (request / "metadata.json").write_text(json.dumps({
-                    "requestId": "old", "requestMode": "STREAM"
-                }), encoding="utf-8")
+                (request / "metadata.json").write_text(json.dumps({"requestId": "old", "requestMode": "STREAM"}), encoding="utf-8")
                 if missing != "biz_request.json":
                     (request / "biz_request.json").write_text("{}", encoding="utf-8")
                 if missing != "response":
@@ -145,9 +157,7 @@ class ArchiveRepairTest(unittest.TestCase):
                     archive.add(request, arcname="req_old")
                 target = case / "out"
                 manifest = case / "manifest.json"
-                self.run_script("--source", source, "--target", target,
-                                "--archive-date", "2026-11-01", "--provider-code", "june",
-                                "--start-number", "1", "--manifest", manifest, expected=1)
+                self.run_script("--source", source, *self.repair_args(target, date="2026-11-01", manifest=manifest), expected=1)
                 self.assertFalse((target / "batch_00008.tar.gz").exists())
                 self.assertFalse((target / "batch_00008.tar.gz.tmp").exists())
                 self.assertFalse(manifest.exists())
