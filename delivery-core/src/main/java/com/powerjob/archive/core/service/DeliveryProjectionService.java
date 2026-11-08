@@ -10,7 +10,7 @@ public class DeliveryProjectionService {
 
     public DeliveryProjectionService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
-    /** 跨日新任务占用下一日目标配额；存在 EXPIRED 血缘且尚未全部成功时，主单保持部分交付而非终态。 */
+    /** 跨日、暂停和最终状态均只由任务事实投影，PowerJob 实例状态不参与交付结论。 */
     public void refresh(long deliveryId) {
         Map<String, Object> facts = jdbc.queryForMap("SELECT s.status,s.discovery_completed_at," +
                 "(SELECT COALESCE(sum((target->>'targetCount')::int),0) FROM jsonb_array_elements(s.target_strategy->'targets') target) AS target_total," +
@@ -21,6 +21,7 @@ public class DeliveryProjectionService {
                 "(SELECT count(*) FROM delivery_task t WHERE t.delivery_id=s.delivery_id AND t.execution_status='RETRY_WAIT') AS retrying," +
                 "(SELECT count(*) FROM delivery_task t WHERE t.delivery_id=s.delivery_id AND t.execution_status='WAITING') AS waiting," +
                 "(SELECT count(*) FROM delivery_task t WHERE t.delivery_id=s.delivery_id AND t.execution_status='BLOCKED') AS blocked," +
+                "(SELECT count(*) FROM delivery_task t WHERE t.delivery_id=s.delivery_id AND t.execution_status='PAUSED') AS paused," +
                 "(SELECT count(*) FROM delivery_task t WHERE t.delivery_id=s.delivery_id AND t.execution_status='CANCELLED') AS cancelled " +
                 "FROM delivery_submit s WHERE s.delivery_id=?", deliveryId);
         String current = facts.get("status").toString();
@@ -30,6 +31,7 @@ public class DeliveryProjectionService {
         else if (number(facts, "target_total") > 0 && number(facts, "active") == number(facts, "target_total")
                 && number(facts, "active") == number(facts, "succeeded")) next = "DELIVERED";
         else if (number(facts, "active") == 0 && number(facts, "cancelled") > 0) next = "COMPLETED_WITH_CANCELLATIONS";
+        else if (number(facts, "paused") > 0) next = "PAUSED";
         else if (number(facts, "expired") > 0) next = "PARTIALLY_DELIVERED";
         else if (number(facts, "blocked") > 0) next = "BLOCKED";
         else if (number(facts, "processing") > 0) next = "PROCESSING";

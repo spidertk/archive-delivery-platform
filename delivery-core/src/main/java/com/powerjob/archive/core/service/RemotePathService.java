@@ -2,22 +2,54 @@ package com.powerjob.archive.core.service;
 
 import com.powerjob.archive.core.domain.DeliveryTask;
 import org.springframework.stereotype.Service;
+
 import java.nio.file.Path;
+import java.util.Map;
 
 @Service
 public class RemotePathService {
-    /** 外部路径包含 delivery/entity/date/file，跨日不会覆盖旧日期对象；配置 prefix 也做穿越校验。 */
-    public String objectKey(String configuredPrefix, DeliveryTask task) {
+    /** 模板路径用于生产 provider/date-batch-provider 目录；普通前缀保留本地验收的隔离层级。 */
+    public String objectKey(String configuredPrefix, DeliveryTask task, String vendorCode, String deliveryBatch) {
         validatePackageName(task.newFileName());
         String prefix = configuredPrefix == null ? "" : configuredPrefix.replaceAll("^/+|/+$", "");
-        if (prefix.contains("..") || prefix.contains("?") || prefix.contains("#")) throw new IllegalArgumentException("Unsafe OSS prefix");
-        String relative = task.deliveryId() + "/entity-" + task.deliveryEntityId() + "/" + task.deliveryDate() + "/" + task.newFileName();
-        return prefix.isBlank() ? relative : prefix + "/" + relative;
+        boolean templated = prefix.contains("{");
+        validateSegment(deliveryBatch, "deliveryBatch");
+        String directory = templated ? expand(prefix, task, vendorCode, deliveryBatch)
+                : (prefix.isBlank() ? "" : prefix + "/") + deliveryBatch + "/" + task.deliveryId()
+                + "/entity-" + task.deliveryEntityId() + "/" + task.deliveryDate();
+        validateRelative(directory);
+        return directory.isBlank() ? task.newFileName() : directory + "/" + task.newFileName();
     }
 
-    public String ftpRelativePath(DeliveryTask task) {
+    public String ftpRelativePath(String template, DeliveryTask task, String vendorCode, String deliveryBatch) {
         validatePackageName(task.newFileName());
-        return task.deliveryId() + "/" + task.deliveryDate() + "/entity-" + task.deliveryEntityId() + "/" + task.newFileName();
+        String directory = expand(template, task, vendorCode, deliveryBatch);
+        validateRelative(directory);
+        return directory + "/" + task.newFileName();
+    }
+
+    private String expand(String template, DeliveryTask task, String vendorCode, String deliveryBatch) {
+        if (template == null || template.isBlank()) throw new IllegalArgumentException("Remote path template is required");
+        Map<String, String> values = Map.of("deliveryId", Long.toString(task.deliveryId()),
+                "deliveryEntityId", Long.toString(task.deliveryEntityId()), "deliveryDate", task.deliveryDate().toString(),
+                "providerCode", vendorCode, "deliveryBatch", deliveryBatch);
+        String result = template;
+        for (Map.Entry<String, String> value : values.entrySet()) {
+            validateSegment(value.getValue(), value.getKey());
+            result = result.replace("{" + value.getKey() + "}", value.getValue());
+        }
+        if (result.contains("{") || result.contains("}")) throw new IllegalArgumentException("Unknown remote path placeholder");
+        return result.replaceAll("^/+|/+$", "");
+    }
+
+    private static void validateSegment(String value, String name) {
+        if (value == null || value.isBlank() || value.contains("/") || value.contains("\\") || value.contains("..")
+                || value.contains("?") || value.contains("#")) throw new IllegalArgumentException("Unsafe remote path value: " + name);
+    }
+
+    private static void validateRelative(String value) {
+        if (value.contains("..") || value.contains("?") || value.contains("#") || value.contains("\\")
+                || Path.of(value).isAbsolute()) throw new IllegalArgumentException("Unsafe remote path");
     }
 
     public static void validatePackageName(String name) {

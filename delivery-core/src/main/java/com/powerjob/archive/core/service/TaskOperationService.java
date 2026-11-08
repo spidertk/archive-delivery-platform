@@ -51,10 +51,32 @@ public class TaskOperationService {
                 throw new ResumeConflictException("Task fence or retry state does not match");
             }
             if (tasks.retry(taskId, expectedFence) != 1) throw new ResumeConflictException("Task changed concurrently");
-            events.append(task.deliveryId(), taskId, null, task.deliveryEntityId(), task.dataId(), "TASK_RETRIED", "INFO",
+            SourceData source = sources.byTaskId(taskId).stream().findFirst().orElseThrow();
+            events.append(task.deliveryId(), taskId, null, task.deliveryEntityId(), source.dataId(), "TASK_RETRIED", "INFO",
                     "MANUAL_RETRY", reason, mapper.createObjectNode().put("taskId", taskId).put("expectedFence", expectedFence),
                     operator, "retry-" + taskId + "-" + expectedFence);
             projections.refresh(task.deliveryId());
+        });
+    }
+
+    /** 暂停只在节点边界生效，不强杀外部 IO；运行中任务须先完成或失败后再暂停。 */
+    public int pause(long deliveryId, String reason, String operator) {
+        requireReason(reason);
+        return transactions.execute(status -> {
+            jdbc.queryForObject("SELECT delivery_id FROM delivery_submit WHERE delivery_id=? FOR UPDATE", Long.class, deliveryId);
+            List<DeliveryTask> active = tasks.byDelivery(deliveryId).stream()
+                    .filter(task -> !List.of("SUCCEEDED", "EXPIRED", "CANCELLED", "PAUSED").contains(task.executionStatus())).toList();
+            if (active.isEmpty()) throw new ResumeConflictException("No active tasks can be paused");
+            if (active.stream().anyMatch(task -> "RUNNING".equals(task.executionStatus()))) {
+                throw new ResumeConflictException("Pause is available at a node boundary after RUNNING tasks finish");
+            }
+            int paused = tasks.pause(deliveryId);
+            if (paused == 0) throw new ResumeConflictException("No pausable tasks matched");
+            events.append(deliveryId, null, null, null, null, "DELIVERY_PAUSED", "INFO", "MANUAL_PAUSE", reason,
+                    mapper.createObjectNode().put("deliveryId", deliveryId).put("paused", paused), operator,
+                    "delivery-paused-" + deliveryId + "-" + java.util.UUID.randomUUID());
+            projections.refresh(deliveryId);
+            return paused;
         });
     }
 
@@ -70,9 +92,10 @@ public class TaskOperationService {
             transactions.executeWithoutResult(status -> {
                 if (List.of("RUNNING", "SUCCEEDED", "EXPIRED", "CANCELLED").contains(task.executionStatus())
                         || !task.currentNodeId().equals(fromNode)) throw new ResumeConflictException("Task is not resumable from " + fromNode);
-                verifyPrerequisites(task, pipeline, from, sources.findById(task.dataId()).orElseThrow());
+                SourceData source = sources.byTaskId(task.taskId()).stream().findFirst().orElseThrow();
+                verifyPrerequisites(task, pipeline, from, source);
                 if (tasks.resume(task.taskId(), task.fence(), fromNode) != 1) throw new ResumeConflictException("Task changed concurrently");
-                events.append(deliveryId, task.taskId(), null, task.deliveryEntityId(), task.dataId(), "TASK_RESUMED", "INFO",
+                events.append(deliveryId, task.taskId(), null, task.deliveryEntityId(), source.dataId(), "TASK_RESUMED", "INFO",
                         "MANUAL_RESUME", reason, mapper.createObjectNode().put("taskId", task.taskId()).put("fromNode", fromNode),
                         operator, "resume-" + task.taskId() + "-" + task.fence());
                 projections.refresh(deliveryId);
@@ -83,7 +106,7 @@ public class TaskOperationService {
 
     private void verifyPrerequisites(DeliveryTask task, PipelineDefinition pipeline, NodeDefinition from, SourceData source) {
         if (from.id().equals(pipeline.firstNode())) return;
-        if (from.id().equals(pipeline.rolloverStartNode()) && source.sha256() != null && !source.artifacts().isEmpty()) return;
+        if (from.id().equals(pipeline.rolloverStartNode()) && task.sha256() != null && task.deliveryArtifact() != null) return;
         String cursor = pipeline.firstNode();
         while (!cursor.equals(from.id())) {
             if (!nodes.succeededOutputs(task.taskId()).containsKey(cursor)) {

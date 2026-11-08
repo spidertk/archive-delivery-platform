@@ -29,6 +29,7 @@ archive:
   ftp-verification-root: ${ARCHIVE_FTP_VERIFY_ROOT:/data/ftp-verify}
   python-command: ${ARCHIVE_PYTHON_COMMAND:python3}
   python-script: ${ARCHIVE_PYTHON_SCRIPT:/app/nodes/python/archive_repair.py}
+  python-merge-script: ${ARCHIVE_PYTHON_MERGE_SCRIPT:/app/nodes/python/archive_merge.py}
   ftp-verify-script: ${ARCHIVE_FTP_VERIFY_SCRIPT:/app/nodes/python/ftp_download_verify.py}
 logging:
   level:

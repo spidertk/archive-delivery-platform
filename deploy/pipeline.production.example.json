@@ -1,0 +1,35 @@
+{
+  "pipelineCode": "archive-delivery",
+  "version": 1,
+  "nodeDefinitions": {
+    "oss.download": {"enabled": true, "configSchema": {"type": "object", "required": ["endpoint", "bucket", "accessKeyId", "accessKeySecret"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
+    "package.merge": {"enabled": true, "configSchema": {"type": "object"}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
+    "python.repair": {"enabled": true, "configSchema": {"type": "object", "required": ["ruleSet"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
+    "manifest.qualify": {"enabled": true, "configSchema": {"type": "object"}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
+    "oss.upload": {"enabled": true, "configSchema": {"type": "object", "required": ["endpoint", "bucket", "accessKeyId", "accessKeySecret"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
+    "ftp.download-verify": {"enabled": true, "configSchema": {"type": "object", "required": ["deliveryEntityFrom", "ftpCredential"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}}
+  },
+  "ruleSets": {
+    "production-archive-v2": {"version": 2, "status": "PUBLISHED", "definition": {"schemaVersion": 1, "requestId": "PRESERVE_SOURCE", "requestTime": "ISO_8601_UTC_NANOSECONDS", "providerCode": "ENTITY_CODE", "repack": true}}
+  },
+  "config": {
+    "businessTimezone": "Asia/Shanghai",
+    "deliveryCutoffTime": "18:00:00",
+    "rolloverStartNode": "targetUpload",
+    "selection": {"orderBy": "key", "limit": 10, "duplicatePolicy": "FILTER_WITH_REASON"},
+    "assignment": {"strategySource": "SUBMIT_TARGETS", "maxPackageBytes": 10485760},
+    "concurrency": {"maxRunningTasks": 3},
+    "retry": {"maxAttempts": 5}
+  },
+  "nodes": [
+    {"id": "sourceDownload", "type": "oss.download", "stageCode": "ACQUIRE", "displayName": "下载源 OSS 并保留", "next": "mergePackages",
+     "config": {"endpoint": "https://oss-ap-southeast-1-internal.aliyuncs.com", "bucket": "replace-source-bucket", "prefix": "replace-source-prefix/", "accessKeyId": "replace-access-key", "accessKeySecret": "replace-secret"}},
+    {"id": "mergePackages", "type": "package.merge", "stageCode": "MERGE", "displayName": "按 10 MiB 合并来源包", "next": "repair", "config": {}},
+    {"id": "repair", "type": "python.repair", "stageCode": "TRANSFORM", "displayName": "生产协议修复并重打包", "next": "qualify", "config": {"ruleSet": "production-archive-v2"}},
+    {"id": "qualify", "type": "manifest.qualify", "stageCode": "QUALIFY", "displayName": "校验修复产物", "next": "targetUpload", "config": {}},
+    {"id": "targetUpload", "type": "oss.upload", "stageCode": "TRANSFER", "displayName": "OSS SDK 上传并 GET 回验", "next": "ftpDownloadVerify",
+     "config": {"endpoint": "https://oss-ap-southeast-1-internal.aliyuncs.com", "bucket": "sg-storage-20261013-6vmlk", "prefix": "{providerCode}/{deliveryDate}-{deliveryBatch}-{providerCode}", "accessKeyId": "replace-access-key", "accessKeySecret": "replace-secret"}},
+    {"id": "ftpDownloadVerify", "type": "ftp.download-verify", "stageCode": "VERIFY", "displayName": "交付 FTP 上传下载核验", "next": null,
+     "config": {"deliveryEntityFrom": "TASK", "remotePathTemplate": "{deliveryDate}", "ftpCredential": {"june": "replace-ftp-password", "june-1": "replace-ftp-password", "june-2": "replace-ftp-password"}}}
+  ]
+}

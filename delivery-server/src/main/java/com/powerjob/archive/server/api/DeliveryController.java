@@ -48,10 +48,9 @@ public class DeliveryController {
     @PostMapping
     @ResponseStatus(HttpStatus.ACCEPTED)
     public DeliverySubmissionService.Submission submit(@Valid @RequestBody SubmitDeliveryRequest request) {
-        return submission.submit(new DeliverySubmissionService.SubmissionCommand(request.sourceId(), request.pipelineVersionId(),
-                request.deliveryDate(), request.cutoffAt(), request.deliveryBatch(), request.idempotencyKey(),
-                request.targets().stream().map(target -> new DeliverySubmissionService.TargetCommand(
-                        target.targetCount(), target.deliveryEntityId())).toList()));
+        return submission.submit(new DeliverySubmissionService.SubmissionCommand(request.ossUri(), request.pipelineCode(),
+                request.deliveryDate(), request.deliveryBatch(), request.cutoffAt(), request.targets().stream()
+                .map(target -> new DeliverySubmissionService.TargetCommand(target.targetCount(), target.vendorCode(), target.entityCode())).toList()));
     }
 
     @GetMapping("/{deliveryId}")
@@ -59,6 +58,13 @@ public class DeliveryController {
 
     @GetMapping("/{deliveryId}/tasks")
     public Map<String, Object> tasks(@PathVariable long deliveryId) { return dashboard.tasks(deliveryId, false); }
+
+    @PostMapping("/{deliveryId}/pause")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public Map<String, Object> pause(@PathVariable long deliveryId, @Valid @RequestBody PauseRequest request) {
+        int count = operations.pause(deliveryId, request.reason(), "api");
+        return Map.of("deliveryId", deliveryId, "paused", count);
+    }
 
     @PostMapping("/{deliveryId}/resume")
     @ResponseStatus(HttpStatus.ACCEPTED)
@@ -84,12 +90,11 @@ public class DeliveryController {
         return ResponseEntity.badRequest().body(Map.of("error", error.getMessage()));
     }
 
-    public record TargetRequest(@Positive int targetCount, @Positive long deliveryEntityId) {}
-    public record SubmitDeliveryRequest(@Positive long sourceId, @Positive long pipelineVersionId,
+    public record TargetRequest(@Positive int targetCount, @NotBlank String vendorCode, @NotBlank String entityCode) {}
+    public record SubmitDeliveryRequest(@NotBlank String ossUri, @NotBlank String pipelineCode,
             @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deliveryDate,
-            @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime cutoffAt,
-            @NotBlank String deliveryBatch, @NotBlank String idempotencyKey,
-            @NotEmpty List<@Valid TargetRequest> targets) {}
+            @NotBlank String deliveryBatch, @NotNull OffsetDateTime cutoffAt, @NotEmpty List<@Valid TargetRequest> targets) {}
+    public record PauseRequest(@NotBlank String reason) {}
     public record ResumeRequest(@NotBlank String fromNode, List<Long> taskIds, @NotBlank String reason) {}
     public record RolloverRequest(@NotNull LocalDate expectedDeliveryDate, @NotNull LocalDate deliveryDate, @NotBlank String reason) {}
 }

@@ -1,119 +1,79 @@
 # Archive Delivery Platform 实体目标升级版方案设计
 
-> 修订日期：2026-11-07
+> 修订日期：2026-11-08
 > 状态：当前唯一实施基线
 > 配套模型：`2026-11-06-archive-delivery-model-upgrade-design.md`
-> 数据策略：不兼容、不回填老数据；V14 在显式授权环境清空旧业务表并重建
+> 数据策略：不兼容、不回填老数据；V14 清空重建，V15/V16/V17 为当前增量
 
 ## 1. 目标与决策
 
-本平台是由 Pipeline 定义的通用归档数据交付系统。PostgreSQL 是业务事实源，PowerJob 只触发通用执行入口，Worker 按提交绑定的不可变 PipelineVersion 推进节点。
+本平台由 Pipeline 定义通用归档数据交付流程。PostgreSQL 是业务事实源，PowerJob 只触发通用入口，Worker 按提交绑定的不可变 PipelineVersion 推进节点。
 
-本次升级确定：
+1. 核心血缘为 `delivery_submit → source_data → delivery_mapping → delivery_task → delivery_node`。
+2. 提交直接使用原始 ossUri、pipelineCode、deliveryDate、deliveryBatch、cutoffAt 和 vendorCode+entityCode targets，不暴露来源、版本或实体数据库 ID；同厂商多个实体整体分配，repair 接收 entityCode。
+3. deliveryBatch 全局唯一，替代独立 idempotencyKey，并作为请求编号命名空间。
+4. source_data 保存 original_file_name 和单个原始 artifact；任务以来源/交付产物对 artifacts[] 和 metadata requestId 列表保存完整溯源，sourceArtifact 必须与 source_data.artifact 完全一致。
+5. 当前链路为源 OSS 直下载并保留 → 本地目录合并 → 本地 repair/一次封包 → qualify → OSS SDK 上传并 GET 回验 → FTP 上传并重新下载验证。
+6. 不使用 SSH 跳板机、CRR、新加坡中转、远端 SSH 发布或旧回执链；新协议只新增 Pipeline 节点。
+7. 支持节点边界暂停；暂停后以相同 deliveryBatch 和完全相同参数再次提交即可继续。
+8. 截止未完成任务生成下一交付日新 taskId，完整映射与产物对不变，新旧关系写不可变事件。
 
-1. 核心血缘为 `delivery_submit(delivery_id) → source_data(delivery_id) → delivery_task(task_id) → delivery_node(task_id,process_id)`。
-2. 交付提交直接表达“交付到哪些实体、每个实体多少产物”，不再建立交付组领域、组编码、组状态或组配额表。
-3. `delivery_task` 直接保存 `delivery_entity_id + worker_group + target_seq`。多个交付实体只是多个 `targets`，不引入中间交付组对象；`worker_group` 只是单服务器本地执行域。
-4. `delivery_pipeline_submit` 更名为 `delivery_submit`，`delivery_task_process` 更名为 `delivery_node`。`process_id` 仍是一次节点尝试主键，字符串 `node_id` 仍是 Pipeline DAG 节点标识。
-5. 节点元数据、规则、DAG、选择、目标分配、重试、跨日、并发和节点 Secret 统一汇集在 `pipeline_version.definition`。不保留 `node_definition`、`rule_set`、`source_pipeline_binding`。
-6. 核心真实链路为：杭州源 OSS 密钥直下载并保留本地文件 → 本地 repair → qualify → 三个交付实体各一个任务 → 上传另一 OSS Bucket → 本地 FTP 上传并重新下载验证 size/SHA → DELIVERED。
-7. 不使用 SSH 跳板机、CRR、新加坡中转、远端 SSH 发布或旧回执链。新协议只新增 Pipeline 节点。
-8. 超过 `cutoff_at` 未完成的任务 EXPIRED，并生成下一交付日的新 `task_id`；`delivery_id/data_id/delivery_entity_id/worker_group/target_seq/artifact_seq` 保持不变。
-9. 配置类信息以集中、可查找、统一维护为原则。只有具有独立生命周期和并发事实的 `pipeline` 与 `pipeline_version` 保留，不为节点、规则或来源绑定拆分平行配置表。
-10. 实体声明 `worker_group`，任务创建时保存不可变执行组快照。各服务器 Worker 以 `ARCHIVE_WORKER_GROUP` 只认领本组任务，组内并发独立计数；同组 Worker 共享一台服务器的本地 `/data`，不同服务器不共享工作目录。
-
-## 2. 范围与边界
-
-本期包含提交幂等、实体目标快照、OSS 源发现与重复过滤、repair/qualify、任务形成、节点尝试、动态看板、retry/resume/rollover，以及真实 OSS/FTP 外部核验。
-
-不包含老 API 或老数据适配、双写、回填、迁移对账、跳板机、独立操作审计、资产刷新历史、每日统计、通知、完整 RBAC 和可视化 DAG 编辑器。
-
-## 3. 核心对象
-
-| 对象 | 职责 | 关键边界 |
-|---|---|---|
-| `delivery_submit` | 一次交付的稳定身份、来源、PipelineVersion 和目标快照 | `target_strategy` 是不可变请求事实；状态由任务投影 |
-| `source_data` | 源定位、过滤、repair、请求映射和产物事实 | 不保存 Worker 租约或节点 Secret |
-| `delivery_entity` | 厂商、协议、账户和非 Secret 目标定位 | 不保存密码、AK/SK、私钥 |
-| `delivery_task` | 一个 artifact 面向一个实体的执行原子 | 直接保存实体与目标内序号；跨日新 taskId |
-| `delivery_node` | 某任务某节点的一次执行尝试 | 保存通用 locator、错误和 fence，不保存 Manifest/PID/progress |
-| `delivery_event` | 过滤、人工原因、跨日和外部核验的不可变事件 | 只 INSERT，不保存 Secret |
-| `pipeline_version` | 集中保存全部流程配置和规则 | PUBLISHED 不可改；修改创建新版本 |
-
-## 4. 总体架构
-
-```mermaid
-flowchart LR
-    UI[Vue 管理台] --> API[Delivery API / delivery-server]
-    API --> PG[(PostgreSQL archive_delivery)]
-    PJ[PowerJob Server] -->|通用触发| W[delivery-worker]
-    W --> EXEC[TaskExecutionService / PipelineEngine]
-    EXEC --> PG
-    EXEC --> NODES[Pipeline NodeHandler]
-    NODES --> SOURCE[杭州源 OSS]
-    NODES --> LOCAL[本地持久化 repair / staging]
-    NODES --> TARGET[交付 OSS Bucket]
-    NODES --> FTP[本地 FTP 下载验证环境]
-```
+## 2. 组件与边界
 
 | 组件 | 负责 | 不负责 |
 |---|---|---|
-| delivery-server | 提交、查询、Pipeline/实体管理、retry/resume/rollover | 直接执行 repair 或外部节点 |
-| PowerJob | 提交准备、任务推进和截止扫描触发 | 判断交付成功或定义 DAG |
+| delivery-server | 业务编码提交、查询、Pipeline/实体管理、pause/retry/resume/rollover | 直接执行外部节点 |
+| PowerJob | 提交准备、任务推进、截止扫描触发 | 判断交付成功或定义 DAG |
 | delivery-worker | 有界 claim、lease/fence、NodeHandler 调用 | 写死固定交付链 |
-| PipelineEngine | 解析同版 DAG、选择处理器、校验后继 | 增加隐式节点或另一套状态 |
-| Python | 数据面安全 repair、FTP 下载与 SHA | 直接写 PG 或决定任务状态 |
-| PostgreSQL | 提交、源数据、任务、节点、事件和并发事实 | 在普通投影暴露 Secret |
+| PipelineEngine | 解析同版 DAG、选择处理器、校验后继 | 隐式增加节点 |
+| Python | 安全解包、目录合并、repair、最终封包、FTP 下载与 SHA | 直接写 PG 或决定状态 |
+| PostgreSQL | 提交、映射、任务、节点、事件和并发事实 | 暴露 Secret |
 
-PowerJob 实例成功不等于交付成功。只有 Pipeline 最终节点成功且外部 size/SHA 核验完成，任务才 SUCCEEDED；目标数量满足且最新任务全部成功，提交才 DELIVERED。
+PowerJob 实例成功不等于交付成功。只有最终节点成功且外部 size/SHA 核验完成，任务才 SUCCEEDED；有效任务满足目标数量且全部成功，提交才 DELIVERED。
 
-## 5. 集中式 PipelineVersion
+## 3. 集中 PipelineVersion 与优化后的 DAG
 
-`definition` 顶层契约：
+definition 集中 nodeDefinitions、ruleSets、nodes、selection、assignment、retry、concurrency、rollover 和节点 Secret。PUBLISHED 不可改，换配置发布新版本。
 
-- `nodeDefinitions`：以 nodeType 为键，保存 enabled、configSchema、inputContract、outputContract。
-- `ruleSets`：以规则编码为键，保存 version、status、definition；repair 节点只能引用同版规则。
-- `nodes`：DAG 节点 id/type/stageCode/displayName/next/config。
-- `config.selection`：源排序、数量、重复过滤。
-- `config.assignment`：当前固定为 `SUBMIT_TARGETS`，只声明如何读取提交目标，不创建组节点。
-- `config.rollover` 相关值：businessTimezone、deliveryCutoffTime、rolloverStartNode。
-- `config.retry/concurrency`：有界重试和执行并发。
-
-核心 DAG 为 `sourceDownload → repair → qualify → targetUpload → ftpDownloadVerify`。该顺序只是当前发布版本的内容，不是 Java 固有流程。
+```text
+sourceDownload → mergePackages → repair → qualify → targetUpload → ftpDownloadVerify
+```
 
 ```yaml
-pipelineCode: archive-delivery
-version: 1
-nodeDefinitions:
-  oss.download: {enabled: true, configSchema: {}, inputContract: {}, outputContract: {}}
-  python.repair: {enabled: true, configSchema: {}, inputContract: {}, outputContract: {}}
-  manifest.qualify: {enabled: true, configSchema: {}, inputContract: {}, outputContract: {}}
-  oss.upload: {enabled: true, configSchema: {}, inputContract: {}, outputContract: {}}
-  ftp.download-verify: {enabled: true, configSchema: {}, inputContract: {}, outputContract: {}}
-ruleSets:
-  fix-archive-legacy-v1: {version: 1, status: PUBLISHED, definition: {schemaVersion: 1}}
 config:
   businessTimezone: Asia/Shanghai
   deliveryCutoffTime: "18:00:00"
   rolloverStartNode: targetUpload
   selection: {orderBy: key, limit: 3, duplicatePolicy: FILTER_WITH_REASON}
-  assignment: {strategySource: SUBMIT_TARGETS}
+  assignment: {strategySource: SUBMIT_TARGETS, maxPackageBytes: 10485760}
   concurrency: {maxRunningTasks: 3}
-nodes:
-  - {id: sourceDownload, type: oss.download, next: repair, config: "源 OSS 节点受控配置"}
-  - {id: repair, type: python.repair, next: qualify, config: {ruleSet: fix-archive-legacy-v1}}
-  - {id: qualify, type: manifest.qualify, next: targetUpload, config: {}}
-  - {id: targetUpload, type: oss.upload, next: ftpDownloadVerify, config: "交付 OSS 节点受控配置"}
-  - {id: ftpDownloadVerify, type: ftp.download-verify, next: null, config: {deliveryEntityFrom: TASK, ftpCredential: "账户密码受控映射"}}
+  retry: {maxAttempts: 5}
 ```
 
-发布时校验节点类型已启用、规则引用同版存在、DAG 唯一入口/无环/无不可达节点、Secret 非掩码或占位符，以及 OSS/FTP 安全约束。
+selection.limit 是扫描入选来源包数上限，targetCount 是合并后的任务数。发现阶段在下载前过滤单包超过 maxPackageBytes 的对象并记录 SOURCE_FILTERED，避免无效大流量。规划器按 vendorCode 将目标分组，在同一厂商内按 entityCode 顺序整体装包，为后续目标保留至少一个来源；当前包无法容纳下一完整源包时封包，最后目标满足后忽略后续来源，禁止切分文件。来源不足以形成全部目标时规划失败并置主单 BLOCKED，不再每 15 秒重复下载。
 
-## 6. 提交与 API
+例如上限 10 MiB，来源依次为 1/2/3/4/12/1/5/3/2 MiB：12 MiB 下载前过滤；首任务为 1+2+3+4=10 MiB，第二任务为 1+5+3=9 MiB，末尾 2 MiB 不再纳入。包名按 delivery_id 跨实体连续生成 batch_00001、batch_00002。
+
+### 3.1 合并/修复性能约束
+
+旧实现为：merge 解包所有来源并生成 merged-source.tar.gz，repair 再解包该 tar 并生成最终 tar.gz，存在额外一次完整 gzip 压缩、一次完整 gzip 解压和中间文件 IO。
+
+当前实现消除该中间包：
+
+1. merge 按 delivery_mapping.source_seq 对每个来源只执行一次安全解包，把请求目录移动到任务受控 `merge/requests/`。不同来源的同名目录以来源序号生成唯一成员键，manifest 同时保留 memberKey、originalPath、sourceSeq 和 sourceFileName。
+2. merge 输出 locator 使用 `workspacePath/manifestPath/requestCount/sourceCount/sourceBytes`，不再输出 artifactPath 或中间包 SHA。
+3. repair 直接读取 merge 请求目录，在 repair 私有 staging 副本上修改 metadata 和目录名，避免失败污染 merge 结果。CLI 接收 `--entity-code`，协议 metadata.providerCode 写 entityCode；vendorCode 仅用于厂商分配和外部路径。合法 39 位 requestId 保留，缺失或旧格式使用 deliveryBatch 号段确定性补号，originalRequestId 始终保留。
+4. 只有 repair 最终执行一次确定性 tar/gzip 封存，并检查 maxPackageBytes、协议结构、size/SHA。
+5. 重试清理本次 `.archive_merge_*`、`.archive_repair_*` 和 `.tmp`；源包、merge 目录和有效最终包保留。
+
+因此仍有一次必要的 staging 文件复制，但不再有重复压缩/解压；最终包大小约束没有被跳过。
+
+## 4. 提交与操作 API
 
 ```text
 POST /api/v1/deliveries
 GET  /api/v1/deliveries/{deliveryId}
+POST /api/v1/deliveries/{deliveryId}/pause
 POST /api/v1/deliveries/{deliveryId}/resume
 POST /api/v1/deliveries/{deliveryId}/rollover
 GET  /api/v1/deliveries/{deliveryId}/tasks
@@ -122,106 +82,83 @@ GET  /api/v1/tasks/{taskId}/timeline
 GET  /api/v1/dashboard/targets?deliveryId={deliveryId}
 ```
 
-提交请求：
+提交请求只含以下字段，Jackson 拒绝未知字段：
 
 ```json
 {
-  "sourceId": 1,
-  "pipelineVersionId": 7,
-  "deliveryDate": "2026-11-07",
-  "cutoffAt": "2026-11-07T18:00:00+08:00",
-  "deliveryBatch": "BATCH-20261107-001",
-  "idempotencyKey": "submit-20261107-001",
+  "ossUri": "oss://source-bucket/archive/input/",
+  "pipelineCode": "archive-delivery",
+  "deliveryDate": "2026-11-09",
+  "deliveryBatch": "BATCH-20261109-001",
+  "cutoffAt": "2026-11-09T18:00:00+08:00",
   "targets": [
-    {"targetCount": 1, "deliveryEntityId": 101},
-    {"targetCount": 1, "deliveryEntityId": 102},
-    {"targetCount": 1, "deliveryEntityId": 103}
+    {"targetCount": 1, "vendorCode": "alibaba", "entityCode": "jun"},
+    {"targetCount": 1, "vendorCode": "alibaba", "entityCode": "jun2"}
   ]
 }
 ```
 
-服务端要求来源可用、版本已发布、实体启用且协议受当前 Pipeline 支持；目标实体在提交内不重复，targetCount 为正整数，selection.limit 等于 targetCount 总和。未知字段由 Jackson 拒绝。幂等键相同且规范化请求一致时返回原 deliveryId，不同请求返回 409。
+服务端自动登记或解析 ossUri，选择该 pipelineCode 最新 PUBLISHED 版本，校验 vendorCode+entityCode 联合唯一、启用、协议支持和显式 cutoffAt 在未来。来源 ID、版本 ID、实体 ID、idempotencyKey、workerGroup、Secret 和节点列表均不是提交入参。
 
-提交只写 `delivery_submit`。准备阶段按 targets 数组顺序和 targetCount 分配源产物，在任务写 `delivery_entity_id`、实体的 `worker_group` 快照与从 1 开始的 `target_seq`。实体目标的数量、分配数、完成数和展示状态均从提交快照及任务事实派生，不冗余维护另一份状态；提交 targets 不接收 workerGroup。
+### 4.1 幂等、暂停与继续
 
-## 7. 执行时序与本地文件
+- deliveryBatch 是全局唯一幂等键。规范化 ossUri/pipelineCode/deliveryDate/cutoffAt/targets 完全一致时返回原 deliveryId，不同参数返回 409。
+- `POST /pause` 只接收 reason。暂停是节点边界操作，不强杀外部 IO；存在 RUNNING 任务时返回 409，调用方在当前节点完成或失败后重试。
+- 可暂停任务转为 PAUSED，Worker 不再 claim；主单投影 PAUSED。
+- 对暂停主单再次 POST 完全相同提交，将所有 PAUSED 任务改为 READY，从各自 current_node_id 继续，返回原 deliveryId。
+- 原有 resume 仍可按 DAG/fromNode/taskIds 操作；retry 必须携带 expectedFence。
 
-```mermaid
-sequenceDiagram
-    participant U as 用户/API
-    participant DB as PostgreSQL
-    participant PJ as PowerJob
-    participant W as Worker
-    participant OSS as 源/交付 OSS
-    participant FTP as 本地 FTP
-    U->>DB: 创建 delivery_submit(target_strategy)
-    PJ->>W: 通用提交准备
-    W->>OSS: selection 发现并直接下载源文件
-    W->>DB: source_data + delivery_task（实体/targetSeq）
-    loop 每个任务每个节点
-        PJ->>W: 通用任务推进
-        W->>DB: claim，fence+1，写 delivery_node RUNNING
-        W->>OSS: 下载/上传并 GET 回验
-        W->>FTP: 上传后重新下载并校验 size/SHA
-        W->>DB: 同 fence 提交 locator、下一节点和事件
-    end
-    PJ->>W: 截止扫描，EXPIRED 并创建下一日 taskId
-```
+## 5. 执行、产物与本地文件
 
-源发现下载保存在 Worker 持久卷的 `work/discovery/{deliveryId}`；repair 和 OSS 回验文件也保存在持久工作目录。FTP 最终下载保存在 `/data/ftp-verify/{deliveryId}/{deliveryDate}/entity-{deliveryEntityId}/{fileName}`。所有下载使用受控目录、`.partial` 和原子 rename；不得清空历史目录或覆盖同名不同 SHA 文件。
+准备阶段真实发现候选对象，先按大小和 targets 计算入选集合，再只下载入选来源并将每个 source_data 独立入库。缓存按 sourceUri+sourceVersion 定位到同机 `work/source-cache/{identityHash}/{originalFileName}`，已存在且 size/SHA 匹配时不重复 OSS GET。sourceDownload 优先把该缓存校验复制到任务目录并记录 cacheHit=true；其他服务器执行组缓存不存在时回退 OSS。每个任务写入 delivery_mapping 和 artifacts 初始对；初始 deliveryArtifact 为 null，任务 size/token 等于原始来源合计。
 
-多服务器时，每个 `worker_group` 只部署在一台服务器，同组 Worker 共享该机持久卷，不同服务器不共享目录。`claimNext(workerId,workerGroup,maxRunning)` 只选择任务快照同组记录，并按组统计有效 RUNNING；后续节点、retry/resume 和 rollover 新任务均保持 worker_group，因此前一节点的本地文件始终位于同一执行域。纯 Worker 服务器统一通过公网连接主 PostgreSQL/PowerJob，主/子 PowerJob 以 external.address/port 显式注册公网地址，安全组仅允许对方公网 IP/32。
+repair 成功后：
 
-## 8. 状态、重试和跨日
+- 每个 dataId 对应一对 sourceArtifact/deliveryArtifact，sourceArtifact 完全等于 source_data.artifact，同一任务的交付包对象写入各对。
+- metadata_ids 保存修复后所有请求目录的 requestId，可定位 `<requestId>/metadata.json`，并与逐来源 file_mapping 的 requestId 全集一致。
+- source_data 只更新 qualification/rule_version/request_namespace/updated_at，原始 original_file_name/size/SHA/artifact 不变。
+- delivery_task.size_bytes/token_count 等于合并 deliveryArtifact 对应值，有效任务的 new_file_name 在同一 delivery_id 下唯一。
+- delivery_node 保存 merge workspace、repair entityCode、qualify、OSS 和 FTP 的 size/SHA 与路径事实。
 
-任务状态：`READY/RUNNING/WAITING/RETRY_WAIT/BLOCKED/SUCCEEDED/EXPIRED/CANCELLED`。节点状态：`RUNNING/SUCCEEDED/WAITING/FAILED/CANCELLED`。
+共享源缓存保存在 `work/source-cache/{identityHash}`；任务文件保存在 `work/delivery-{deliveryId}/task-{taskId}`。FTP 下载保存在受控 ftp-verify 根目录。所有外部下载使用 `.partial` 和原子 rename；不得清空历史目录或覆盖同名不同 SHA 文件。
 
-- 临时网络/IO 按 RetryPolicy 有界退避；权限、配置、路径或 SHA 冲突进入 BLOCKED。
-- retry 只操作当前失败任务并校验 expectedFence。
-- resume 的 fromNode 必须属于当前 DAG 且前置成功 locator/SHA 完整。
-- EXPIRED 任务不能 retry/resume，只能推进其最新接续任务。
-- 跨日事务关闭旧任务活动 delivery_node，按指定下一交付日创建新 task_id，从 rolloverStartNode 开始，retryCount 清零。
-- 新任务占用下一交付日对应实体配额；同一 artifact 通过 superseded_by_task_id 接续，旧 EXPIRED 仅保留历史，不与新任务重复计数。
-- 手工续交调用 rollover 时必须提供 expectedDeliveryDate、deliveryDate 和 reason，deliveryDate 必须晚于 expectedDeliveryDate；响应返回实际新日期。
-- 外部路径包含 deliveryId、entityId、deliveryDate 和安全文件名；同 URI 同 SHA 幂等，不同 SHA 阻断。
+worker_group 是单服务器本地执行域。Worker 只认领同组任务，组内共享本机 /data，跨服务器不共享目录；各组独立计算最大 RUNNING 数。
 
-提交状态：`SUBMITTED/DISCOVERING/PLANNING/PROCESSING/WAITING/RETRYING/BLOCKED/PARTIALLY_DELIVERED/DELIVERED/COMPLETED_WITH_CANCELLATIONS/CANCELLED`。投影只统计非 EXPIRED/CANCELLED 的最新任务；active 等于目标总数且全部 SUCCEEDED 才 DELIVERED。存在 EXPIRED 血缘且尚未全部成功时为 PARTIALLY_DELIVERED，该状态不是终态，次日继续期间保持不变，全部成功后转为 DELIVERED。
+## 6. 状态、重试与跨日
 
-```json
-{
-  "expectedDeliveryDate": "2026-11-07",
-  "deliveryDate": "2026-11-08",
-  "reason": "截止未完成，下一交付日继续"
-}
-```
+任务状态：`READY/RUNNING/WAITING/RETRY_WAIT/BLOCKED/PAUSED/SUCCEEDED/EXPIRED/CANCELLED`。临时网络/IO 有界退避；权限、配置、路径或 SHA 冲突进入 BLOCKED。
 
-## 9. 看板与时间轴
+跨日事务关闭旧任务活动节点，将旧任务置 EXPIRED，并创建指定下一交付日的新 taskId：
 
-看板展示 targets、实体、targetCount、assignedCount、completedCount 和派生状态，不展示组编码或生产线。任务展示实体、targetSeq、dataId、artifactSeq、文件名、size/token/SHA、日期、截止和动态阶段。时间轴返回 `nodes` 与 `events`，节点记录使用 processId 标识尝试。
+- 不变：delivery_id、entity/entity_code、worker_group、new_file_name、artifacts、metadata_ids、完整 delivery_mapping。
+- 更新：delivery_date、cutoff_at、current_node_id=rolloverStartNode、retryCount=0。
+- 血缘：TASK_EXPIRED/TASK_REGENERATED payload 保存 oldTaskId/newTaskId、日期和原因，不使用 superseded_by_task_id。
+- 配额：新任务占下一交付日实体目标配额，旧 EXPIRED 不重复计数。
+- 主单：未全部成功前 PARTIALLY_DELIVERED，全部成功后 DELIVERED。
 
-## 10. 清空重建与安全
+## 7. 看板与时间轴
 
-V14 是单向破坏性迁移，只在连接设置 `archive_delivery.upgrade_authorized=2026-11-07` 时执行。它清空 schema 内旧业务表并创建新模型，不读取旧行、不保留旧 ID、不创建兼容视图。普通启动不得隐式携带授权。V15 增加 PARTIALLY_DELIVERED 状态，不清理 V14 之后的交付事实。
+看板按 target_strategy 的 vendorCode+entityCode 聚合 targetCount、assignedCount、completedCount 和派生状态。任务展示 entityCode、vendorCode、workerGroup、new_file_name、sourceDataIds、artifacts 产物对、metadataIds、日期和动态阶段，不展示已删除任务列。
 
-Secret 只在 Pipeline 对应节点维护；管理 API 脱敏，Worker 只获得当前节点配置。Secret 不进入实体、locator、artifacts、事件、日志或前端。外部 IO、业务决策和事务提交分离，NodeHandler 不直接更新任务或提交状态。
+时间轴返回 nodes 与 events；processId 标识节点尝试。跨日时间轴通过事件中的 oldTaskId/newTaskId 追查，EXPIRED 仅作历史。
 
-## 11. 验证与验收
+## 8. 安全与迁移
 
-标准回归：Python unittest、全部 Maven 测试、前端 Vitest/build、Shell 语法和 Compose 配置。模型集成测试验证废弃表不存在、全表全列注释、artifacts 白名单、事件不可变和跨日实体目标保持。
+Secret 只在 Pipeline 对应节点维护；管理 API 脱敏，Worker 只获得当前节点配置。Secret 不进入实体、locator、artifacts、metadata_ids、事件、日志或前端。外部 IO、业务决策和事务提交分离，NodeHandler 不直接更新任务或提交状态。
 
-核心状态验收使用三实体各 2 个的小样本，避免大批量测试消耗本地资源：
+V14 只在显式授权环境清空旧业务表；V15 增加 PARTIALLY_DELIVERED；V16 形成 delivery_mapping 和任务产物对；V17 形成 entityCode 提交/repair、source_data 单原始 artifact、original_file_name、来源时间戳、任务 entity_code 和 delivery 内有效包名唯一约束。普通启动不得隐式携带清库授权。
 
-1. 作业单 0001 共 6 个任务在截止前全部成功，主单 DELIVERED。
-2. 作业单 0002 每实体 1 个成功、1 个未完成，跨日后三个旧任务 EXPIRED、三个新 taskId 占次日配额，主单 PARTIALLY_DELIVERED。
-3. 作业单 0002 指定下一交付日继续，每实体保持 1 个既往成功和 1 个次日任务，三个新任务完成后主单 DELIVERED。
+## 9. 验证与验收
 
-真实核心验收必须提供本次 deliveryId/taskId 的原始证据：
+标准回归：Python unittest、全部 Maven 测试、前端 Vitest/build、Shell 语法和 Compose 配置。模型集成测试验证废弃对象、全表全列注释、source_data 单 artifact、来源时间戳、任务来源产物一致性、包名唯一、事件不可变、复合业务键与 cutoffAt 提交、暂停再提交、请求编号外键和三实体各两个任务的跨日状态。节点测试证明缓存命中时不调用 OSS 下载服务。
 
-1. 源 OSS 三份对象真实 GET 成功，本地文件保留且 size/SHA 与 delivery_node/source_data 一致。
-2. repair/qualify 成功，三个直属实体各生成一个任务。
-3. 交付 OSS 三份对象实际 GET 回验，size/SHA 与数据库一致。
-4. 三个 FTP 账户实际上传并重新下载，文件保留，size/SHA 一致且无 `.partial`。
-5. 最新任务全 SUCCEEDED，最终 delivery_node 成功，delivery_submit 为 DELIVERED。
-6. 至少一次单任务 retry 和一次跨日接续成功，旧 EXPIRED、新 taskId、日期顺延、deliveryId/entity/targetSeq 不变。
+本地真实核心 case 固定为：
 
-skipped、fake、Local Node、PowerJob 绿色实例、仅有 API 成功或历史记录都不能作为真实通过证据。验收报告应给出可直接执行的文件清单与 SHA 复核命令。
+1. 真实 Compose 启动 server/Worker/PG/PowerJob/FTP，执行实际 V1–V17 迁移。
+2. 从 `oss://sg-storage-20261013-6vmlk/internal/gpt-delta-seven-20261105-accepted-20261106-v1/products/` 真实 GET 三份 tar.gz，本地保留并逐源核对 original_file_name/size/SHA/artifact。
+3. 提交显式 cutoffAt，同 vendorCode=alibaba 的 jun/jun2 各 targetCount=1，三份来源按每包 10 MiB 上限整体装包形成两个任务，repair 输入为 entityCode。merge 保留请求目录且无 merged-source.tar.gz，repair/qualify 后各包大于 0 且不超过 10 MiB。
+4. 三份来源各分配一次，sourceArtifact 完全等于 source_data.artifact，file_mapping 仅含本来源 originalPath，metadata_ids 与各 merge requestCount 一致，任务 size/token 与合并包一致，有效包名在 delivery_id 下唯一，request_namespace 等于 deliveryBatch。
+5. 项目 OSS SDK 实际两件上传并 GET 回验；两个本地 FTP 账户分别上传并重新下载一件产物，size/SHA 与数据库一致且无 .partial。
+6. 同一 case 实际覆盖节点边界暂停、相同批次再提交继续、跨日新 taskId 和单任务 retry；再以 local-other/jun3 复用相同来源形成第二个交付，所有 sourceDownload.cacheHit=true 且无重复源 OSS GET；两个主单最终均 DELIVERED。
+
+三实体各两个任务的 DELIVERED → PARTIALLY_DELIVERED → 次日 DELIVERED 状态序列由小样本模型集成 case 覆盖；生产真实验收仍按生产 targets 和真实目标执行。skipped、fake、Local Node、PowerJob 绿色实例、仅 API 成功或历史记录不能作为真实通过证据。验收记录必须给出实际 deliveryId/taskId、迁移版本、启动日志、文件清单和 SHA 自助复核命令。

@@ -23,7 +23,15 @@ public class DeliveryPreparationProcessor implements BasicProcessor {
         List<Long> deliveryIds = jdbc.queryForList("SELECT delivery_id FROM delivery_submit " +
                 "WHERE status IN('SUBMITTED','DISCOVERING') ORDER BY delivery_id LIMIT 20", Long.class);
         int discovered = 0;
-        for (long deliveryId : deliveryIds) discovered += preparation.prepare(deliveryId);
+        for (long deliveryId : deliveryIds) {
+            try {
+                discovered += preparation.prepare(deliveryId);
+            } catch (IllegalArgumentException error) {
+                jdbc.update("UPDATE delivery_submit SET status='BLOCKED',updated_at=now() " +
+                        "WHERE delivery_id=? AND discovery_completed_at IS NULL", deliveryId);
+                throw error;
+            }
+        }
         return new ProcessResult(true, "discovered=" + discovered + ",deliveries=" + deliveryIds.size());
     }
 }

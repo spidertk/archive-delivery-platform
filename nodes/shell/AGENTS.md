@@ -9,7 +9,7 @@
 辅助脚本如确需保留，只能接受受控源 URI、expectedSha、固定 stagingDir、finalName、finalDir。Secret 由 Java 当前 Pipeline 节点受控注入，不写入 argv 日志、脚本或结果。
 
 1. staging/finalDir 必须位于 delivery_task 直属实体的授权根目录。
-2. 文件名只能使用 source_data.artifacts 已校验的 newFileName，禁止路径穿越和任意绝对路径。
+2. 文件名只能使用 delivery_task 中已校验且与 source_data.artifact 对齐的 newFileName，禁止路径穿越和任意绝对路径。
 3. 下载先写 `.partial`，校验 size/SHA 后原子 rename；同 SHA 幂等，不同 SHA 冲突。
 4. 禁止 rm -rf、递归/通配符删除、rsync --delete、下载前清目录和任意 sh -c。
 5. 脚本只返回脱敏结构化结果，供 Java 写 delivery_node.output_locator 和 delivery_event，不直接写 PG。

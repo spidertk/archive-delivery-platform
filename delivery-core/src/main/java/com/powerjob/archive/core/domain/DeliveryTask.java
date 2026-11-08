@@ -1,15 +1,37 @@
 package com.powerjob.archive.core.domain;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-/** 一个 artifact 面向一个交付实体的执行原子；执行组快照约束本地文件域，跨日新 taskId 仍保持同组。 */
+/** 合并交付包的执行原子；逐来源产物对和 metadata requestId 保存完整溯源，跨日仍保持同执行组。 */
 public record DeliveryTask(
-        long taskId, long deliveryId, long dataId, long deliveryEntityId, String workerGroup, int targetSeq, int artifactSeq,
-        LocalDate deliveryDate, OffsetDateTime cutoffAt, String originalFileName,
-        String newFileName, long sizeBytes, long tokenCount, String sha256,
+        long taskId, long deliveryId, long deliveryEntityId, String entityCode, String workerGroup,
+        LocalDate deliveryDate, OffsetDateTime cutoffAt, String newFileName,
+        long sizeBytes, long tokenCount, JsonNode artifacts, JsonNode metadataIds,
         String currentNodeId, String executionStatus, String leaseOwner,
         OffsetDateTime leaseUntil, long fence, int retryCount, OffsetDateTime nextRetryAt,
-        String lastErrorCode, Long supersededByTaskId, OffsetDateTime invalidatedAt,
-        String invalidationReason, OffsetDateTime completedAt) {
+        String lastErrorCode, OffsetDateTime completedAt) {
+
+    public JsonNode deliveryArtifact() {
+        if (artifacts == null) return null;
+        for (JsonNode pair : artifacts) {
+            JsonNode artifact = pair.path("deliveryArtifact");
+            if (artifact.isObject()) return artifact;
+        }
+        return null;
+    }
+
+    public String sha256() {
+        JsonNode artifact = deliveryArtifact();
+        return artifact == null ? null : artifact.path("sha256").asText(null);
+    }
+
+    public String originalFileName() {
+        if (artifacts != null && artifacts.isArray() && !artifacts.isEmpty()) {
+            String name = artifacts.required(0).path("sourceArtifact").path("originalFileName").asText(null);
+            if (name != null && !name.isBlank()) return name;
+        }
+        return newFileName;
+    }
 }

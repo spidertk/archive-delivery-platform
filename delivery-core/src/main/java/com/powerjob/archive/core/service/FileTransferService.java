@@ -46,14 +46,19 @@ public class FileTransferService {
     public void copyStream(InputStream input, Path destination) throws IOException {
         Files.createDirectories(destination.getParent());
         Path partial = destination.resolveSibling(destination.getFileName() + ".partial");
-        try (var channel = java.nio.channels.FileChannel.open(partial, java.nio.file.StandardOpenOption.CREATE,
-                java.nio.file.StandardOpenOption.TRUNCATE_EXISTING, java.nio.file.StandardOpenOption.WRITE);
-             OutputStream output = java.nio.channels.Channels.newOutputStream(channel)) {
-            input.transferTo(output);
-            output.flush();
-            channel.force(true);
+        try {
+            try (var channel = java.nio.channels.FileChannel.open(partial, java.nio.file.StandardOpenOption.CREATE,
+                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING, java.nio.file.StandardOpenOption.WRITE);
+                 OutputStream output = java.nio.channels.Channels.newOutputStream(channel)) {
+                input.transferTo(output);
+                output.flush();
+                channel.force(true);
+            }
+            moveAtomically(partial, destination, true);
+        } catch (IOException | RuntimeException error) {
+            Files.deleteIfExists(partial);
+            throw error;
         }
-        moveAtomically(partial, destination, true);
     }
 
     private void moveAtomically(Path source, Path target, boolean replace) throws IOException {

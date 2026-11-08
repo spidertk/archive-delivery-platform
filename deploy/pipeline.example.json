@@ -3,31 +3,33 @@
   "version": 1,
   "nodeDefinitions": {
     "oss.download": {"enabled": true, "configSchema": {"type": "object", "required": ["endpoint", "bucket", "accessKeyId", "accessKeySecret"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
+    "package.merge": {"enabled": true, "configSchema": {"type": "object"}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
     "python.repair": {"enabled": true, "configSchema": {"type": "object", "required": ["ruleSet"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
     "manifest.qualify": {"enabled": true, "configSchema": {"type": "object"}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
     "oss.upload": {"enabled": true, "configSchema": {"type": "object", "required": ["endpoint", "bucket", "accessKeyId", "accessKeySecret"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}},
     "ftp.download-verify": {"enabled": true, "configSchema": {"type": "object", "required": ["deliveryEntityFrom", "ftpCredential"]}, "inputContract": {"type": "object"}, "outputContract": {"type": "object"}}
   },
   "ruleSets": {
-    "fix-archive-legacy-v1": {"version": 1, "status": "PUBLISHED", "definition": {"schemaVersion": 1}}
+    "production-archive-v2": {"version": 2, "status": "PUBLISHED", "definition": {"schemaVersion": 1, "requestId": "PRESERVE_SOURCE", "requestTime": "ISO_8601_UTC_NANOSECONDS", "providerCode": "ENTITY_CODE", "repack": true}}
   },
   "config": {
     "businessTimezone": "Asia/Shanghai",
     "deliveryCutoffTime": "18:00:00",
     "rolloverStartNode": "targetUpload",
     "selection": {"orderBy": "key", "limit": 3, "duplicatePolicy": "FILTER_WITH_REASON"},
-    "assignment": {"strategySource": "SUBMIT_TARGETS"},
+    "assignment": {"strategySource": "SUBMIT_TARGETS", "maxPackageBytes": 10485760},
     "concurrency": {"maxRunningTasks": 3},
     "retry": {"maxAttempts": 5}
   },
   "nodes": [
-    {"id": "sourceDownload", "type": "oss.download", "stageCode": "ACQUIRE", "displayName": "下载源 OSS", "next": "repair",
+    {"id": "sourceDownload", "type": "oss.download", "stageCode": "ACQUIRE", "displayName": "下载源 OSS", "next": "mergePackages",
      "config": {"endpoint": "replace-endpoint", "bucket": "replace-source-bucket", "prefix": "replace-source-prefix/", "accessKeyId": "replace-access-key", "accessKeySecret": "replace-secret"}},
-    {"id": "repair", "type": "python.repair", "stageCode": "TRANSFORM", "displayName": "本地修复归档", "next": "qualify", "config": {"ruleSet": "fix-archive-legacy-v1"}},
+    {"id": "mergePackages", "type": "package.merge", "stageCode": "MERGE", "displayName": "合并来源包", "next": "repair", "config": {}},
+    {"id": "repair", "type": "python.repair", "stageCode": "TRANSFORM", "displayName": "本地修复归档", "next": "qualify", "config": {"ruleSet": "production-archive-v2"}},
     {"id": "qualify", "type": "manifest.qualify", "stageCode": "QUALIFY", "displayName": "校验修复产物", "next": "targetUpload", "config": {}},
     {"id": "targetUpload", "type": "oss.upload", "stageCode": "TRANSFER", "displayName": "上传交付 OSS", "next": "ftpDownloadVerify",
      "config": {"endpoint": "replace-endpoint", "bucket": "replace-target-bucket", "prefix": "archive-delivery", "accessKeyId": "replace-access-key", "accessKeySecret": "replace-secret"}},
     {"id": "ftpDownloadVerify", "type": "ftp.download-verify", "stageCode": "VERIFY", "displayName": "本地 FTP 下载核验", "next": null,
-     "config": {"deliveryEntityFrom": "TASK", "ftpCredential": {"entity1": "replace-ftp-password", "entity2": "replace-ftp-password", "entity3": "replace-ftp-password"}}}
+     "config": {"deliveryEntityFrom": "TASK", "remotePathTemplate": "{deliveryBatch}/{deliveryId}/{deliveryDate}/entity-{deliveryEntityId}", "ftpCredential": {"entity1": "replace-ftp-password", "entity2": "replace-ftp-password", "entity3": "replace-ftp-password"}}}
   ]
 }

@@ -3,11 +3,13 @@ package com.powerjob.archive.core.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.powerjob.archive.core.domain.DeliveryEntity;
 import com.powerjob.archive.core.domain.DeliverySubmit;
 import com.powerjob.archive.core.pipeline.PipelineDefinition;
 import com.powerjob.archive.core.pipeline.PipelineRepository;
 import com.powerjob.archive.core.repository.DeliveryEventRepository;
 import com.powerjob.archive.core.repository.DeliveryRepository;
+import com.powerjob.archive.core.repository.DeliveryTaskRepository;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.time.OffsetDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 public class DeliverySubmissionService {
@@ -25,95 +28,128 @@ public class DeliverySubmissionService {
     private final TransactionTemplate transactions;
     private final ObjectMapper mapper;
     private final DeliveryRepository deliveries;
+    private final DeliveryTaskRepository tasks;
     private final DeliveryEventRepository events;
+    private final DeliveryProjectionService projections;
     private final PipelineRepository pipelines;
+    private final IngestSourceService sources;
 
     public DeliverySubmissionService(JdbcTemplate jdbc, TransactionTemplate transactions, ObjectMapper mapper,
-                                     DeliveryRepository deliveries, DeliveryEventRepository events, PipelineRepository pipelines) {
+                                     DeliveryRepository deliveries, DeliveryTaskRepository tasks, DeliveryEventRepository events,
+                                     DeliveryProjectionService projections, PipelineRepository pipelines, IngestSourceService sources) {
         this.jdbc = jdbc;
         this.transactions = transactions;
         this.mapper = mapper;
         this.deliveries = deliveries;
+        this.tasks = tasks;
         this.events = events;
+        this.projections = projections;
         this.pipelines = pipelines;
+        this.sources = sources;
     }
 
-    /** 提交只固化来源、不可变版本、日期和实体目标；不接受组编码、Secret、节点链或任意路径。 */
+    /** 提交使用 vendorCode+entityCode 复合业务键和显式 cutoffAt，deliveryBatch 全局幂等并支持暂停单原样续交。 */
     public Submission submit(SubmissionCommand command) {
         ObjectNode strategy = validateAndSnapshot(command);
-        var existing = deliveries.findByIdempotencyKey(command.idempotencyKey());
+        var existing = deliveries.findByDeliveryBatch(command.deliveryBatch());
         if (existing.isPresent()) return sameRequest(existing.get(), command, strategy);
-        validateReferences(command);
         try {
             return transactions.execute(status -> {
+                ResolvedReferences references = resolveReferences(command);
                 long deliveryId = jdbc.queryForObject("INSERT INTO delivery_submit(delivery_batch,source_id," +
-                                "pipeline_version_id,idempotency_key,delivery_date,cutoff_at,target_strategy) " +
-                                "VALUES(?,?,?,?,?,?,?::jsonb) RETURNING delivery_id", Long.class, command.deliveryBatch(),
-                        command.sourceId(), command.pipelineVersionId(), command.idempotencyKey(), command.deliveryDate(),
-                        command.cutoffAt(), strategy.toString());
+                                "pipeline_version_id,delivery_date,cutoff_at,target_strategy) VALUES(?,?,?,?,?,?::jsonb) RETURNING delivery_id",
+                        Long.class, command.deliveryBatch(), references.sourceId(), references.pipelineVersionId(),
+                        command.deliveryDate(), command.cutoffAt(), strategy.toString());
                 events.append(deliveryId, null, null, null, null, "DELIVERY_SUBMITTED", "INFO", null,
                         "Delivery accepted", mapper.createObjectNode().put("deliveryId", deliveryId), "api", "submitted");
                 return new Submission(deliveryId, "SUBMITTED", command.deliveryDate(), command.cutoffAt());
             });
         } catch (DuplicateKeyException e) {
-            var concurrent = deliveries.findByIdempotencyKey(command.idempotencyKey());
+            var concurrent = deliveries.findByDeliveryBatch(command.deliveryBatch());
             if (concurrent.isPresent()) return sameRequest(concurrent.get(), command, strategy);
-            throw new IdempotencyConflictException("sourceId and deliveryBatch are already used");
+            throw new IdempotencyConflictException("deliveryBatch or a referenced business code is already used");
         }
     }
 
     private ObjectNode validateAndSnapshot(SubmissionCommand command) {
-        if (command.sourceId() <= 0 || command.pipelineVersionId() <= 0 || blank(command.deliveryBatch())
-                || blank(command.idempotencyKey()) || command.deliveryDate() == null || command.cutoffAt() == null
+        if (command == null || blank(command.ossUri()) || blank(command.pipelineCode()) || blank(command.deliveryBatch())
+                || command.deliveryBatch().length() > 128 || command.deliveryDate() == null || command.cutoffAt() == null
                 || command.targets() == null || command.targets().isEmpty()) {
-            throw new IllegalArgumentException("Complete source, Pipeline, dates, batch, idempotency key and targets are required");
+            throw new IllegalArgumentException("ossUri, pipelineCode, deliveryDate, deliveryBatch, cutoffAt and targets are required");
         }
-        if (!command.cutoffAt().isAfter(OffsetDateTime.now())) throw new IllegalArgumentException("cutoffAt must be in the future");
-        Set<Long> entities = new HashSet<>();
+        Set<String> entities = new HashSet<>();
         ObjectNode strategy = mapper.createObjectNode().put("schemaVersion", 1);
         ArrayNode targets = strategy.putArray("targets");
         for (TargetCommand target : command.targets()) {
-            if (target.targetCount() <= 0 || target.deliveryEntityId() <= 0 || !entities.add(target.deliveryEntityId())) {
-                throw new IllegalArgumentException("targets require distinct deliveryEntityId and positive targetCount");
+            String businessKey = target == null ? "" : target.vendorCode() + "\0" + target.entityCode();
+            if (target == null || target.targetCount() <= 0 || blank(target.vendorCode()) || blank(target.entityCode())
+                    || !entities.add(businessKey)) {
+                throw new IllegalArgumentException("targets require distinct vendorCode+entityCode and positive targetCount");
             }
-            targets.addObject().put("targetCount", target.targetCount()).put("deliveryEntityId", target.deliveryEntityId());
+            targets.addObject().put("targetCount", target.targetCount())
+                    .put("vendorCode", target.vendorCode()).put("entityCode", target.entityCode());
         }
         return strategy;
     }
 
-    private void validateReferences(SubmissionCommand command) {
+    private ResolvedReferences resolveReferences(SubmissionCommand command) {
+        long sourceId = sources.resolve(command.ossUri());
         Integer available = jdbc.queryForObject("SELECT count(*) FROM ingest_source WHERE source_id=? AND availability_status='AVAILABLE'",
-                Integer.class, command.sourceId());
-        if (available != 1) throw new IllegalArgumentException("Source is missing or unavailable");
-        String definition = jdbc.query("SELECT definition::text FROM pipeline_version WHERE pipeline_version_id=? AND status='PUBLISHED'",
-                (rs, n) -> rs.getString(1), command.pipelineVersionId()).stream().findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("PipelineVersion is missing or not published"));
+                Integer.class, sourceId);
+        if (available != 1) throw new IllegalArgumentException("Source is unavailable");
+        var row = jdbc.query("SELECT pv.pipeline_version_id,pv.definition::text FROM pipeline_version pv JOIN pipeline p ON p.pipeline_id=pv.pipeline_id " +
+                        "WHERE p.pipeline_code=? AND pv.status='PUBLISHED' ORDER BY pv.version_no DESC LIMIT 1",
+                (rs, n) -> new PipelineRow(rs.getLong(1), rs.getString(2)), command.pipelineCode()).stream().findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("pipelineCode has no published version"));
         PipelineDefinition pipeline;
         try {
-            pipeline = pipelines.read(mapper.readTree(definition));
+            pipeline = pipelines.read(mapper.readTree(row.definition()));
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid Pipeline definition", e);
         }
         for (TargetCommand target : command.targets()) {
-            var entity = deliveries.entity(target.deliveryEntityId());
-            if (!entity.enabled()) throw new IllegalArgumentException("Delivery entity is disabled");
+            DeliveryEntity entity = deliveries.entityByBusinessCode(target.vendorCode(), target.entityCode());
+            if (!entity.enabled()) throw new IllegalArgumentException("Delivery entity is disabled: " + target.entityCode());
             boolean supported = pipeline.nodes().stream().anyMatch(node -> node.type().startsWith(entity.protocol().toLowerCase(java.util.Locale.ROOT) + "."));
             if (!supported) throw new IllegalArgumentException("Pipeline does not support entity protocol " + entity.protocol());
         }
+        if (!command.cutoffAt().isAfter(OffsetDateTime.now())) {
+            throw new IllegalArgumentException("Submitted cutoffAt must be in the future");
+        }
+        return new ResolvedReferences(sourceId, row.id());
     }
 
     private Submission sameRequest(DeliverySubmit existing, SubmissionCommand command, ObjectNode strategy) {
-        boolean same = existing.sourceId() == command.sourceId() && existing.pipelineVersionId() == command.pipelineVersionId()
-                && existing.deliveryBatch().equals(command.deliveryBatch()) && existing.deliveryDate().equals(command.deliveryDate())
-                && existing.cutoffAt().toInstant().equals(command.cutoffAt().toInstant()) && existing.targetStrategy().equals(strategy);
-        if (!same) throw new IdempotencyConflictException("idempotencyKey is already used by different delivery parameters");
-        return new Submission(existing.deliveryId(), existing.status(), existing.deliveryDate(), existing.cutoffAt());
+        String sourceUri = jdbc.queryForObject("SELECT oss_uri FROM ingest_source WHERE source_id=?", String.class, existing.sourceId());
+        String pipelineCode = jdbc.queryForObject("SELECT p.pipeline_code FROM pipeline p JOIN pipeline_version pv ON p.pipeline_id=pv.pipeline_id " +
+                "WHERE pv.pipeline_version_id=?", String.class, existing.pipelineVersionId());
+        boolean sameCutoff = Boolean.TRUE.equals(jdbc.queryForObject("SELECT cutoff_at=? FROM delivery_submit WHERE delivery_id=?",
+                Boolean.class, command.cutoffAt(), existing.deliveryId()));
+        boolean same = existing.deliveryDate().equals(command.deliveryDate()) && sameCutoff
+                && existing.targetStrategy().equals(strategy) && sourceUri.equals(command.ossUri()) && pipelineCode.equals(command.pipelineCode());
+        if (!same) throw new IdempotencyConflictException("deliveryBatch is already used by different delivery parameters");
+        if ("PAUSED".equals(existing.status())) {
+            transactions.executeWithoutResult(status -> {
+                int resumed = tasks.resumePaused(existing.deliveryId());
+                if (resumed > 0) {
+                    events.append(existing.deliveryId(), null, null, null, null, "DELIVERY_RESUMED", "INFO", "MANUAL_RESUBMIT",
+                            "Paused delivery resumed by identical deliveryBatch submission", mapper.createObjectNode()
+                                    .put("deliveryId", existing.deliveryId()).put("resumed", resumed), "api",
+                            "delivery-resumed-" + existing.deliveryId() + "-" + UUID.randomUUID());
+                }
+                projections.refresh(existing.deliveryId());
+            });
+        }
+        DeliverySubmit current = deliveries.find(existing.deliveryId()).orElseThrow();
+        return new Submission(current.deliveryId(), current.status(), current.deliveryDate(), current.cutoffAt());
     }
 
     private static boolean blank(String value) { return value == null || value.isBlank(); }
 
-    public record TargetCommand(int targetCount, long deliveryEntityId) {}
-    public record SubmissionCommand(long sourceId, long pipelineVersionId, LocalDate deliveryDate, OffsetDateTime cutoffAt,
-                                    String deliveryBatch, String idempotencyKey, List<TargetCommand> targets) {}
+    private record PipelineRow(long id, String definition) {}
+    private record ResolvedReferences(long sourceId, long pipelineVersionId) {}
+    public record TargetCommand(int targetCount, String vendorCode, String entityCode) {}
+    public record SubmissionCommand(String ossUri, String pipelineCode, LocalDate deliveryDate, String deliveryBatch,
+                                    OffsetDateTime cutoffAt, List<TargetCommand> targets) {}
     public record Submission(long deliveryId, String status, LocalDate deliveryDate, OffsetDateTime cutoffAt) {}
 }

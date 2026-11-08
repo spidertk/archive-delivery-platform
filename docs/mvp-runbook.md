@@ -5,19 +5,21 @@
 当前核心 Pipeline DAG：
 
 ```text
-sourceDownload → repair → qualify → targetUpload → ftpDownloadVerify
+sourceDownload → mergePackages → repair → qualify → targetUpload → ftpDownloadVerify
 ```
 
-该顺序来自 PipelineVersion，不是 Processor 或 Service 的固定分支。必须同时证明：
+本地真实核心 case 必须同时证明：
 
-- 源 OSS 直接下载三份样本且本地文件保留，repair/qualify 成功，请求映射、size/token/SHA 和七字段 artifacts 入库。
-- 三个交付实体各一个有效任务，任务直接保存 delivery_entity_id/target_seq。
-- 三份产物上传到另一 OSS Bucket，外部 size/SHA 与 source_data、任务和 delivery_node 一致。
-- 三个本地 FTP 账户按实体目录完成实际下载，文件保留，size/SHA 一致，无 `.partial`。
-- 最新任务全部 SUCCEEDED，最终 ftpDownloadVerify 成功，delivery_submit 聚合 DELIVERED。
-- 至少一次单任务 retry 和一次跨日新 task_id 接续，下一日 OSS/FTP 路径隔离。
+- 源 OSS 直接下载三份样本且本地文件保留，逐源 original_file_name/size/SHA/artifact 与 source_data 一致，created_at/updated_at 非空。
+- merge 输出请求目录且无 merged-source.tar.gz；repair/qualify 成功，三来源按每包 10 MiB 上限形成两个 entityCode 任务，每个实体 targetCount=1，repair 输入也是 entityCode。
+- delivery_mapping 合计三条有序映射，任务 artifacts 保留全部 dataId/sourceArtifact/deliveryArtifact 对，sourceArtifact 完全等于 source_data.artifact，file_mapping 仅含本来源 originalPath，metadata_ids 数量与各 merge requestCount 一致。
+- 两个有效任务的 new_file_name 不同且序号在整个 delivery_id 内连续，任务 size/token 与合并 deliveryArtifact 一致。
+- request_id_allocation.request_namespace 等于全局唯一 deliveryBatch。
+- 两件合并产物上传到另一 OSS Bucket 并 GET 回验；两个本地 FTP 账户分别上传下载一件产物，文件保留、size/SHA 一致且无 .partial。
+- 同一 case 覆盖节点边界暂停、相同批次再提交继续、单任务 retry 和跨日新 taskId。
+- 最新有效任务 SUCCEEDED，最终 ftpDownloadVerify 成功，delivery_submit 为 DELIVERED。
 
-API 接受、PowerJob 绿色实例、Local/fake 节点或 skipped 测试均不是真实交付证据。
+API 接受、PowerJob 绿色实例、Local/fake 节点、数据库直写或 skipped 测试均不是真实交付证据。
 
 ## 2. 标准回归
 
@@ -28,21 +30,15 @@ cd web && npm ci && npm run test && npm run build
 bash -n scripts/*.sh
 ```
 
-覆盖 V1–V15 迁移、全表全列注释、废弃对象不存在、artifacts 白名单、事件不可变、跨日血缘、集中 Pipeline 和前端。
+覆盖 V1–V17 迁移、全表全列注释、废弃对象不存在、source_data 单 artifact 白名单、来源时间戳、任务产物对一致性、delivery 内包名唯一、三来源映射、事件不可变、entityCode 提交、暂停再提交、请求编号外键、跨日完整血缘、集中 Pipeline 和前端。
 
 核心状态集成案例位于 `ArchiveModelIntegrationTest`：
 
 | 案例 | 初始事实 | 跨日操作 | 必须结果 |
 |---|---|---|---|
-| 正向作业单 0001 | 三实体各 2，共 6，截止前全部 SUCCEEDED | 无 | 主单 DELIVERED |
-| 当日逆向作业单 0002 | 每实体 1 成功、第 2 个 READY，共 5/6 | 指定下一交付日 rollover | 三个旧任务 EXPIRED，三个新 taskId 占次日配额，主单 PARTIALLY_DELIVERED |
-| 次日续交作业单 0002 | 每实体 1 个既往成功 + 1 个次日新任务 | 三个新任务全部 SUCCEEDED | 每实体有效任务仍为 2，主单 DELIVERED |
-
-可单独执行：
-
-```bash
-./scripts/mvn.sh -pl delivery-core -Dtest=ArchiveModelIntegrationTest test
-```
+| 正向作业单 | 三实体各 2，共 6，全部 SUCCEEDED | 无 | 主单 DELIVERED |
+| 当日逆向作业单 | 每实体 1 成功、第 2 个 READY | 指定下一交付日 rollover | 三个旧任务 EXPIRED，三个新 taskId 占次日配额，主单 PARTIALLY_DELIVERED |
+| 次日续交 | 每实体 1 个既往成功 + 1 个次日任务 | 三个新任务全部 SUCCEEDED | 每实体有效任务仍为 2，主单 DELIVERED |
 
 ## 3. 一键真实验收
 
@@ -52,15 +48,15 @@ bash -n scripts/*.sh
 ./scripts/real-e2e-test.sh
 ```
 
-该入口具有真实 OSS 写副作用，并明确放弃旧本地业务数据。它会：
+该入口具有真实 OSS/FTP 写副作用，并明确放弃旧本地业务数据。它会：
 
-1. 携带 V14 授权启动新模型并应用 V15，配置通用调度、集中 Pipeline、来源和三个 FTP 实体。
-2. 双确认清理运行事实，保留 Pipeline/实体配置和 OSS/FTP 历史文件。
-3. 真实预检源 OSS、目标 Bucket 和三个 FTP 账户。
-4. 暂时停止两个实体 FTP，提交三个 targets 各一的新交付。
-5. 恢复第一实体 FTP，仅 retry 对应阻塞任务；第二实体保持未完成并 rollover。
-6. 证明旧任务 EXPIRED、新 task_id 按指定下一日接续并占次日配额，主单先 PARTIALLY_DELIVERED，再恢复第二实体。
-7. 有界等待 3/3 DELIVERED，调用 verify-delivery.sh 独立读取 PG、OSS 和 FTP 核验。
+1. 先携带 2026-11-06 授权完成 V13 并等待成功，再携带 2026-11-07 授权应用 V14–V17，配置通用调度、六节点 Pipeline、来源和三个 FTP 实体。
+2. 双确认清理运行事实，真实预检源 OSS、目标 Bucket 和三个 FTP 账户。
+3. 暂停前两个核心实体 FTP，以指定 sg-storage products 为 ossUri，显式 cutoffAt 并提交 alibaba/jun、alibaba/jun2、各 targetCount=1，按厂商整体以 10 MiB 上限形成两个任务。
+4. 在两个 ftpDownloadVerify 阻塞边界暂停，使用完全相同请求再次提交并确认 deliveryId 不变。
+5. 对两个旧任务 rollover，证明旧任务 EXPIRED、新 taskId 按下一日接续；新任务再次阻塞后恢复 FTP，逐任务 retry。
+6. 有界等待 DELIVERED，调用 verify-delivery.sh 独立读取 PG、OSS 和 FTP 核验。
+7. 再以 local-other/jun3 提交相同来源，等待第二个 delivery 成功，核对 sourceDownload 的所有 source.cacheHit=true，证明跨交付、跨厂商复用缓存而未重复 GET。
 
 任何预检、意外 BLOCKED、超时或 SHA 不一致都会非零停止，不用 SQL 修改状态绕过。
 
@@ -71,8 +67,17 @@ bash -n scripts/*.sh
 ./scripts/bootstrap-powerjob.sh
 ./scripts/configure-pipeline.sh
 ./scripts/preflight.sh
-./scripts/submit-delivery.sh <sourceId> <pipelineVersionId> <deliveryDate> <cutoffAt> <deliveryBatch> <idempotencyKey>
+./scripts/submit-delivery.sh <ossUri> <pipelineCode> <deliveryDate> <cutoffAt> <deliveryBatch>
 ./scripts/verify-delivery.sh <deliveryId>
+```
+
+暂停与继续：
+
+```bash
+curl -H 'Content-Type: application/json' \
+  -d '{"reason":"节点边界暂停验收"}' \
+  http://127.0.0.1:8080/api/v1/deliveries/<deliveryId>/pause
+# 使用完全相同的提交 JSON 再次 POST /api/v1/deliveries，deliveryId 不变并从当前节点继续。
 ```
 
 retry/resume：
@@ -84,39 +89,35 @@ curl -H 'Content-Type: application/json' \
 ./scripts/resume-delivery.sh <deliveryId> <fromNode> '前置事实已核验，续跑当前节点' <taskId>
 ```
 
-EXPIRED 任务不能 retry/resume。跨日手工验收调用 `/api/v1/deliveries/<deliveryId>/rollover`，必须携带 expectedDeliveryDate、deliveryDate 和 reason，且新日期晚于原日期；不得直接修改日期或状态。
-
-```bash
-curl -H 'Content-Type: application/json' \
-  -d '{"expectedDeliveryDate":"2026-11-07","deliveryDate":"2026-11-08","reason":"截止未完成，次日继续"}' \
-  http://127.0.0.1:8080/api/v1/deliveries/<deliveryId>/rollover
-```
+EXPIRED 任务不能 retry/resume。rollover 必须携带 expectedDeliveryDate、deliveryDate 和 reason，且新日期晚于原日期。
 
 ## 5. 只读事实查询
 
-```bash
-docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T postgres \
-  psql -U archive -d archive_delivery
-```
-
 ```sql
 SET search_path TO archive_delivery;
-SELECT delivery_id,delivery_batch,status,target_strategy,discovery_completed_at,completed_at
+SELECT delivery_id,delivery_batch,delivery_date,cutoff_at,status,target_strategy,discovery_completed_at,completed_at
 FROM delivery_submit WHERE delivery_id=<deliveryId>;
-SELECT task_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq,delivery_date,current_node_id,
-       execution_status,size_bytes,token_count,sha256,superseded_by_task_id
+SELECT task_id,delivery_entity_id,entity_code,worker_group,delivery_date,current_node_id,
+       execution_status,new_file_name,size_bytes,token_count,artifacts,metadata_ids
 FROM delivery_task WHERE delivery_id=<deliveryId> ORDER BY task_id;
+SELECT data_id,original_file_name,size_bytes,sha256,artifact,created_at,updated_at,
+       original_locator->>'cachePath' AS cache_path
+FROM source_data WHERE delivery_id=<deliveryId> ORDER BY data_id;
+SELECT task_id,data_id,source_seq FROM delivery_mapping
+WHERE delivery_id=<deliveryId> ORDER BY task_id,source_seq;
 SELECT process_id,task_id,node_id,node_type,stage_code,attempt,status,output_locator,error_code
 FROM delivery_node WHERE delivery_id=<deliveryId> ORDER BY process_id;
 SELECT event_type,task_id,process_id,delivery_entity_id,reason_code,message,payload
 FROM delivery_event WHERE delivery_id=<deliveryId> ORDER BY event_id;
+SELECT request_namespace,data_id,start_value,count_value FROM request_id_allocation
+WHERE request_namespace=(SELECT delivery_batch FROM delivery_submit WHERE delivery_id=<deliveryId>);
 ```
 
-每个目标应有 targetCount 个最新有效任务且最终全部 SUCCEEDED。跨日旧行必须 EXPIRED 并指向下一日新行，新行占次日实体配额；主单未全部成功前为 PARTIALLY_DELIVERED，全部成功后 DELIVERED。
+跨日新旧 taskId 从 TASK_EXPIRED/TASK_REGENERATED payload 的 oldTaskId/newTaskId 查询，不再使用 superseded_by_task_id。
 
 ## 6. 外部证据与自助复核
 
-`verify-delivery.sh` 在独立容器中读取当前 Pipeline 受控配置，不打印 Secret；它实际 GET 源 OSS 和交付 OSS，重新登录 FTP 下载，并核对 Worker 最终文件和 `.partial`。
+`verify-delivery.sh` 在独立容器中读取当前 Pipeline 受控配置，不打印 Secret；它实际 GET 三份源 OSS 和交付 OSS，重新登录 FTP 下载，并核对 Worker 最终文件、merge 目录、mapping、metadataIds 和 .partial。
 
 Worker 持久卷中的最终 FTP 文件可用以下命令列出并计算 SHA（替换 deliveryId）：
 
@@ -125,4 +126,20 @@ docker run --rm -v deploy_archive_data:/data:ro alpine:3.22 \
   sh -c 'find /data/ftp-verify/<deliveryId> -type f -path "*/entity-*" ! -name "*.partial" -exec sha256sum {} \;'
 ```
 
-该命令只读挂载持久卷，不访问 Pipeline Secret，不修改文件。输出应包含三个不同实体路径，且 SHA 与 `delivery_task.sha256` 一致。本次 V14 验收使用 deliveryId=1，实际结果和原始证据见 `2026-11-07-entity-target-v14-verification.md`。
+输出 SHA 应与 `delivery_task.artifacts->0->'deliveryArtifact'->>'sha256'` 一致。历史 V14 三实体验收仅作历史证据，不替代本次三来源合并 case。
+
+## 7. 本机 PostgreSQL 可见合并辅助 case
+
+该入口只用于本机 Compose，会清空并完整重建 archive_delivery，禁止用于生产：
+
+```bash
+set -a; source deploy/.env; set +a
+export ARCHIVE_TEST_LOCAL_PG=true ARCHIVE_TEST_LOCAL_SCHEMA_RESET=true
+export ARCHIVE_DB_URL='jdbc:postgresql://host.docker.internal:5432/archive_delivery?currentSchema=archive_delivery'
+export ARCHIVE_DB_USER="${ARCHIVE_DB_USER:-archive}"
+export ARCHIVE_DB_PASSWORD="${ARCHIVE_DB_PASSWORD:-archive_local}"
+./scripts/mvn.sh -pl delivery-worker -am -Dsurefire.failIfNoSpecifiedTests=false \
+  '-Dtest=LocalMergedCaseVerificationTest' test
+```
+
+成功日志必须包含实际 clean、V1–V13 与 V14–V17 两段迁移和 `LOCAL MERGED CASE PASSED`。核对 Flyway=17、source_data=3、原任务=1、每任务 delivery_mapping=3、sourceArtifact=source_data.artifact、跨日 taskId 不同且来源集合不变。该 case 不能替代真实 OSS/FTP 验收。

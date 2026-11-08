@@ -4,7 +4,10 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.ObjectMetadata;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.powerjob.archive.core.pipeline.OssNodeConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +16,7 @@ import java.util.Base64;
 
 @Service
 public class OssTransferService {
+    private static final Logger log = LoggerFactory.getLogger(OssTransferService.class);
     private final OssClientFactory clients;
     private final FileTransferService files;
 
@@ -28,13 +32,18 @@ public class OssTransferService {
             ObjectMetadata metadata = client.getObjectMetadata(bucket, key);
             if (expectedSize != null && metadata.getContentLength() != expectedSize) throw new IOExceptionSizeMismatch();
             if (Files.isRegularFile(destination) && (expectedSize == null || Files.size(destination) == expectedSize)
-                    && (expectedSha == null || files.sha256(destination).equals(expectedSha))) return files.sha256(destination);
+                    && (expectedSha == null || files.sha256(destination).equals(expectedSha))) {
+                log.info("OSS download reused verified local file bucket={} key={} path={} sizeBytes={} sha256={}",
+                        bucket, key, destination, Files.size(destination), files.sha256(destination));
+                return files.sha256(destination);
+            }
             try (InputStream input = client.getObject(bucket, key).getObjectContent()) {
                 files.copyStream(input, destination);
             }
             if (expectedSize != null && Files.size(destination) != expectedSize) throw new IOExceptionSizeMismatch();
             String sha = files.sha256(destination);
             if (expectedSha != null && !expectedSha.equals(sha)) throw new RemoteConflictException("Source OSS SHA changed after discovery");
+            log.info("OSS GET completed bucket={} key={} path={} sizeBytes={} sha256={}", bucket, key, destination, Files.size(destination), sha);
             return sha;
         } finally {
             client.shutdown();
@@ -53,6 +62,8 @@ public class OssTransferService {
                         || !expectedSha.equals(existing.getUserMetadata().get("sha256"))) {
                     throw new RemoteConflictException("Delivery OSS key exists with different size or SHA: " + key);
                 }
+                log.info("OSS upload reused identical object deliveryId={} taskId={} bucket={} key={} sizeBytes={} sha256={}",
+                        deliveryId, taskId, config.bucket(), key, existing.getContentLength(), expectedSha);
             } else {
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentLength(Files.size(artifact));
@@ -63,6 +74,8 @@ public class OssTransferService {
                 try (InputStream input = Files.newInputStream(artifact)) {
                     client.putObject(new PutObjectRequest(config.bucket(), key, input, metadata));
                 }
+                log.info("OSS PUT completed deliveryId={} taskId={} bucket={} key={} sizeBytes={} sha256={}",
+                        deliveryId, taskId, config.bucket(), key, Files.size(artifact), expectedSha);
             }
             ObjectMetadata uploaded = client.getObjectMetadata(config.bucket(), key);
             if (uploaded.getContentLength() != Files.size(artifact)
@@ -75,6 +88,8 @@ public class OssTransferService {
             if (Files.size(verifiedDownload) != Files.size(artifact) || !files.sha256(verifiedDownload).equals(expectedSha)) {
                 throw new RemoteConflictException("Delivery OSS downloaded copy differs from uploaded artifact");
             }
+            log.info("OSS upload HEAD/GET verified bucket={} key={} verifiedPath={} sizeBytes={} sha256={}",
+                    config.bucket(), key, verifiedDownload, uploaded.getContentLength(), expectedSha);
             return new UploadResult("oss://" + config.bucket() + "/" + key, uploaded.getContentLength(), expectedSha);
         } finally {
             client.shutdown();

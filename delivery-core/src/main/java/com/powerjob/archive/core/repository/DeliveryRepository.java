@@ -19,8 +19,7 @@ public class DeliveryRepository {
         this.jdbc = jdbc;
         this.submitMapper = (rs, n) -> new DeliverySubmit(
                 rs.getLong("delivery_id"), rs.getString("delivery_batch"), rs.getLong("source_id"),
-                rs.getLong("pipeline_version_id"), rs.getString("idempotency_key"),
-                rs.getObject("delivery_date", java.time.LocalDate.class),
+                rs.getLong("pipeline_version_id"), rs.getObject("delivery_date", java.time.LocalDate.class),
                 rs.getObject("cutoff_at", java.time.OffsetDateTime.class),
                 rs.getObject("submitted_at", java.time.OffsetDateTime.class),
                 JdbcJson.read(mapper, rs.getString("target_strategy")), rs.getString("status"),
@@ -36,13 +35,19 @@ public class DeliveryRepository {
         return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_id=?", submitMapper, deliveryId).stream().findFirst();
     }
 
-    public Optional<DeliverySubmit> findByIdempotencyKey(String key) {
-        return jdbc.query("SELECT * FROM delivery_submit WHERE idempotency_key=?", submitMapper, key).stream().findFirst();
+    public Optional<DeliverySubmit> findByDeliveryBatch(String deliveryBatch) {
+        return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_batch=?", submitMapper, deliveryBatch).stream().findFirst();
     }
 
     public DeliveryEntity entity(long entityId) {
         return jdbc.query("SELECT * FROM delivery_entity WHERE delivery_entity_id=?", entityMapper, entityId).stream().findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown delivery entity " + entityId));
+    }
+
+    public DeliveryEntity entityByBusinessCode(String vendorCode, String entityCode) {
+        return jdbc.query("SELECT * FROM delivery_entity WHERE vendor_code=? AND entity_code=?", entityMapper, vendorCode, entityCode)
+                .stream().findFirst().orElseThrow(() -> new IllegalArgumentException(
+                        "Unknown delivery entity " + vendorCode + "/" + entityCode));
     }
 
     public void markDiscovering(long deliveryId) {

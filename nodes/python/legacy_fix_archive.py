@@ -1,9 +1,23 @@
 import json
+import re
 import tarfile
 from pathlib import Path
 
+TIME_OF_DAY_RE = re.compile(r"(\d{2}):(\d{2}):(\d{2})(\.\d+)?")
+REQUEST_ID_RE = re.compile(r"^\d{14}[A-Za-z0-9]{25}$")
 
-def fix_request(request_dir, new_request_id, archive_date, provider_code):
+
+def normalize_request_time(value, archive_date):
+    """生产协议使用交付日期和源时间部分，统一为 UTC 纳秒 ISO 8601。"""
+    match = TIME_OF_DAY_RE.search(str(value or ""))
+    if not match:
+        return f"{archive_date}T00:00:00.000000000Z"
+    fraction = ((match.group(4) or ".")[1:]).ljust(9, "0")[:9]
+    return f"{archive_date}T{match.group(1)}:{match.group(2)}:{match.group(3)}.{fraction}Z"
+
+
+def fix_request(request_dir, fallback_number, archive_date, provider_code):
+    """合法 39 位源 requestId 保留；缺失或旧格式使用 Java 幂等号段确定性补号。"""
     request_dir = Path(request_dir)
     metadata_path = request_dir / "metadata.json"
     if not metadata_path.is_file():
@@ -13,11 +27,19 @@ def fix_request(request_dir, new_request_id, archive_date, provider_code):
     with metadata_path.open(encoding="utf-8") as stream:
         metadata = json.load(stream)
     original_request_id = metadata.get("requestId")
-    original_time = metadata.get("requestTime", "")
-    time_part = original_time.split(" ", 1)[1] if " " in original_time else "00:00:00"
+    if original_request_id and REQUEST_ID_RE.fullmatch(str(original_request_id)):
+        new_request_id = str(original_request_id)
+    else:
+        match = TIME_OF_DAY_RE.search(str(metadata.get("requestTime") or ""))
+        time_part = "".join(match.group(1, 2, 3)) if match else "000000"
+        new_request_id = archive_date.replace("-", "") + time_part + f"{fallback_number:025d}"
+        if fallback_number < 1 or fallback_number > 9999999999999999999999999:
+            raise ValueError("Fallback request number exceeds 25 digits")
+    if not REQUEST_ID_RE.fullmatch(new_request_id):
+        raise ValueError("requestId does not match the 39-character production protocol: " + new_request_id)
     metadata["requestId"] = new_request_id
     metadata["providerCode"] = provider_code
-    metadata["requestTime"] = archive_date + " " + time_part
+    metadata["requestTime"] = normalize_request_time(metadata.get("requestTime"), archive_date)
     stream_response = request_dir / "biz_stream_response.jsonl"
     sync_response = request_dir / "biz_response.json"
     mode = metadata.get("requestMode", "")
@@ -29,9 +51,11 @@ def fix_request(request_dir, new_request_id, archive_date, provider_code):
         raise FileNotFoundError("Missing STREAM response in " + request_dir.name)
     if mode == "SYNC" and not sync_response.is_file():
         raise FileNotFoundError("Missing SYNC response in " + request_dir.name)
+    if mode not in ("STREAM", "SYNC"):
+        raise ValueError("Unsupported requestMode in " + request_dir.name)
     with metadata_path.open("w", encoding="utf-8") as stream:
         json.dump(metadata, stream, ensure_ascii=False)
-    return original_request_id
+    return original_request_id, new_request_id
 
 
 def verify_output(artifact, archive_date, provider_code):
@@ -43,6 +67,9 @@ def verify_output(artifact, archive_date, provider_code):
         for directory in directories:
             files = {Path(member.name).name for member in members
                      if member.isfile() and Path(member.name).parts[0] == directory}
+            if not REQUEST_ID_RE.fullmatch(directory):
+                errors.append(directory + ": directory is not a 39-character requestId")
+                continue
             if "metadata.json" not in files:
                 errors.append(directory + ": missing metadata.json")
                 continue
@@ -51,8 +78,9 @@ def verify_output(artifact, archive_date, provider_code):
             metadata = json.load(archive.extractfile(directory + "/metadata.json"))
             if metadata.get("requestId") != directory:
                 errors.append(directory + ": requestId does not match directory")
-            if not metadata.get("requestTime", "").startswith(archive_date + " "):
-                errors.append(directory + ": requestTime does not match archive date")
+            expected_time = re.compile(rf"^{re.escape(archive_date)}T\d{{2}}:\d{{2}}:\d{{2}}\.\d{{9}}Z$")
+            if not expected_time.fullmatch(str(metadata.get("requestTime") or "")):
+                errors.append(directory + ": requestTime does not match ISO UTC nanoseconds")
             if metadata.get("providerCode") != provider_code:
                 errors.append(directory + ": providerCode mismatch")
             has_stream = "biz_stream_response.jsonl" in files

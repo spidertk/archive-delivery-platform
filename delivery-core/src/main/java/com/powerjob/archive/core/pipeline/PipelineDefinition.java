@@ -54,6 +54,7 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
                     throw new IllegalArgumentException("Repair ruleSet must be defined in this PipelineVersion");
                 }
             }
+            if (node.type().equals("package.merge")) maxPackageBytes();
         }
         Set<String> visited = new HashSet<>();
         String current = firstNode();
@@ -80,5 +81,13 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
             throw new IllegalArgumentException("Pipeline config.selection.limit must be positive");
         }
         return limit.intValue();
+    }
+
+    public long maxPackageBytes() {
+        Object assignment = config.get("assignment");
+        Object configured = assignment instanceof Map<?, ?> map ? map.get("maxPackageBytes") : null;
+        long value = configured instanceof Number number ? number.longValue() : -1;
+        if (value <= 0) throw new IllegalArgumentException("config.assignment.maxPackageBytes must be positive");
+        return value;
     }
 }

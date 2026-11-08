@@ -11,6 +11,8 @@ web/dist/
 web/*.tsbuildinfo
 web/vite.config.js
 deploy/pipeline.local.json
+deploy/pipeline.production.json
 deploy/pipeline-v3.local.json
 deploy/pipeline-v4.local.json
 deploy/pipeline-sg-ftp.local.json
+/docs/服务器信息/

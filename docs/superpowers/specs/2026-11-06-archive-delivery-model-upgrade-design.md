@@ -1,22 +1,21 @@
 # Archive Delivery 实体目标升级版模型与数据字典
 
-> 修订日期：2026-11-07
+> 修订日期：2026-11-08
 > 状态：当前唯一模型基线
 > schema：`archive_delivery`
 > 配套方案：`2026-11-06-archive-delivery-platform-upgrade-design.md`
-> 数据策略：不兼容、不回填老数据；V14 在显式授权环境清空旧业务表并重建
+> 数据策略：不兼容、不回填老数据；V14 清空重建，V15/V16/V17 为当前增量
 
 ## 1. 建模约定
 
-1. 核心标识为 `delivery_id/data_id/delivery_entity_id/task_id/process_id`。`delivery_node.node_id` 是 Pipeline 字符串节点标识，不是尝试主键。
-2. 所有表、列和枚举必须有数据库注释；时间使用 timestamptz，业务日期使用 date，ID 使用 bigint，扩展事实使用 jsonb。
-3. 通用模型不出现地区、具体 Bucket、FTP 路径或实现专用列。节点定位使用通用 JSONB，阶段语义来自 PipelineVersion。
-4. 配置类信息遵循“能集中就集中，方便查找和统一维护”：节点定义、规则和流程配置全部进入 pipeline_version，不拆平行配置表。
-5. Secret 只由 Pipeline 节点配置受控维护，不进入实体、locator、artifacts、delivery_node、事件或普通 API。
-6. `source_data` 是数据事实，`delivery_task` 是面向实体的执行原子，`delivery_node` 是节点尝试，`delivery_event` 是不可变事件。
-7. JSONB 不替代提交、源数据、任务、实体和节点间的关系约束。
+1. 核心血缘为 `delivery_submit → source_data → delivery_mapping → delivery_task → delivery_node`；`process_id` 是节点尝试主键，字符串 `node_id` 是 DAG 节点标识。
+2. 外部提交只使用 `ossUri/pipelineCode/deliveryDate/deliveryBatch/cutoffAt` 和 `vendorCode+entityCode` targets，数据库 ID 仅是内部关系事实。`delivery_batch` 全局唯一，同时是幂等键和请求编号命名空间。
+3. 所有表、列和枚举必须有 COMMENT ON；时间使用 timestamptz，业务日期使用 date，扩展事实使用 jsonb。新增模型表必须默认同时带 created_at/updated_at。
+4. 节点定义、规则、DAG、选择、分配、重试、跨日、并发和 Secret 集中在 `pipeline_version.definition`，不建立平行配置表。
+5. Secret 不进入实体、locator、artifacts、metadata_ids、事件、日志或普通 API。
+6. JSONB 不替代关系约束；任务的完整来源集合只由 `delivery_mapping` 定义。
 
-## 2. 核心 ER
+## 2. 核心 ER 与不变量
 
 ```mermaid
 erDiagram
@@ -26,25 +25,21 @@ erDiagram
     DELIVERY_SUBMIT ||--o{ SOURCE_DATA : discovers
     DELIVERY_SUBMIT ||--o{ DELIVERY_TASK : owns
     DELIVERY_ENTITY ||--o{ DELIVERY_TASK : receives
-    SOURCE_DATA ||--o{ DELIVERY_TASK : materializes
-    DELIVERY_TASK ||--o{ DELIVERY_TASK : supersedes
+    DELIVERY_TASK ||--o{ DELIVERY_MAPPING : groups
+    SOURCE_DATA ||--o{ DELIVERY_MAPPING : originates
     DELIVERY_SUBMIT ||--o{ DELIVERY_NODE : scopes
     DELIVERY_TASK ||--o{ DELIVERY_NODE : executes
     DELIVERY_SUBMIT ||--o{ DELIVERY_EVENT : scopes
     DELIVERY_TASK o|--o{ DELIVERY_EVENT : traces
-    DELIVERY_NODE o|--o{ DELIVERY_EVENT : emits
-    DELIVERY_ENTITY o|--o{ DELIVERY_EVENT : references
     SOURCE_DATA ||--o{ REQUEST_ID_ALLOCATION : numbers
+    DELIVERY_SUBMIT ||--o{ REQUEST_ID_SEQUENCE : namespaces
 ```
 
-核心不变量：
-
-- task.delivery_id 必须等于 source_data.delivery_id；delivery_node.delivery_id 必须等于 task.delivery_id，由应用事务验证。
-- task 直接引用启用实体；target_seq 在同一提交同一实体内从 1 分配且不超过 targetCount。
-- 非 EXPIRED/CANCELLED 任务计入主单有效目标；跨日新 task 占用下一交付日对应实体配额，旧 EXPIRED 只保留历史，不与新 task 重复计数。
-- task 用 data_id + artifact_seq 定位一个产物，文件、size/token/SHA 必须与 artifact 一致。
-- 跨日保持 delivery_id/data_id/delivery_entity_id/target_seq/artifact_seq，旧任务 superseded_by_task_id 指向新 task_id；主单未全部成功前为 PARTIALLY_DELIVERED。
-- 每个 delivery_node 只写当前节点通用 locator，不写 Secret 或其他节点私有字段。
+- mapping 的 task/delivery 与 data/delivery 复合外键保证任务和来源属于同一提交。
+- 一个任务的 `source_seq` 从 1 连续分配，`(task_id,data_id)` 唯一；跨日新 taskId 复制完整映射。
+- `delivery_task` 保存 entity_code，不保存 data_id、target_seq、artifact_seq、original_file_name、sha256、superseded_by_task_id、invalidated_at、invalidation_reason 或单数 artifact。
+- 跨日新旧 taskId、日期和原因由 `delivery_event` 的 TASK_EXPIRED/TASK_REGENERATED payload 保存；旧任务 EXPIRED，新任务占下一日目标配额。
+- 来源原始 original_file_name/size/SHA/artifact 不被合并产物覆盖；任务的每个 sourceArtifact 必须等于对应 source_data.artifact。
 
 ## 3. 来源、实体与集中配置
 
@@ -52,156 +47,66 @@ erDiagram
 
 | 字段 | 类型/约束 | 用途 |
 |---|---|---|
-| source_id | bigint identity PK | 来源 ID |
-| oss_uri | varchar(1280) unique not null | 无 Secret、无签名参数的 OSS URI |
-| availability_status | varchar(16) default AVAILABLE | AVAILABLE/UNAVAILABLE |
-| channel_code | varchar(64) not null | 供应商或业务渠道 |
-| oss_type | varchar(32) not null | 对象存储类型 |
-| previous_refresh_bytes | bigint default 0 check >=0 | 上一次成功刷新字节数 |
-| latest_refresh_bytes | bigint default 0 check >=0 | 最近成功刷新字节数 |
-
-只保留七列；没有刷新历史或每日统计表。
+| source_id | bigint identity PK | 内部来源 ID，不由提交 API 传入 |
+| oss_uri | varchar(1280) unique not null | 无 Secret、无签名参数的原始 OSS URI |
+| availability_status | varchar(16) | AVAILABLE/UNAVAILABLE |
+| channel_code/oss_type | varchar not null | 渠道和对象存储类型；URI 首次提交时自动登记 |
+| previous_refresh_bytes/latest_refresh_bytes | bigint >=0 | 最近两次成功发现字节数 |
 
 ### 3.2 delivery_entity
 
 | 字段 | 类型/约束 | 用途 |
 |---|---|---|
-| delivery_entity_id | bigint identity PK | 实体 ID |
-| vendor_code/entity_code | varchar(64)，联合唯一 | 厂商与厂商内实体编码 |
+| delivery_entity_id | bigint identity PK | 内部实体 ID |
+| vendor_code | varchar(64) not null | 与 entity_code 联合唯一，同厂商多个实体整体分配 |
+| entity_code | varchar(64) not null | 与 vendor_code 联合唯一，复合提交和 repair 使用 |
 | entity_name | varchar(128) not null | 展示名称 |
-| protocol | varchar(32) not null | 实体能力协议，不决定 DAG |
-| account_name | varchar(128) not null | 业务账户，不是密码 |
-| worker_group | varchar(32) not null，安全标识 CHECK | 实体默认单服务器执行组，新任务保存快照 |
-| endpoint_locator | jsonb object default '{}' | host/port/rootPath 等非 Secret 定位 |
-| enabled | boolean default true | 是否允许新提交引用 |
-| created_at/updated_at | timestamptz not null | 创建和修改时间 |
-
-endpoint_locator 禁止 password、privateKey、accessKeyId、accessKeySecret 和签名 URL。
+| protocol/account_name | varchar not null | 交付协议与业务账户，不是密码 |
+| worker_group | varchar(32) not null | 单服务器执行组，新任务保存快照 |
+| endpoint_locator | jsonb object | host/port/rootPath 等非 Secret 定位 |
+| enabled | boolean | 是否允许新提交引用 |
+| created_at/updated_at | timestamptz | 创建与修改时间 |
 
 ### 3.3 pipeline / pipeline_version
 
-`pipeline`：pipeline_id、pipeline_code unique、description、created_at。
+`pipeline` 保存内部 pipeline_id、唯一 pipeline_code、description、created_at。`pipeline_version` 保存内部版本 ID、pipeline_id、version_no、状态、definition、definition_sha256、created_by、published_at、created_at。
 
-`pipeline_version`：
+`pipeline_code` 提交时选择 version_no 最大的 PUBLISHED 版本，提交后固化 pipeline_version_id。definition 顶层只有 `pipelineCode/version/nodeDefinitions/ruleSets/config/nodes` 契约；PUBLISHED 不可改。提交显式携带 cutoffAt，服务端只校验其在未来，不再从 Pipeline 推导。
 
-| 字段 | 类型/约束 | 用途 |
-|---|---|---|
-| pipeline_version_id | bigint identity PK | 版本 ID |
-| pipeline_id | bigint FK not null | 所属 Pipeline |
-| version_no | int >0，与 pipeline_id 联合唯一 | 版本号 |
-| status | varchar(16) | DRAFT/PUBLISHED/ARCHIVED |
-| definition | jsonb object not null | 全部流程配置和规则 |
-| definition_sha256 | varchar(64) 小写 SHA | 快照完整性 |
-| created_by | varchar(64) | 创建者 |
-| published_at | timestamptz null | 发布时间 |
-| created_at | timestamptz not null | 创建时间 |
-
-definition 顶层结构：
-
-```json
-{
-  "pipelineCode": "archive-delivery",
-  "version": 1,
-  "nodeDefinitions": {
-    "oss.download": {
-      "enabled": true,
-      "configSchema": {"type": "object"},
-      "inputContract": {"type": "object"},
-      "outputContract": {"type": "object"}
-    }
-  },
-  "ruleSets": {
-    "fix-archive-legacy-v1": {
-      "version": 1,
-      "status": "PUBLISHED",
-      "definition": {"schemaVersion": 1}
-    }
-  },
-  "config": {
-    "businessTimezone": "Asia/Shanghai",
-    "deliveryCutoffTime": "18:00:00",
-    "rolloverStartNode": "targetUpload",
-    "selection": {"orderBy": "key", "limit": 3, "duplicatePolicy": "FILTER_WITH_REASON"},
-    "assignment": {"strategySource": "SUBMIT_TARGETS"},
-    "concurrency": {"maxRunningTasks": 3},
-    "retry": {"maxAttempts": 5}
-  },
-  "nodes": []
-}
-```
-
-只有 PUBLISHED 可提交，发布后 definition 不可改。Secret 只写不读并脱敏返回。数据库 CHECK 要保障 nodeDefinitions/ruleSets 为 object，应用发布校验节点类型、规则引用、DAG 和节点 Schema。
-
-## 4. 交付提交与源数据
+## 4. 提交、来源与请求编号
 
 ### 4.1 delivery_submit
 
 | 字段 | 类型/约束 | 用途 |
 |---|---|---|
 | delivery_id | bigint identity PK | 跨日稳定交付 ID |
-| delivery_batch | varchar(128) not null | 用户批次，与 source_id 联合唯一 |
-| source_id | bigint FK not null | 来源 |
-| pipeline_version_id | bigint FK not null | 不可变版本 |
-| idempotency_key | varchar(128) unique not null | 全局幂等键 |
-| delivery_date | date not null | 首个交付日 |
-| cutoff_at | timestamptz not null | 首批截止时间 |
+| delivery_batch | varchar(128) unique not null | 全局幂等键和 request_namespace |
+| source_id | bigint FK not null | 由 ossUri 解析的内部来源 |
+| pipeline_version_id | bigint FK not null | 由 pipelineCode 选择的不可变版本 |
+| delivery_date/cutoff_at | date/timestamptz not null | 首个交付日与提交显式截止时间 |
 | submitted_at | timestamptz not null | 接受时间 |
-| target_strategy | jsonb object not null | targets 请求快照 |
-| status | varchar(40) default SUBMITTED | 聚合状态 |
-| discovery_completed_at | timestamptz null | 发现和规划完成时间 |
-| completed_at | timestamptz null | 交付或取消终态时间 |
-| created_at/updated_at | timestamptz not null | 创建和投影更新时间 |
-
-索引：(status,updated_at,delivery_id)、(pipeline_version_id,delivery_id)。没有组策略、组表或来源绑定表。
-
-target_strategy 严格契约：
+| target_strategy | jsonb object not null | 不可变 vendorCode/entityCode/targetCount 快照 |
+| status | varchar(40) | 聚合状态，含 PAUSED |
+| discovery_completed_at/completed_at | timestamptz null | 规划完成和终态时间 |
+| created_at/updated_at | timestamptz | 创建和投影时间 |
 
 ```json
 {
   "schemaVersion": 1,
   "targets": [
-    {"targetCount": 1, "deliveryEntityId": 101},
-    {"targetCount": 1, "deliveryEntityId": 102},
-    {"targetCount": 1, "deliveryEntityId": 103}
+    {"targetCount": 1, "vendorCode": "alibaba", "entityCode": "jun"},
+    {"targetCount": 1, "vendorCode": "alibaba", "entityCode": "jun2"}
   ]
 }
 ```
 
-targets 非空，实体在提交内不重复，targetCount 为正整数；快照不随任务状态回写。
+相同 deliveryBatch 且 ossUri、pipelineCode、deliveryDate、targets 完全一致时返回原 deliveryId；不同参数返回 409。主单 PAUSED 时，相同请求把所有 PAUSED 任务从各自 current_node_id 恢复为 READY，不重复发现、建单或分配号段。
 
 ### 4.2 source_data
 
-| 字段 | 类型/约束 | 用途 |
-|---|---|---|
-| data_id | bigint identity PK | 源数据 ID |
-| delivery_id | bigint FK not null | 所属提交 |
-| original_request_id/new_request_id | varchar(256) null | 原始/repair 后请求编号 |
-| request_namespace | varchar(128) default '' | 编号命名空间 |
-| original_locator | jsonb object default '{}' | 原始定位 |
-| output_locator | jsonb object default '{}' | repair 后包内定位 |
-| qualification | varchar(32) default PENDING | PENDING/QUALIFIED/QUALIFIED_WITH_SKIPS/FILTERED/UNQUALIFIED |
-| filter_rule_code/filter_reason | varchar null | FILTERED 时必填 |
-| affected_count | bigint >=0 | 影响条目数 |
-| rule_version | varchar(128) null | repair 规则版本 |
-| size_bytes/token_count | bigint >=0 | 主产物大小与 token |
-| sha256 | varchar(64) null | 主产物 SHA |
-| artifacts | jsonb array default '[]' | 严格七字段产物数组 |
+保留 data_id、delivery_id、original_file_name、request_namespace、original/output_locator、qualification、过滤原因、affected_count、rule_version、原始 size_bytes/token_count/sha256、单个 artifact、created_at/updated_at；不保存 original_request_id、new_request_id 或 artifacts 数组。repair 后同任务来源的 request_namespace 统一为 deliveryBatch，updated_at 由触发器维护。
 
-约束：
-
-```text
-UNIQUE(request_namespace,new_request_id)
-  WHERE new_request_id IS NOT NULL AND qualification<>'FILTERED'
-UNIQUE(delivery_id,(original_locator->>'sourceUri'),(original_locator->>'sourceVersion'))
-  WHERE qualification<>'FILTERED'
-INDEX(delivery_id,qualification,data_id)
-INDEX(delivery_id,sha256) WHERE sha256 IS NOT NULL
-CHECK(qualification<>'FILTERED' OR filter_rule_code/filter_reason 均非空)
-```
-
-original_locator 白名单：schemaVersion/sourceUri/sourceVersion/memberPath/responsePaths。output_locator 白名单：schemaVersion/memberPath/manifestPath，不保存交付 OSS/FTP URI。
-
-artifacts 每项严格七字段：
+original_locator 白名单为 schemaVersion/sourceUri/sourceVersion/cachePath/memberPath/responsePaths；cachePath 是 URI+版本确定的同机共享源包缓存，跨 delivery 和其他厂商分配复用时不重复 OSS GET，其他执行组缓存缺失时回退 OSS。output_locator 白名单为 schemaVersion/memberPath/manifestPath。artifact 是严格七字段对象，并与 original_file_name/size/token/SHA 完全一致：
 
 ```json
 {
@@ -211,176 +116,109 @@ artifacts 每项严格七字段：
   "sizeBytes": 10240,
   "sha256": "64-lowercase-hex-characters",
   "token": 2048,
-  "file_mapping": {"req_0001": "req_0003"}
+  "file_mapping": {}
 }
 ```
 
-artifactSeq/newFileName 数组内唯一；文件名不得含路径分隔符或 `..`；数值非负；file_mapping 为 object。数据库触发器拒绝额外字段。
+### 4.3 request_id_sequence / request_id_allocation
 
-## 5. 交付任务与节点
+两表 request_namespace 均外键引用 `delivery_submit.delivery_batch`。sequence 通过行锁分配不重叠号段；allocation 保存 allocation_id、request_namespace、data_id、request_key、start_value、count_value、created_at。repair 重试按命名空间、首来源 dataId 和 requestKey 复用原号段，失败空洞不回收。全局唯一 deliveryBatch 防止不同提交共用请求号段。
 
-### 5.1 delivery_task
+## 5. 交付任务、映射与节点
+
+### 5.1 delivery_mapping
+
+| 字段 | 类型/约束 | 用途 |
+|---|---|---|
+| task_id/delivery_id | bigint 复合 FK | 所属任务和提交 |
+| data_id | bigint 复合 FK | 同提交 source_data |
+| source_seq | int >0 | 下载、合并顺序 |
+| created_at/updated_at | timestamptz | 映射创建和最近更新时间，默认当前时间 |
+
+主键 `(task_id,source_seq)`，`UNIQUE(task_id,data_id)`；索引覆盖 data_id 和 `(delivery_id,task_id,source_seq)`。
+
+### 5.2 delivery_task
 
 | 字段组 | 字段 | 类型/约束与用途 |
 |---|---|---|
-| 血缘目标 | task_id | bigint identity PK，跨日生成新值 |
-|  | delivery_id/data_id | bigint FK not null |
-|  | delivery_entity_id | bigint FK not null，直接交付实体 |
-| 执行域 | worker_group | varchar(32) not null，创建时固化实体执行组；claim/retry/rollover 不跨组 |
-|  | target_seq | int >0，同一提交实体内目标序号 |
-|  | artifact_seq | int >0，产物序号 |
-| 日期 | delivery_date/cutoff_at | date/timestamptz not null |
-| 文件 | original_file_name/new_file_name | varchar(512) not null |
-|  | size_bytes/token_count | bigint >=0 |
-|  | sha256 | varchar(64) null，小写 SHA |
-| 执行 | current_node_id | varchar(64) not null |
-|  | execution_status | READY/RUNNING/WAITING/RETRY_WAIT/BLOCKED/SUCCEEDED/EXPIRED/CANCELLED |
-| 租约 | lease_owner/lease_until | Worker 与租约截止，可空 |
-|  | fence | bigint default 0，claim 递增 |
-| 重试 | retry_count | int >=0 |
-|  | next_retry_at/last_error_code | 可空 |
-| 跨日 | superseded_by_task_id | bigint FK unique null |
-|  | invalidated_at/invalidation_reason | EXPIRED 时记录 |
+| 血缘 | task_id/delivery_id/delivery_entity_id/entity_code | bigint PK/FK 与实体编码快照 |
+| 执行域 | worker_group | varchar(32)，创建和跨日固化 |
+| 日期 | delivery_date/cutoff_at | 当前交付日和截止 |
+| 文件 | new_file_name | varchar(512)，delivery 内连续序号；有效任务文件名全局唯一 |
+| 汇总 | size_bytes/token_count | bigint >=0，repair 前为来源合计，修复后严格等于交付包值 |
+| 产物 | artifacts | jsonb array not null default []，逐来源产物对 |
+| 元数据 | metadata_ids | jsonb array not null default []，修复后 requestId 列表 |
+| 执行 | current_node_id/execution_status | 当前 DAG 节点和状态 |
+| 租约 | lease_owner/lease_until/fence | Worker 租约和执行纪元 |
+| 重试 | retry_count/next_retry_at/last_error_code | 有界重试事实 |
 | 时间 | completed_at/created_at/updated_at | 完成、创建和更新时间 |
 
-约束与索引：
+任务状态：`READY/RUNNING/WAITING/RETRY_WAIT/BLOCKED/PAUSED/SUCCEEDED/EXPIRED/CANCELLED`。PAUSED 只在节点边界设置，不被 claim。`uk_task_active_delivery_file_name(delivery_id,new_file_name)` 只排除 EXPIRED/CANCELLED，因此跨日新 taskId 可复用原包名，不同实体有效任务不能重名。
 
-```text
-UNIQUE(delivery_id,delivery_entity_id,delivery_date,new_file_name)
-UNIQUE(delivery_id,delivery_entity_id,data_id,artifact_seq)
-  WHERE execution_status NOT IN('EXPIRED','CANCELLED')
-UNIQUE(delivery_id,delivery_entity_id,target_seq)
-  WHERE execution_status NOT IN('EXPIRED','CANCELLED')
-UNIQUE(superseded_by_task_id)
-CHECK((execution_status='EXPIRED')=(invalidated_at IS NOT NULL))
-INDEX(delivery_id,execution_status,delivery_date,task_id)
-INDEX(worker_group,execution_status,next_retry_at,delivery_date,task_id)
-INDEX(cutoff_at,task_id) WHERE 非成功/超期/取消
-INDEX(delivery_entity_id,execution_status,task_id)
-```
-
-没有 delivery_group_id、group_code、assigned_count 或组状态。目标 assignedCount/completedCount/status 由查询派生。
-
-### 5.2 delivery_node
-
-| 字段 | 类型/约束 | 用途 |
-|---|---|---|
-| process_id | bigint identity PK | 一次节点尝试 ID |
-| delivery_id/task_id | bigint FK not null | 完整任务血缘 |
-| original_file_name/new_file_name | varchar(512) not null | 文件名快照 |
-| node_id/node_type/stage_code | varchar not null | DAG 节点、类型和阶段快照 |
-| attempt | int >0 | 同 task/node 内递增 |
-| fence | bigint not null | claim 执行纪元 |
-| status | varchar(16) | RUNNING/SUCCEEDED/WAITING/FAILED/CANCELLED |
-| worker_instance_id | varchar(128) null | Worker 实例 |
-| input_locator/output_locator | jsonb object default '{}' | 通用输入输出定位 |
-| error_code/error_detail | 可空 | 脱敏错误 |
-| started_at/heartbeat_at/finished_at | timestamptz | 开始、心跳和结束时间 |
-
-约束：UNIQUE(task_id,node_id,attempt)；索引(delivery_id,task_id,started_at,process_id) 和 RUNNING 心跳索引。没有 implementation、Manifest、PID、progress 或多输出关联表。
-
-output_locator 示例：
+artifacts 每项严格三字段：
 
 ```json
 {
-  "schemaVersion": 1,
-  "nodeId": "targetUpload",
-  "uri": "oss://target-bucket/archive-delivery/1/entity-101/2026-11-07/batch_00001.tar.gz",
-  "sizeBytes": 10240,
-  "sha256": "64-lowercase-hex-characters",
-  "verifiedAt": "2026-11-07T10:00:00Z"
+  "dataId": 101,
+  "sourceArtifact": {
+    "artifactSeq": 1,
+    "originalFileName": "source-01.tar.gz",
+    "newFileName": "source-01.tar.gz",
+    "sizeBytes": 1024,
+    "sha256": "source-sha256",
+    "token": 1024,
+    "file_mapping": {}
+  },
+  "deliveryArtifact": {
+    "artifactSeq": 1,
+    "originalFileName": "source-01.tar.gz",
+    "newFileName": "batch_00001.tar.gz",
+    "sizeBytes": 2048,
+    "sha256": "delivery-sha256",
+    "token": 2048,
+    "file_mapping": {"old-request-dir": "new-request-id"}
+  }
 }
 ```
 
-nodeId 必须等于本行 node_id。最终 FTP 节点额外保存 downloadPath 和实际下载 size/SHA。URI 不得包含 Secret 或签名参数。
+repair 前 deliveryArtifact 为 JSON null，任务 size/token 等于来源原始值合计；repair 后每个来源对保存同一合并包的 size/token/SHA/newFileName，任务 size/token 与其一致。sourceArtifact 必须逐字段等于同 delivery 下 source_data.artifact。file_mapping 只包含该 dataId 对应来源的请求，键是真实 originalPath，值是新 requestId；跨源同名目录分别保存在各自来源对中，不写人工成员键。dataId 在数组内唯一，两个 artifact 均严格七字段。metadata_ids 是字符串数组，每项为修复后请求目录及其 `metadata.json` 的 requestId，数组内唯一，并与所有来源 file_mapping 的 requestId 全集完全一致。
 
-## 6. 请求编号与事件
+### 5.3 delivery_node
 
-`request_id_sequence`：request_namespace PK、next_value >=0、updated_at。通过行锁分配，失败空洞不回收。
+保留 process_id、delivery_id/task_id、执行时 original/new_file_name 快照、node_id/node_type/stage_code、attempt、fence、status、worker_instance_id、通用 input/output_locator、脱敏错误和时间。任务删除 original_file_name 不影响节点历史快照；新节点从首来源 sourceArtifact 取得原始文件名。repair locator 同时保存 entityCode。
 
-`request_id_allocation`：allocation_id、request_namespace、data_id FK、request_key、start_value、count_value >0、created_at；UNIQUE(request_namespace,data_id,request_key) 和 UNIQUE(request_namespace,start_value)。
+最终 OSS/FTP locator 保存安全 URI、下载路径、size/SHA、verifiedAt；不保存 Secret 或签名参数。
 
-`delivery_event`：
+## 6. 事件与状态
 
-| 字段 | 类型/约束 | 用途 |
-|---|---|---|
-| event_id | bigint identity PK | 事件 ID |
-| delivery_id | bigint FK not null | 所属交付 |
-| task_id/process_id | bigint FK null | 相关任务和 delivery_node 尝试 |
-| delivery_entity_id/data_id | bigint FK null | 相关实体和源数据 |
-| event_type | varchar(64) not null | 稳定机器码 |
-| severity | INFO/WARN/ERROR | 级别 |
-| reason_code/message | 可空 | 脱敏原因 |
-| payload | jsonb object default '{}' | 白名单结构化事实 |
-| operator_id | varchar(64) null | 人工操作者 |
-| occurred_at | timestamptz not null | 发生时间 |
-| dedup_key | varchar(256)，与 delivery_id 联合唯一 | 幂等去重 |
+delivery_event 只 INSERT，保存 delivery_id、可选 task/process/entity/data 血缘、event_type、severity、reason/message、白名单 payload、operator、occurred_at、dedup_key。
 
-事件只 INSERT，数据库触发器拒绝 UPDATE/DELETE。payload 可含 dataId/taskId/processId/deliveryEntityId/targetSeq、safe URI、SHA、日期和原因，禁止 Secret、私钥、完整请求响应和 Shell。
-
-## 7. 状态与跨日
-
-delivery_submit.status：
+提交状态：
 
 ```text
 SUBMITTED / DISCOVERING / PLANNING / PROCESSING / WAITING / RETRYING /
-BLOCKED / PARTIALLY_DELIVERED / DELIVERED / COMPLETED_WITH_CANCELLATIONS / CANCELLED
+BLOCKED / PAUSED / PARTIALLY_DELIVERED / DELIVERED /
+COMPLETED_WITH_CANCELLATIONS / CANCELLED
 ```
 
-DELIVERED 要求 discovery 完成、active 等于 targetCount 总和且全部 SUCCEEDED。active 只统计非 EXPIRED/CANCELLED 任务。存在 EXPIRED 血缘且尚未全部成功时为 PARTIALLY_DELIVERED；该状态不是终态，completed_at 保持 NULL，次日继续期间不改变，全部成功后 DELIVERED。
+DELIVERED 要求 discovery 完成、有效任务数等于 targetCount 总和且全部 SUCCEEDED。PAUSED 优先于其他非终态投影。存在 EXPIRED 血缘且未全部成功时为 PARTIALLY_DELIVERED，completed_at 保持 NULL。
 
-跨日字段关系：
+跨日事件 payload：
 
-```text
-旧任务：EXPIRED，invalidated_at 非空，invalidation_reason=CUTOFF_EXCEEDED，
-        superseded_by_task_id=新 task_id
-新任务：delivery_date=指定下一交付日，cutoff_at=该日 Pipeline 截止，
-        current_node_id=rolloverStartNode，retry_count=0
-不变：  delivery_id/data_id/delivery_entity_id/worker_group/target_seq/artifact_seq
-配额：  新 task_id 占下一交付日对应实体配额，旧 EXPIRED 不与新任务重复计数
+```json
+{
+  "taskId": 10,
+  "oldTaskId": 10,
+  "newTaskId": 11,
+  "oldDeliveryDate": "2026-11-08",
+  "newDeliveryDate": "2026-11-09"
+}
 ```
 
-人工 rollover 必须输入 expectedDeliveryDate、deliveryDate、reason，且新日期晚于原日期。同一旧任务最多一个新任务，同一新任务最多被一个旧任务指向，禁止环。V15 增加 PARTIALLY_DELIVERED 状态 CHECK 和列注释，不改变 V14 清空重建契约。
+新任务复制 delivery_id、entity/entity_code、worker_group、new_file_name、artifacts、metadata_ids 和完整 delivery_mapping，从 rolloverStartNode 开始，retryCount 清零。
 
-## 8. 最终删除对象与 V14 契约
+## 7. V17 最终对象与安全约束
 
-升级后不得存在：
+V17 直接形成上述模型，不保留 source_data.original/new_request_id、artifacts 数组、delivery_task_source、旧任务字段、idempotency_key、兼容视图或旧 ID 映射。所有新表、列、枚举和触发器有注释；数据库触发器强制 source_data 原始事实与 artifact 一致、任务 sourceArtifact 与 source_data.artifact 一致，以及合并包 size/token、逐来源映射和 metadata_ids 一致。
 
-```text
-delivery_group
-delivery_pipeline_submit
-delivery_task_process
-node_definition
-rule_set
-source_pipeline_binding
-delivery_node_task_output
-ingest_source_daily_stat
-ingest_source_refresh
-operation_audit
-source_package / source_request / output_package / delivery_node_task
-production_group / production_line
-```
-
-V14 执行要求：
-
-1. 停止 server/Worker，仅在明确放弃老数据的环境设置 `archive_delivery.upgrade_authorized=2026-11-07`。
-2. 清空 schema 内旧业务表，身份序列重新开始；不读取、映射或保留旧交付数据。
-3. 创建本文表、外键、CHECK、索引、触发器和全部 COMMENT ON。
-4. 不创建兼容视图、legacy task 或旧 ID 映射，不做迁移对账。
-5. 验收查询第 8 章对象不存在，当前核心表存在，全表全列注释覆盖率 100%。
-
-## 9. 本地与外部定位
-
-源下载、repair、OSS 回验和 FTP 下载路径属于受控运行事实，保存在 delivery_node 通用 locator；路径必须限制在 Worker 工作根目录。外部对象键使用：
-
-```text
-{configuredPrefix}/{deliveryId}/entity-{deliveryEntityId}/{deliveryDate}/{newFileName}
-```
-
-FTP 相对路径使用：
-
-```text
-{deliveryId}/{deliveryDate}/entity-{deliveryEntityId}/{newFileName}
-```
-
-同 URI 同 SHA 幂等成功，不同 SHA 阻断；不得清理历史目录或覆盖其他任务文件。
+源文件、merge 工作目录、repair 包和 FTP 下载文件均位于 Worker 受控持久目录。非模板 OSS 路径包含 `deliveryBatch/deliveryId/entity/date`，本地 FTP 模板包含 deliveryBatch；生产使用 `{providerCode}/{deliveryDate}-{deliveryBatch}-{providerCode}` 模板。所有路径都隔离不同批次；同 URI 同 SHA 幂等，不同 SHA 阻断且不覆盖历史。

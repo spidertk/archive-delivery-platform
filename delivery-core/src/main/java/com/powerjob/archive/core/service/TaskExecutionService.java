@@ -70,10 +70,17 @@ public class TaskExecutionService {
         PipelineDefinition pipeline = onlyCurrentNodeConfig(rawPipeline, rawNode.id());
         NodeDefinition node = pipeline.node(rawNode.id());
         long processId = nodes.start(task, node, workerId);
+        Long sourceDataId = null;
         try {
-            SourceData source = sources.findById(task.dataId()).orElseThrow();
+            java.util.List<SourceData> taskSources = sources.byTaskId(task.taskId());
+            if (taskSources.isEmpty()) throw new IllegalStateException("Task source lineage is missing");
+            SourceData source = taskSources.get(0);
+            sourceDataId = source.dataId();
             DeliveryEntity entity = deliveries.entity(task.deliveryEntityId());
-            NodeResult result = engine.execute(new NodeContext(task, source, entity, node, pipeline,
+            log.info("Delivery node started deliveryId={} taskId={} processId={} node={} sourceCount={} sourceDataIds={} entityId={} vendorCode={} workerGroup={}",
+                    task.deliveryId(), task.taskId(), processId, node.id(), taskSources.size(),
+                    taskSources.stream().map(item -> Long.toString(item.dataId())).toList(), entity.deliveryEntityId(), entity.vendorCode(), task.workerGroup());
+            NodeResult result = engine.execute(new NodeContext(task, source, taskSources, entity, node, pipeline,
                     processId, task.fence(), workerId, nodes.succeededOutputs(task.taskId())));
             if (result.kind() == NodeResult.ResultKind.WAITING) {
                 transactions.executeWithoutResult(status -> {
@@ -92,7 +99,7 @@ public class TaskExecutionService {
             }
             boolean terminal = result.nextNode() == null;
             transactions.executeWithoutResult(status -> {
-                sources.applyPatch(task.dataId(), result.sourcePatch());
+                if (result.sourcePatch() != null) sources.markSourcesQualified(task.taskId(), result.sourcePatch().ruleVersion(), result.sourcePatch().requestNamespace());
                 nodes.finish(processId, "SUCCEEDED", result.inputLocator(), result.outputLocator(), null, null);
                 tasks.complete(task.taskId(), task.fence(), workerId, terminal ? node.id() : result.nextNode(), result.sourcePatch(), terminal);
                 events.append(task.deliveryId(), task.taskId(), processId, task.deliveryEntityId(), source.dataId(), "NODE_SUCCEEDED", "INFO",
@@ -102,24 +109,25 @@ public class TaskExecutionService {
             });
             log.info("Delivery node succeeded deliveryId={} taskId={} processId={} node={}", task.deliveryId(), task.taskId(), processId, node.id());
         } catch (Exception error) {
-            fail(task, node, processId, workerId, error);
+            fail(task, node, processId, workerId, sourceDataId, error);
         }
         return 1;
     }
 
-    private void fail(DeliveryTask task, NodeDefinition node, long processId, String workerId, Exception error) {
+    private void fail(DeliveryTask task, NodeDefinition node, long processId, String workerId, Long sourceDataId, Exception error) {
         RetryPolicy.Decision decision = retries.onFailure(error, task.retryCount(), 5);
         String detail = safeError(error);
         transactions.executeWithoutResult(status -> {
             nodes.finish(processId, "FAILED", null, null, decision.errorCode(), detail);
             tasks.markFailure(task.taskId(), task.fence(), workerId, decision);
-            events.append(task.deliveryId(), task.taskId(), processId, task.deliveryEntityId(), task.dataId(), "NODE_FAILED",
+            events.append(task.deliveryId(), task.taskId(), processId, task.deliveryEntityId(), sourceDataId, "NODE_FAILED",
                     "ERROR", decision.errorCode(), detail, mapper.createObjectNode().put("taskId", task.taskId())
                             .put("processId", processId).put("nodeId", node.id()), workerId, "node-failed-" + processId);
             projections.refresh(task.deliveryId());
         });
-        log.warn("Delivery node failed deliveryId={} taskId={} processId={} node={} errorCode={}",
-                task.deliveryId(), task.taskId(), processId, node.id(), decision.errorCode());
+        log.warn("Delivery node failed deliveryId={} taskId={} processId={} node={} errorCode={} retryCount={} nextRetrySeconds={} detail={}",
+                task.deliveryId(), task.taskId(), processId, node.id(), decision.errorCode(), decision.retryCount(),
+                decision.nextRetrySeconds(), detail);
     }
 
     private PipelineDefinition pipeline(long deliveryId) {

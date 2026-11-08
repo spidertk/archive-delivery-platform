@@ -6,6 +6,7 @@ export interface Summary {
   blocked: number
   retrying: number
   waiting: number
+  paused: number
   expired: number
   targets: DeliveryTarget[]
 }
@@ -18,6 +19,7 @@ export interface DeliveryTarget {
   deliveryEntityId: number
   workerGroup: string
   vendorCode: string
+  entityCode: string
   entityName: string
   protocol: string
   accountName: string
@@ -33,20 +35,24 @@ export interface Artifact {
   file_mapping: Record<string, string>
 }
 
+export interface ArtifactPair {
+  dataId: number
+  sourceArtifact: Artifact
+  deliveryArtifact?: Artifact
+}
+
 export interface DeliveryTask {
   taskId: number
   deliveryId: number
-  dataId: number
+  sourceDataIds: number[]
   deliveryEntityId: number
   workerGroup: string
-  targetSeq: number
   vendorCode: string
+  entityCode: string
   entityName: string
   accountName: string
-  artifactSeq: number
   deliveryDate: string
   cutoffAt: string
-  originalFileName: string
   newFileName: string
   sizeBytes: number
   tokenCount: number
@@ -58,8 +64,8 @@ export interface DeliveryTask {
   fence: number
   retryCount: number
   lastErrorCode?: string
-  supersededByTaskId?: number
-  artifacts: Artifact[]
+  artifacts: ArtifactPair[]
+  metadataIds: string[]
 }
 
 export interface NodeItem {
@@ -99,15 +105,15 @@ export interface Timeline {
 
 export interface SubmitTarget {
   targetCount: number
-  deliveryEntityId: number
+  vendorCode: string
+  entityCode: string
 }
 
 export interface SubmitDelivery {
-  sourceId: number
-  pipelineVersionId: number
+  ossUri: string
+  pipelineCode: string
   deliveryDate: string
-  cutoffAt: string
   deliveryBatch: string
-  idempotencyKey: string
+  cutoffAt: string
   targets: SubmitTarget[]
 }

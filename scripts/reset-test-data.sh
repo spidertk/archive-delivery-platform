@@ -19,8 +19,8 @@ DO $$ BEGIN
     RAISE EXCEPTION 'V14 local test schema is required';
   END IF;
 END $$;
-TRUNCATE delivery_event,delivery_node,delivery_task,request_id_allocation,source_data,
-  delivery_submit RESTART IDENTITY CASCADE;
+TRUNCATE delivery_event,delivery_node,delivery_mapping,delivery_task,request_id_allocation,source_data,
+  delivery_submit CASCADE;
 DELETE FROM request_id_sequence;
 SQL
 printf 'Local delivery facts reset; Pipeline/entity configuration and external history were preserved.\n'

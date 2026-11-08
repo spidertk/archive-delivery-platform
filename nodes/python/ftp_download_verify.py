@@ -64,6 +64,7 @@ def transfer(request):
         ftp.connect(request["host"], int(request["port"]), timeout=30)
         ftp.login(request["username"], request["password"])
         ftp.voidcmd("TYPE I")
+        print(f"FTP_CONNECTED host={request['host']} rootPath={root} remotePath={remote_full}", flush=True)
         existing = remote_matches(ftp, remote_full, request["expectedSize"], request["expectedSha256"])
         if existing is False:
             raise ValueError("FTP remote exists with different size or SHA")
@@ -73,6 +74,7 @@ def transfer(request):
                 ftp.storbinary("STOR " + remote_full, stream)
             if remote_matches(ftp, remote_full, request["expectedSize"], request["expectedSha256"]) is not True:
                 raise ValueError("FTP upload verification failed")
+            print(f"FTP_UPLOAD_VERIFIED remotePath={remote_full} size={request['expectedSize']} sha256={request['expectedSha256']}", flush=True)
         try:
             with partial.open("wb") as stream:
                 ftp.retrbinary("RETR " + remote_full, stream.write)
@@ -122,9 +124,10 @@ def main():
     try:
         if sys.argv[1:] == ["--preflight"]:
             result = preflight(json.load(sys.stdin))
+            print(json.dumps(result, ensure_ascii=False))
         else:
             result = transfer(json.load(sys.stdin))
-        print(json.dumps(result, ensure_ascii=False))
+            print("FTP_RESULT " + json.dumps(result, ensure_ascii=False))
     except Exception as error:
         print(type(error).__name__ + ": " + str(error), file=sys.stderr)
         return 1

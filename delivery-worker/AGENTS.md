@@ -4,34 +4,31 @@
 
 `delivery-worker` 接收 PowerJob 通用触发，把提交准备、任务推进和截止扫描交给 delivery-core。Processor 只负责触发、有界槽位和摘要，不写死节点链；顺序完全由 delivery_submit 绑定的 PipelineVersion 决定。
 
-入口：`src/main/java/com/powerjob/archive/worker/ArchiveWorkerApplication.java`。
-
 | 通用调度 | 类型 | 业务作用 |
 |---|---|---|
-| 提交准备 | STANDALONE | 按 selection/targets 发现 source_data 并形成直属实体任务 |
-| 任务推进 | BROADCAST 或有界池 | claim 最新任务，每次执行一个 currentNodeId |
-| 截止扫描 | STANDALONE | EXPIRED 并生成下一日 task_id；主单保持 PARTIALLY_DELIVERED 至全部成功 |
-
-正式运行启用 PowerJob，业务重试由 PG/RetryPolicy 管理，PowerJob 调度重试为 0。Processor 成功不代表任务 SUCCEEDED 或提交 DELIVERED。
+| 提交准备 | STANDALONE | 按 selection/entityCode targets 发现 source_data，依 vendorCode 整体分配并形成 delivery_mapping |
+| 任务推进 | BROADCAST 或有界池 | claim 最新非 PAUSED 任务，每次执行一个 currentNodeId |
+| 截止扫描 | STANDALONE | EXPIRED 并生成下一日 taskId，事件保存新旧血缘 |
 
 ## 执行边界
 
-1. 有界 executor；防重、目标唯一约束、lease/fence 和状态提交由 core + PG 保证。
-2. 每次 executeNext 只推进一个节点；WAITING 释放槽位，后续 Tick 继续。
-3. claim 后创建 delivery_node，提交前校验 task_id + fence + lease_owner。
-4. 跨日 RUNNING 通过 EXPIRED/fence 拒绝晚到提交，不强制 kill 或删除租约。
-5. 镜像只含当前节点工具，不安装或挂载跳板机私钥。
-6. Secret 只从当前 Pipeline 节点获取，不从全局业务环境变量回退。
-7. 生产不能回退 Local Node/debug runner；缩容先停止新 claim。
-8. `ARCHIVE_WORKER_GROUP` 是单服务器执行域；Worker 只抢同组任务，同机 Worker 共享本地 `/data`，跨机不共享。`ARCHIVE_MAX_RUNNING_TASKS` 按组限流，纯 Worker 用 27777–27779 接收 PowerJob 公网回调，并通过 external.address/port 注册本机公网地址；实际地址只写入未跟踪的本地配置。
+1. 有界 executor；防重、lease/fence 和状态提交由 core + PG 保证。
+2. 每次 executeNext 只推进一个节点；PAUSED 不认领，WAITING 释放槽位。
+3. 跨日 RUNNING 通过 EXPIRED/fence 拒绝晚到提交，不强杀外部 IO。
+4. Secret 只从当前 Pipeline 节点获取；生产不能回退 Local Node/debug runner。
+5. `ARCHIVE_WORKER_GROUP` 是单服务器执行域，同机 Worker 共享 /data，跨机不共享。
 
-## 核心验证职责
+## 当前数据面
 
-Worker 按 Pipeline 完成杭州源 OSS 直下载并保留源文件、本地 repair、三个实体各一任务、另一 OSS 上传、本地 FTP 下载验证。最终成功以外部 OSS/FTP size/SHA 和 delivery_node 事实为准。
+Worker 按 `oss.download → package.merge → python.repair → manifest.qualify → oss.upload → ftp.download-verify` 推进。超限源包下载前过滤，同 vendorCode 的 entityCode 目标整体顺序累计到 10 MiB 内且不切分。URI+版本源包在同机 source-cache 复用，sourceDownload 命中后本地校验复制并记录 cacheHit=true，其他执行组缓存缺失时回退 OSS。merge 输出请求目录；repair 接收 entityCode 并只最终封包一次。任务来源只读 delivery_mapping，任务 sourceArtifact 等于 source_data.artifact，metadata_ids 与来源映射全集一致。
+
+## 核心验证
 
 ```bash
 ./scripts/mvn.sh -pl delivery-worker -am test
 ./scripts/verify-delivery.sh <deliveryId>
 ```
 
-真实验收必须证明三份 OSS/FTP 外部 size/SHA、文件保留、无 `.partial`、单任务 retry 和跨日新 taskId。`ARCHIVE_REAL_E2E=true` 只用于明确授权环境；skipped/fake/PowerJob 绿色实例不算通过。
+本地真实核心 case 从指定 sg-storage products 下载三份样本，按每包 10 MiB 形成两个实体任务、每组上传一件，完成 repair/qualify、两件 OSS GET 回验和两个 FTP 账户各一件产物上传下载核验；同时实际覆盖暂停后原批次续交、单任务 retry 和跨日新 taskId。最终核对三份来源各分配一次、sourceArtifact=source_data.artifact、逐来源 originalPath 映射、metadataIds 与各 merge 请求数一致、包名在 delivery 内唯一、deliveryBatch 编号命名空间、外部 size/SHA、文件保留和无 .partial。
+
+`LocalMergedCaseVerificationTest` 仅用于显式本机 Compose V17 迁移/三来源映射辅助核验，不能替代真实节点验收。`ARCHIVE_REAL_E2E=true` 只用于明确授权环境；skipped、fake、PowerJob 绿色实例和数据库直写均不算端到端通过。模型或流程调整后必须实际跑通本地或生产完整链路。

@@ -1,6 +1,9 @@
 package com.powerjob.archive.core.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.powerjob.archive.core.domain.DeliveryEntity;
 import com.powerjob.archive.core.domain.DeliverySubmit;
 import com.powerjob.archive.core.domain.DeliveryTask;
@@ -18,42 +21,61 @@ import java.util.Optional;
 
 @Repository
 public class DeliveryTaskRepository {
+    private static final ObjectMapper JSON = new ObjectMapper();
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transactions;
     private final RowMapper<DeliveryTask> mapper = (rs, n) -> new DeliveryTask(
-            rs.getLong("task_id"), rs.getLong("delivery_id"), rs.getLong("data_id"), rs.getLong("delivery_entity_id"),
-            rs.getString("worker_group"), rs.getInt("target_seq"), rs.getInt("artifact_seq"),
-            rs.getObject("delivery_date", java.time.LocalDate.class), rs.getObject("cutoff_at", java.time.OffsetDateTime.class),
-            rs.getString("original_file_name"), rs.getString("new_file_name"), rs.getLong("size_bytes"), rs.getLong("token_count"),
-            rs.getString("sha256"), rs.getString("current_node_id"), rs.getString("execution_status"), rs.getString("lease_owner"),
+            rs.getLong("task_id"), rs.getLong("delivery_id"), rs.getLong("delivery_entity_id"),
+            rs.getString("entity_code"), rs.getString("worker_group"),
+            rs.getObject("delivery_date", java.time.LocalDate.class),
+            rs.getObject("cutoff_at", java.time.OffsetDateTime.class), rs.getString("new_file_name"),
+            rs.getLong("size_bytes"), rs.getLong("token_count"), JdbcJson.read(JSON, rs.getString("artifacts")),
+            JdbcJson.read(JSON, rs.getString("metadata_ids")), rs.getString("current_node_id"),
+            rs.getString("execution_status"), rs.getString("lease_owner"),
             rs.getObject("lease_until", java.time.OffsetDateTime.class), rs.getLong("fence"), rs.getInt("retry_count"),
             rs.getObject("next_retry_at", java.time.OffsetDateTime.class), rs.getString("last_error_code"),
-            (Long) rs.getObject("superseded_by_task_id"), rs.getObject("invalidated_at", java.time.OffsetDateTime.class),
-            rs.getString("invalidation_reason"), rs.getObject("completed_at", java.time.OffsetDateTime.class));
+            rs.getObject("completed_at", java.time.OffsetDateTime.class));
 
     public DeliveryTaskRepository(JdbcTemplate jdbc, TransactionTemplate transactions) {
         this.jdbc = jdbc;
         this.transactions = transactions;
     }
 
-    /** 创建任务时固化实体执行组；后续实体调整不会改变已有任务的本地文件执行域。 */
-    public long createPlanned(DeliverySubmit submit, SourceData source, DeliveryEntity entity, int targetSeq, String firstNode) {
-        if (source.deliveryId() != submit.deliveryId() || entity.deliveryEntityId() <= 0 || targetSeq <= 0
-                || !"QUALIFIED".equals(source.qualification()) && !"PENDING".equals(source.qualification())) {
-            throw new IllegalArgumentException("Source/target delivery lineage or qualification is invalid");
+    /** 规划时固化每个来源的原始产物对；packageSeq 在整个 delivery_id 内连续，交付产物在 repair 后补齐。 */
+    public long createPlanned(DeliverySubmit submit, List<SourceData> sourceList, DeliveryEntity entity, int packageSeq, String firstNode) {
+        if (sourceList == null || sourceList.isEmpty() || entity.deliveryEntityId() <= 0 || packageSeq <= 0) {
+            throw new IllegalArgumentException("Task sources and package sequence are required");
+        }
+        ArrayNode artifactPairs = JSON.createArrayNode();
+        for (SourceData source : sourceList) {
+            if (source.deliveryId() != submit.deliveryId()
+                    || !"QUALIFIED".equals(source.qualification()) && !"PENDING".equals(source.qualification())) {
+                throw new IllegalArgumentException("Source/target delivery lineage or qualification is invalid");
+            }
+            var pair = artifactPairs.addObject();
+            pair.put("dataId", source.dataId());
+            pair.set("sourceArtifact", source.artifact().deepCopy());
+            pair.set("deliveryArtifact", NullNode.instance);
         }
         String workerGroup = WorkerGroups.requireValid(entity.workerGroup());
-        JsonNode artifact = source.artifacts().required(0);
-        int artifactSeq = artifact.required("artifactSeq").asInt();
-        return transactions.execute(status -> jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq," +
-                        "delivery_date,cutoff_at,original_file_name,new_file_name,size_bytes,token_count,sha256,current_node_id) " +
-                        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING task_id", Long.class, submit.deliveryId(), source.dataId(),
-                entity.deliveryEntityId(), workerGroup, targetSeq, artifactSeq, submit.deliveryDate(), submit.cutoffAt(),
-                artifact.required("originalFileName").asText(), artifact.required("newFileName").asText(),
-                artifact.required("sizeBytes").asLong(), artifact.required("token").asLong(), artifact.required("sha256").asText(), firstNode));
+        String newFileName = String.format("batch_%05d.tar.gz", packageSeq);
+        long sizeBytes = sourceList.stream().mapToLong(SourceData::sizeBytes).sum();
+        long tokenCount = sourceList.stream().mapToLong(SourceData::tokenCount).sum();
+        return transactions.execute(status -> {
+            long taskId = jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,delivery_entity_id,entity_code,worker_group," +
+                            "delivery_date,cutoff_at,new_file_name,size_bytes,token_count,artifacts,current_node_id) " +
+                            "VALUES(?,?,?,?,?,?,?,?,?,?::jsonb,?) RETURNING task_id", Long.class, submit.deliveryId(),
+                    entity.deliveryEntityId(), entity.entityCode(), workerGroup, submit.deliveryDate(), submit.cutoffAt(), newFileName,
+                    sizeBytes, tokenCount, artifactPairs.toString(), firstNode);
+            for (int index = 0; index < sourceList.size(); index++) {
+                jdbc.update("INSERT INTO delivery_mapping(task_id,delivery_id,data_id,source_seq) VALUES(?,?,?,?)",
+                        taskId, submit.deliveryId(), sourceList.get(index).dataId(), index + 1);
+            }
+            return taskId;
+        });
     }
 
-    /** 每台服务器只认领本组任务，组内并发独立计数；lease/fence 防止同组多 Worker 重复推进。 */
+    /** 每台服务器只认领本组任务；PAUSED 不在可认领状态内，组内并发独立计数。 */
     public Optional<DeliveryTask> claimNext(String workerId, String workerGroup, int maxRunning) {
         WorkerGroups.requireValid(workerGroup);
         return transactions.execute(status -> {
@@ -79,15 +101,19 @@ public class DeliveryTaskRepository {
 
     public void complete(long taskId, long fence, String workerId, String nextNode,
                          SourceDataPatch patch, boolean terminal) {
-        JsonNode artifact = patch == null || patch.artifacts() == null ? null : patch.artifacts().path(0);
+        JsonNode artifact = patch == null || patch.artifacts() == null ? null : patch.artifacts().path(0).path("deliveryArtifact");
         int changed = jdbc.update("UPDATE delivery_task SET current_node_id=?,execution_status=?," +
                 "new_file_name=COALESCE(?,new_file_name),size_bytes=COALESCE(?,size_bytes),token_count=COALESCE(?,token_count)," +
-                "sha256=COALESCE(?,sha256),lease_owner=NULL,lease_until=NULL,retry_count=0,next_retry_at=NULL,last_error_code=NULL," +
+                "artifacts=COALESCE(?::jsonb,artifacts),metadata_ids=COALESCE(?::jsonb,metadata_ids)," +
+                "lease_owner=NULL,lease_until=NULL,retry_count=0,next_retry_at=NULL,last_error_code=NULL," +
                 "completed_at=CASE WHEN ? THEN COALESCE(completed_at,now()) ELSE completed_at END,updated_at=now() " +
                 "WHERE task_id=? AND fence=? AND lease_owner=? AND execution_status='RUNNING'",
-                nextNode, terminal ? "SUCCEEDED" : "READY", artifact == null ? null : artifact.path("newFileName").asText(null),
-                artifact == null ? null : artifact.path("sizeBytes").asLong(), artifact == null ? null : artifact.path("token").asLong(),
-                artifact == null ? null : artifact.path("sha256").asText(null), terminal, taskId, fence, workerId);
+                nextNode, terminal ? "SUCCEEDED" : "READY", artifact == null || !artifact.isObject() ? null : artifact.path("newFileName").asText(null),
+                artifact == null || !artifact.isObject() ? null : artifact.path("sizeBytes").asLong(),
+                artifact == null || !artifact.isObject() ? null : artifact.path("token").asLong(),
+                patch == null || patch.artifacts() == null ? null : patch.artifacts().toString(),
+                patch == null || patch.metadataIds() == null ? null : patch.metadataIds().toString(),
+                terminal, taskId, fence, workerId);
         if (changed != 1) throw new IllegalStateException("Stale task fence for task " + taskId);
     }
 
@@ -115,7 +141,17 @@ public class DeliveryTaskRepository {
 
     public int resume(long taskId, long expectedFence, String fromNode) {
         return jdbc.update("UPDATE delivery_task SET execution_status='READY',current_node_id=?,next_retry_at=NULL,last_error_code=NULL," +
-                "lease_owner=NULL,lease_until=NULL,updated_at=now() WHERE task_id=? AND fence=? AND execution_status IN('READY','RETRY_WAIT','WAITING','BLOCKED')",
+                "lease_owner=NULL,lease_until=NULL,updated_at=now() WHERE task_id=? AND fence=? AND execution_status IN('READY','RETRY_WAIT','WAITING','BLOCKED','PAUSED')",
                 fromNode, taskId, expectedFence);
+    }
+
+    public int pause(long deliveryId) {
+        return jdbc.update("UPDATE delivery_task SET execution_status='PAUSED',next_retry_at=NULL,updated_at=now() " +
+                "WHERE delivery_id=? AND execution_status IN('READY','WAITING','RETRY_WAIT','BLOCKED')", deliveryId);
+    }
+
+    public int resumePaused(long deliveryId) {
+        return jdbc.update("UPDATE delivery_task SET execution_status='READY',next_retry_at=NULL,last_error_code=NULL,updated_at=now() " +
+                "WHERE delivery_id=? AND execution_status='PAUSED'", deliveryId);
     }
 }
