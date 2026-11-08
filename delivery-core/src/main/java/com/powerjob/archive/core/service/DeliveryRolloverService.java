@@ -74,11 +74,11 @@ public class DeliveryRolloverService {
                     "WHERE task_id=? AND execution_status NOT IN('SUCCEEDED','EXPIRED','CANCELLED')", old.taskId());
             if (expired != 1) continue;
             jdbc.update("UPDATE delivery_node SET status='CANCELLED',finished_at=now() WHERE task_id=? AND status IN('RUNNING','WAITING')", old.taskId());
-            long newTaskId = jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,target_seq,artifact_seq," +
+            long newTaskId = jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq," +
                             "delivery_date,cutoff_at,original_file_name,new_file_name,size_bytes,token_count,sha256,current_node_id) " +
-                            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING task_id", Long.class, old.deliveryId(), old.dataId(), old.deliveryEntityId(),
-                    old.targetSeq(), old.artifactSeq(), nextDate, nextCutoff, old.originalFileName(), old.newFileName(), old.sizeBytes(), old.tokenCount(),
-                    old.sha256(), pipeline.rolloverStartNode());
+                            "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING task_id", Long.class, old.deliveryId(), old.dataId(), old.deliveryEntityId(),
+                    old.workerGroup(), old.targetSeq(), old.artifactSeq(), nextDate, nextCutoff, old.originalFileName(), old.newFileName(), old.sizeBytes(),
+                    old.tokenCount(), old.sha256(), pipeline.rolloverStartNode());
             jdbc.update("UPDATE delivery_task SET superseded_by_task_id=? WHERE task_id=?", newTaskId, old.taskId());
             ObjectNode expiredPayload = mapper.createObjectNode().put("taskId", old.taskId()).put("newTaskId", newTaskId)
                     .put("oldDeliveryDate", old.deliveryDate().toString()).put("newDeliveryDate", nextDate.toString());
@@ -104,7 +104,8 @@ public class DeliveryRolloverService {
 
     private DeliveryTask mapTask(java.sql.ResultSet rs, int n) throws java.sql.SQLException {
         return new DeliveryTask(rs.getLong("task_id"), rs.getLong("delivery_id"), rs.getLong("data_id"), rs.getLong("delivery_entity_id"),
-                rs.getInt("target_seq"), rs.getInt("artifact_seq"), rs.getObject("delivery_date", LocalDate.class), rs.getObject("cutoff_at", OffsetDateTime.class),
+                rs.getString("worker_group"), rs.getInt("target_seq"), rs.getInt("artifact_seq"),
+                rs.getObject("delivery_date", LocalDate.class), rs.getObject("cutoff_at", OffsetDateTime.class),
                 rs.getString("original_file_name"), rs.getString("new_file_name"), rs.getLong("size_bytes"), rs.getLong("token_count"),
                 rs.getString("sha256"), rs.getString("current_node_id"), rs.getString("execution_status"), rs.getString("lease_owner"),
                 rs.getObject("lease_until", OffsetDateTime.class), rs.getLong("fence"), rs.getInt("retry_count"),

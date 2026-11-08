@@ -23,6 +23,7 @@
 5. 镜像只含当前节点工具，不安装或挂载跳板机私钥。
 6. Secret 只从当前 Pipeline 节点获取，不从全局业务环境变量回退。
 7. 生产不能回退 Local Node/debug runner；缩容先停止新 claim。
+8. `ARCHIVE_WORKER_GROUP` 是单服务器执行域；Worker 只抢同组任务，同机 Worker 共享本地 `/data`，跨机不共享。`ARCHIVE_MAX_RUNNING_TASKS` 按组限流，纯 Worker 用 27777–27779 接收 PowerJob 公网回调，并通过 external.address/port 注册本机公网地址；实际地址只写入未跟踪的本地配置。
 
 ## 核心验证职责
 

@@ -9,13 +9,14 @@ Archive Delivery Platform 是基于 PowerJob + Pipeline 的可定义归档数据
 1. 核心血缘为 `delivery_submit(delivery_id) → source_data(delivery_id) → delivery_task(task_id) → delivery_node(task_id,process_id)`。
 2. Pipeline 是唯一业务流程定义。下载、repair、清洗、校验、上传、FTP 下载验证和未来动作都由 DAG、nodeId、stageCode 和节点配置定义。
 3. 提交直接表达交付实体目标，不再有交付组领域、delivery_group、groupCode、组状态或组节点。`targets` 每项为 `deliveryEntityId + targetCount`，任务直接保存 `delivery_entity_id + target_seq`。
-4. 表为 `delivery_submit`、`source_data`、`delivery_entity`、`delivery_task`、`delivery_node`、`delivery_event`、`ingest_source`、`pipeline/pipeline_version` 及请求编号表。
-5. **配置集中维护原则：配置类信息能汇集就汇集，便于查找和统一管理。** `pipeline_version.definition` 统一保存 nodeDefinitions、ruleSets、DAG、selection、assignment、retry、concurrency、rollover 和节点 Secret；禁止恢复 node_definition、rule_set、source_pipeline_binding 等平行配置表。
-6. `delivery_node.process_id` 是节点尝试主键，`node_id` 是 Pipeline 字符串节点 ID；API 继续使用 processId 标识尝试。
-7. 核心验证为：杭州源 OSS 密钥直下载并保留文件 → 本地 repair/qualify → 三个实体各一个任务 → 上传另一 OSS Bucket → 本地 FTP 下载验证 size/SHA → DELIVERED。
-8. 不经过 SSH 跳板机，不使用 CRR、新加坡中转、远端 SSH 发布或旧回执链。新增协议只新增 Pipeline 节点。
-9. 交付实体维护厂商、协议、账户和非 Secret 目录；Secret 只属于 Pipeline 对应节点，不进入实体、日志、事件、Manifest、看板或普通 API。
-10. 超过 cutoff_at 未完成任务即 EXPIRED，并生成指定下一交付日的新 task_id；delivery_id/data_id/entity/target_seq/artifact 不变。新任务占用下一交付日对应实体配额，主单未全部成功前为 PARTIALLY_DELIVERED，全部成功后转为 DELIVERED。
+4. 实体通过 `worker_group` 绑定单服务器执行组，任务创建和跨日接续固化该组快照。Worker 只认领 `ARCHIVE_WORKER_GROUP` 相同的任务，组内共享本机 `/data`，跨服务器不共享目录；每组独立计算 `ARCHIVE_MAX_RUNNING_TASKS`。
+5. 表为 `delivery_submit`、`source_data`、`delivery_entity`、`delivery_task`、`delivery_node`、`delivery_event`、`ingest_source`、`pipeline/pipeline_version` 及请求编号表。
+6. **配置集中维护原则：配置类信息能汇集就汇集，便于查找和统一管理。** `pipeline_version.definition` 统一保存 nodeDefinitions、ruleSets、DAG、selection、assignment、retry、concurrency、rollover 和节点 Secret；禁止恢复 node_definition、rule_set、source_pipeline_binding 等平行配置表。
+7. `delivery_node.process_id` 是节点尝试主键，`node_id` 是 Pipeline 字符串节点 ID；API 继续使用 processId 标识尝试。
+8. 核心验证为：杭州源 OSS 密钥直下载并保留文件 → 本地 repair/qualify → 三个实体各一个任务 → 上传另一 OSS Bucket → 本地 FTP 下载验证 size/SHA → DELIVERED。
+9. 不经过 SSH 跳板机，不使用 CRR、新加坡中转、远端 SSH 发布或旧回执链。新增协议只新增 Pipeline 节点。
+10. 交付实体维护厂商、协议、账户、执行组和非 Secret 目录；Secret 只属于 Pipeline 对应节点，不进入实体、日志、事件、Manifest、看板或普通 API。
+11. 超过 cutoff_at 未完成任务即 EXPIRED，并生成指定下一交付日的新 task_id；delivery_id/data_id/entity/worker_group/target_seq/artifact 不变。新任务占用下一交付日对应实体配额，主单未全部成功前为 PARTIALLY_DELIVERED，全部成功后转为 DELIVERED。
 
 ## 设计依据
 
@@ -44,8 +45,8 @@ Archive Delivery Platform 是基于 PowerJob + Pipeline 的可定义归档数据
 |---|---|
 | `delivery_submit` | 交付身份、批次、日期、截止、Pipeline 和 target_strategy |
 | `source_data` | 源定位、过滤、请求映射、size/token/SHA 和严格七字段 artifacts |
-| `delivery_entity` | 厂商实体、协议、账户和非 Secret 定位 |
-| `delivery_task` | 一个 artifact 面向一个实体的执行原子，含 target_seq |
+| `delivery_entity` | 厂商实体、协议、账户、worker_group 和非 Secret 定位 |
+| `delivery_task` | 一个 artifact 面向一个实体的执行原子，含 worker_group 快照和 target_seq |
 | `delivery_node` | 节点尝试，保留 delivery_id/task_id、文件名和通用 locator |
 | `delivery_event` | 过滤、人工原因、跨日和外部核验的不可变事件 |
 | `ingest_source` | OSS URI、可用状态、渠道、类型及最近两次刷新字节数 |

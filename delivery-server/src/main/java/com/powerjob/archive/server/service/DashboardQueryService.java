@@ -54,7 +54,7 @@ public class DashboardQueryService {
                 "WHEN count(t.task_id) FILTER(WHERE t.execution_status='BLOCKED')>0 THEN 'BLOCKED' " +
                 "WHEN count(t.task_id)>0 THEN 'RUNNING' ELSE 'FILLING' END AS status," +
                 "e.vendor_code AS \"vendorCode\",e.entity_code AS \"entityCode\",e.entity_name AS \"entityName\"," +
-                "e.protocol,e.account_name AS \"accountName\",e.endpoint_locator AS \"endpointLocator\" FROM requested r " +
+                "e.protocol,e.account_name AS \"accountName\",e.worker_group AS \"workerGroup\",e.endpoint_locator AS \"endpointLocator\" FROM requested r " +
                 "JOIN delivery_entity e ON e.delivery_entity_id=r.delivery_entity_id " +
                 "LEFT JOIN delivery_task t ON t.delivery_id=r.delivery_id AND t.delivery_entity_id=r.delivery_entity_id " +
                 "AND t.execution_status NOT IN('EXPIRED','CANCELLED') " +
@@ -90,7 +90,7 @@ public class DashboardQueryService {
 
     private static String taskSelect() {
         return "SELECT t.task_id AS \"taskId\",t.delivery_id AS \"deliveryId\",t.data_id AS \"dataId\"," +
-                "t.delivery_entity_id AS \"deliveryEntityId\",t.target_seq AS \"targetSeq\",e.vendor_code AS \"vendorCode\"," +
+                "t.delivery_entity_id AS \"deliveryEntityId\",t.worker_group AS \"workerGroup\",t.target_seq AS \"targetSeq\",e.vendor_code AS \"vendorCode\"," +
                 "e.entity_name AS \"entityName\",e.account_name AS \"accountName\",t.artifact_seq AS \"artifactSeq\"," +
                 "t.delivery_date AS \"deliveryDate\",t.cutoff_at AS \"cutoffAt\",t.original_file_name AS \"originalFileName\"," +
                 "t.new_file_name AS \"newFileName\",t.size_bytes AS \"sizeBytes\",t.token_count AS \"tokenCount\",t.sha256," +

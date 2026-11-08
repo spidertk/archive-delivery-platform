@@ -13,7 +13,8 @@ x-worker-common: &worker-common
     ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:-archive}
     ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
     ARCHIVE_UPGRADE_AUTHORIZED: ${ARCHIVE_UPGRADE_AUTHORIZED:-}
-    ARCHIVE_MAX_RUNNING_TASKS: "3"
+    ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group1}
+    ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-3}
     POWERJOB_ENABLED: "true"
     POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
     POWERJOB_SERVER_ADDRESS: powerjob-server:7700
@@ -33,7 +34,7 @@ services:
       POSTGRES_DB: archive_delivery
       POSTGRES_USER: ${ARCHIVE_DB_USER:-archive}
       POSTGRES_PASSWORD: ${ARCHIVE_DB_PASSWORD:-archive_local}
-    ports: ["127.0.0.1:55432:5432"]
+    ports: ["${ARCHIVE_PG_BIND_ADDRESS:-127.0.0.1}:5432:5432"]
     volumes: [archive_pg:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${ARCHIVE_DB_USER:-archive} -d archive_delivery"]
@@ -58,6 +59,7 @@ services:
   powerjob-server:
     image: powerjob/powerjob-server:v5.1.7
     environment:
+      JVMOPTIONS: ${POWERJOB_JVMOPTIONS:-}
       PARAMS: >-
         --spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
         --spring.datasource.core.username=root --spring.datasource.core.password=powerjob_local
@@ -67,7 +69,7 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    ports: ["127.0.0.1:7700:7700"]
+    ports: ["${POWERJOB_BIND_ADDRESS:-127.0.0.1}:7700:7700"]
 
   archive-server:
     build:

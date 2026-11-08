@@ -12,7 +12,7 @@
 | `mvp-test.sh` | Python + Maven 标准回归 | fake/skipped 不代表真实通过 |
 | `mvp-up.sh` | 启动数据库、server、Worker 和 FTP | V14 清库需显式授权 |
 | `bootstrap-powerjob.sh` | 创建通用准备、推进和截止 Job | 调度重试为 0 |
-| `configure-pipeline.sh` | 发布集中节点/规则/DAG/Secret 的版本 | 不打印 Secret，无 binding |
+| `configure-pipeline.sh` | 发布集中节点/规则/DAG/Secret 的版本并创建带 workerGroup 的实体 | 不打印 Secret，无 binding；单机三实体默认 group1 |
 | `preflight.sh` | 检查源/目标 OSS、三个 FTP 实体和数据库 | 失败非零退出 |
 | `submit-delivery.sh` | 提交日期/截止/批次/targets/幂等键 | 三实体各 1 |
 | `resume-delivery.sh` | 按 deliveryId/fromNode/taskIds/reason 续跑 | 前置不足 409 |

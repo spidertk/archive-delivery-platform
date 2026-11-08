@@ -16,6 +16,7 @@ export interface DeliveryTarget {
   completedCount: number
   status: string
   deliveryEntityId: number
+  workerGroup: string
   vendorCode: string
   entityName: string
   protocol: string
@@ -37,6 +38,7 @@ export interface DeliveryTask {
   deliveryId: number
   dataId: number
   deliveryEntityId: number
+  workerGroup: string
   targetSeq: number
   vendorCode: string
   entityName: string

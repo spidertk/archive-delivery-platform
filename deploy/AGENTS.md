@@ -10,7 +10,8 @@
 
 | 对象 | 职责 |
 |---|---|
-| `docker-compose.yml` | PostgreSQL、MySQL、PowerJob、server、三 Worker 和 ftp-entity-1/2/3 |
+| `docker-compose.yml` | 主服务器 PostgreSQL、MySQL、PowerJob、server、group1 三 Worker 和 ftp-entity-1/2/3 |
+| `docker-compose.worker.yml` / `env.worker.example` | 任务服务器 group2 纯 Worker、共享主 PG/PowerJob、主机网络和独立本地卷 |
 | `Dockerfile.server` | 前端与 server 构建、非 root 运行 |
 | `Dockerfile.worker` | Worker、Python 和 FTP 工具，不含跳板配置 |
 | `Dockerfile.ftp` / `ftp_server.py` | entity1/entity2/entity3 隔离账户，禁止删除和匿名访问 |
@@ -21,20 +22,22 @@
 
 ## 运行约束
 
-1. PG、PowerJob、API 和 FTP 管理端口只绑定回环地址；Worker 内部端口不发布。
-2. 三 Worker 只是执行槽；交付去向由 delivery_task.delivery_entity_id 和 Pipeline 决定。
+1. 本地 PG、PowerJob、API 和 FTP 管理端口默认只绑定回环地址；公网主子连接时主 PG/PowerJob 监听 0.0.0.0，但安全组只允许对方公网 IP/32，API/FTP 不因扩容暴露公网。
+2. 同机三 Worker 是同一 worker_group 的执行槽；交付去向由 delivery_entity_id、任务 worker_group 快照和 Pipeline 共同决定。
 3. 启动顺序：数据库 → PowerJob → server/Worker/FTP → bootstrap → 发布 Pipeline → 预检。
 4. 配置集中进 PipelineVersion；deploy 只注入受控值，不拆节点/规则/绑定配置表。
 5. FTP 使用 `.partial`、SHA 和原子 rename；禁止清空历史或同名不同 SHA 覆盖。
 6. 镜像构建跳过测试不能替代交付前标准回归。
 7. 只有 `ARCHIVE_UPGRADE_AUTHORIZED=2026-11-07` 的显式升级命令允许 V14 清库。
 8. ECS 不照搬 loopback、宿主路径或开发默认值。
+9. 一个 `worker_group` 只对应一台服务器的本地 `archive_data`；主/任务服务器不共享目录，统一通过公网 PG/PowerJob。主/子 PowerJob 必须分别配置 external.address/port，纯 Worker 使用主机网络及独立 27777–27779 回调端口。
 
 ## 验证
 
 ```bash
 bash -n scripts/*.sh nodes/shell/*.sh
 docker compose -f deploy/docker-compose.yml --env-file deploy/.env config
+docker compose -f deploy/docker-compose.worker.yml --env-file deploy/env.worker.example config --quiet
 ./scripts/mvp-up.sh
 ./scripts/bootstrap-powerjob.sh
 ./scripts/preflight.sh

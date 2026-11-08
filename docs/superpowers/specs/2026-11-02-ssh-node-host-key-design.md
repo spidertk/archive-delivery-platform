@@ -15,14 +15,14 @@
 
 ## SSH 执行
 
-`SshCommandRunner` 为每次调用创建仅当前用户可写的临时目录和 `known_hosts`，写入该线目标及跳板机公钥。目标 SSH 与 `ProxyCommand` 均显式使用：
+`SshCommandRunner` 为每次调用创建仅当前用户可写的临时目录和 `known_hosts`，写入该线跳板机公钥。Worker 只连接跳板机并调用固定 `ftp_exec.sh`；中继为 FTP 连接创建独立临时 `known_hosts`，写入目标公钥。Worker 与跳板机上的目标 SSH 均显式使用：
 
 ```text
 -o UserKnownHostsFile=<临时文件>
 -o StrictHostKeyChecking=yes
 ```
 
-目标连接继续只使用该线私钥，ProxyCommand 继续使用该线跳板机私钥。命令结束或异常后删除临时文件。禁止 `StrictHostKeyChecking=no`、`accept-new` 和全局环境变量回退。
+Worker 只使用该线跳板机私钥；FTP 目标连接只使用跳板机 `$HOME/.ssh/archive-delivery-target-id_ed25519`，不再向 Worker 分发目标私钥。命令结束或异常后删除临时文件。禁止 `StrictHostKeyChecking=no`、`accept-new` 和全局环境变量回退。
 
 ## 安全与故障行为
 
@@ -30,7 +30,7 @@
 
 ## 验证
 
-1. 单元测试覆盖每线公钥解析、缺失及非法字段、目标与 ProxyCommand 的严格校验参数和临时文件清理。
-2. 真实预检覆盖三线目标与跳板机，确认容器内不再出现 `Host key verification failed`。
-3. 继续原 MVP 的真实 10 包、包级重试、指定节点续跑、跨日看板和全量非生产回归。
-4. 对当前两个 HZ 不同内容冲突只读取证据；未获明确许可前不删除或覆盖远端对象。
+1. 单元测试覆盖每线公钥解析、缺失及非法字段、Worker 到跳板及跳板到目标的严格校验参数和临时文件清理。
+2. 真实预检覆盖三线目标与跳板机，确认容器内不再出现 `Host key verification failed`，且本地无需目标私钥。
+3. 继续当前三线各一包、包级重试、指定节点续跑、跨日看板和全量非生产回归。
+4. 对远端同名不同内容冲突只读取证据；未获明确许可前不删除或覆盖远端对象。

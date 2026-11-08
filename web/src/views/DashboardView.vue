@@ -27,7 +27,7 @@
       <template #header>交付目标与厂商实体</template>
       <div v-for="target in summary.targets" :key="target.deliveryEntityId" class="target-row">
         <b>实体 {{ target.deliveryEntityId }}</b><span>{{ target.vendorCode }} / {{ target.entityName }}</span>
-        <span>{{ target.accountName }}</span><strong>{{ target.completedCount }}/{{ target.targetCount }}</strong><span>{{ target.status }}</span>
+        <span>{{ target.accountName }}</span><span>执行组 {{ target.workerGroup }}</span><strong>{{ target.completedCount }}/{{ target.targetCount }}</strong><span>{{ target.status }}</span>
       </div>
     </el-card>
     <el-card>
@@ -35,6 +35,7 @@
       <el-table :data="tasks" size="small">
         <el-table-column prop="taskId" label="Task ID" width="90" />
         <el-table-column prop="entityName" label="交付实体" width="140" />
+        <el-table-column prop="workerGroup" label="执行组" width="100" />
         <el-table-column prop="newFileName" label="产物" min-width="150" />
         <el-table-column prop="deliveryDate" label="交付日" width="110" />
         <el-table-column prop="stageCode" label="Pipeline 阶段" width="130" />

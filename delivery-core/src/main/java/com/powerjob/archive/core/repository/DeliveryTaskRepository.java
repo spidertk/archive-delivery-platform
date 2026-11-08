@@ -1,9 +1,11 @@
 package com.powerjob.archive.core.repository;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.powerjob.archive.core.domain.DeliveryEntity;
 import com.powerjob.archive.core.domain.DeliverySubmit;
 import com.powerjob.archive.core.domain.DeliveryTask;
 import com.powerjob.archive.core.domain.SourceData;
+import com.powerjob.archive.core.domain.WorkerGroups;
 import com.powerjob.archive.core.pipeline.SourceDataPatch;
 import com.powerjob.archive.core.service.RetryPolicy;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,10 +22,10 @@ public class DeliveryTaskRepository {
     private final TransactionTemplate transactions;
     private final RowMapper<DeliveryTask> mapper = (rs, n) -> new DeliveryTask(
             rs.getLong("task_id"), rs.getLong("delivery_id"), rs.getLong("data_id"), rs.getLong("delivery_entity_id"),
-            rs.getInt("target_seq"), rs.getInt("artifact_seq"), rs.getObject("delivery_date", java.time.LocalDate.class),
-            rs.getObject("cutoff_at", java.time.OffsetDateTime.class), rs.getString("original_file_name"),
-            rs.getString("new_file_name"), rs.getLong("size_bytes"), rs.getLong("token_count"), rs.getString("sha256"),
-            rs.getString("current_node_id"), rs.getString("execution_status"), rs.getString("lease_owner"),
+            rs.getString("worker_group"), rs.getInt("target_seq"), rs.getInt("artifact_seq"),
+            rs.getObject("delivery_date", java.time.LocalDate.class), rs.getObject("cutoff_at", java.time.OffsetDateTime.class),
+            rs.getString("original_file_name"), rs.getString("new_file_name"), rs.getLong("size_bytes"), rs.getLong("token_count"),
+            rs.getString("sha256"), rs.getString("current_node_id"), rs.getString("execution_status"), rs.getString("lease_owner"),
             rs.getObject("lease_until", java.time.OffsetDateTime.class), rs.getLong("fence"), rs.getInt("retry_count"),
             rs.getObject("next_retry_at", java.time.OffsetDateTime.class), rs.getString("last_error_code"),
             (Long) rs.getObject("superseded_by_task_id"), rs.getObject("invalidated_at", java.time.OffsetDateTime.class),
@@ -34,33 +36,36 @@ public class DeliveryTaskRepository {
         this.transactions = transactions;
     }
 
-    /** 任务直接携带实体和目标内序号；唯一约束防止并发规划重复占用同一目标配额。 */
-    public long createPlanned(DeliverySubmit submit, SourceData source, long deliveryEntityId, int targetSeq, String firstNode) {
-        if (source.deliveryId() != submit.deliveryId() || deliveryEntityId <= 0 || targetSeq <= 0
+    /** 创建任务时固化实体执行组；后续实体调整不会改变已有任务的本地文件执行域。 */
+    public long createPlanned(DeliverySubmit submit, SourceData source, DeliveryEntity entity, int targetSeq, String firstNode) {
+        if (source.deliveryId() != submit.deliveryId() || entity.deliveryEntityId() <= 0 || targetSeq <= 0
                 || !"QUALIFIED".equals(source.qualification()) && !"PENDING".equals(source.qualification())) {
             throw new IllegalArgumentException("Source/target delivery lineage or qualification is invalid");
         }
+        String workerGroup = WorkerGroups.requireValid(entity.workerGroup());
         JsonNode artifact = source.artifacts().required(0);
         int artifactSeq = artifact.required("artifactSeq").asInt();
-        return transactions.execute(status -> jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,target_seq,artifact_seq," +
+        return transactions.execute(status -> jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq," +
                         "delivery_date,cutoff_at,original_file_name,new_file_name,size_bytes,token_count,sha256,current_node_id) " +
-                        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING task_id", Long.class, submit.deliveryId(), source.dataId(),
-                deliveryEntityId, targetSeq, artifactSeq, submit.deliveryDate(), submit.cutoffAt(), artifact.required("originalFileName").asText(),
-                artifact.required("newFileName").asText(), artifact.required("sizeBytes").asLong(),
-                artifact.required("token").asLong(), artifact.required("sha256").asText(), firstNode));
+                        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?) RETURNING task_id", Long.class, submit.deliveryId(), source.dataId(),
+                entity.deliveryEntityId(), workerGroup, targetSeq, artifactSeq, submit.deliveryDate(), submit.cutoffAt(),
+                artifact.required("originalFileName").asText(), artifact.required("newFileName").asText(),
+                artifact.required("sizeBytes").asLong(), artifact.required("token").asLong(), artifact.required("sha256").asText(), firstNode));
     }
 
-    /** 有界全局并发配合 SKIP LOCKED；过期租约可重新 claim，fence 每次递增。 */
-    public Optional<DeliveryTask> claimNext(String workerId, int maxRunning) {
+    /** 每台服务器只认领本组任务，组内并发独立计数；lease/fence 防止同组多 Worker 重复推进。 */
+    public Optional<DeliveryTask> claimNext(String workerId, String workerGroup, int maxRunning) {
+        WorkerGroups.requireValid(workerGroup);
         return transactions.execute(status -> {
-            Integer running = jdbc.queryForObject("SELECT count(*) FROM delivery_task WHERE execution_status='RUNNING' AND lease_until>=now()", Integer.class);
+            Integer running = jdbc.queryForObject("SELECT count(*) FROM delivery_task WHERE worker_group=? " +
+                    "AND execution_status='RUNNING' AND lease_until>=now()", Integer.class, workerGroup);
             if (running >= maxRunning) return Optional.empty();
-            return jdbc.query("WITH candidate AS (SELECT task_id FROM delivery_task WHERE " +
+            return jdbc.query("WITH candidate AS (SELECT task_id FROM delivery_task WHERE worker_group=? AND (" +
                             "execution_status='READY' OR (execution_status IN('RETRY_WAIT','WAITING') AND next_retry_at<=now()) " +
-                            "OR (execution_status='RUNNING' AND lease_until<now()) ORDER BY delivery_date,task_id FOR UPDATE SKIP LOCKED LIMIT 1)," +
+                            "OR (execution_status='RUNNING' AND lease_until<now())) ORDER BY delivery_date,task_id FOR UPDATE SKIP LOCKED LIMIT 1)," +
                             " claimed AS (UPDATE delivery_task t SET execution_status='RUNNING',lease_owner=?,lease_until=now()+interval '120 seconds'," +
                             "fence=t.fence+1,updated_at=now() FROM candidate c WHERE t.task_id=c.task_id RETURNING t.*) SELECT * FROM claimed",
-                    mapper, workerId).stream().findFirst();
+                    mapper, workerGroup, workerId).stream().findFirst();
         });
     }
 

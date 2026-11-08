@@ -71,6 +71,7 @@ erDiagram
 | entity_name | varchar(128) not null | 展示名称 |
 | protocol | varchar(32) not null | 实体能力协议，不决定 DAG |
 | account_name | varchar(128) not null | 业务账户，不是密码 |
+| worker_group | varchar(32) not null，安全标识 CHECK | 实体默认单服务器执行组，新任务保存快照 |
 | endpoint_locator | jsonb object default '{}' | host/port/rootPath 等非 Secret 定位 |
 | enabled | boolean default true | 是否允许新提交引用 |
 | created_at/updated_at | timestamptz not null | 创建和修改时间 |
@@ -225,6 +226,7 @@ artifactSeq/newFileName 数组内唯一；文件名不得含路径分隔符或 `
 | 血缘目标 | task_id | bigint identity PK，跨日生成新值 |
 |  | delivery_id/data_id | bigint FK not null |
 |  | delivery_entity_id | bigint FK not null，直接交付实体 |
+| 执行域 | worker_group | varchar(32) not null，创建时固化实体执行组；claim/retry/rollover 不跨组 |
 |  | target_seq | int >0，同一提交实体内目标序号 |
 |  | artifact_seq | int >0，产物序号 |
 | 日期 | delivery_date/cutoff_at | date/timestamptz not null |
@@ -252,7 +254,7 @@ UNIQUE(delivery_id,delivery_entity_id,target_seq)
 UNIQUE(superseded_by_task_id)
 CHECK((execution_status='EXPIRED')=(invalidated_at IS NOT NULL))
 INDEX(delivery_id,execution_status,delivery_date,task_id)
-INDEX(execution_status,next_retry_at,delivery_date,task_id)
+INDEX(worker_group,execution_status,next_retry_at,delivery_date,task_id)
 INDEX(cutoff_at,task_id) WHERE 非成功/超期/取消
 INDEX(delivery_entity_id,execution_status,task_id)
 ```
@@ -334,7 +336,7 @@ DELIVERED 要求 discovery 完成、active 等于 targetCount 总和且全部 SU
         superseded_by_task_id=新 task_id
 新任务：delivery_date=指定下一交付日，cutoff_at=该日 Pipeline 截止，
         current_node_id=rolloverStartNode，retry_count=0
-不变：  delivery_id/data_id/delivery_entity_id/target_seq/artifact_seq
+不变：  delivery_id/data_id/delivery_entity_id/worker_group/target_seq/artifact_seq
 配额：  新 task_id 占下一交付日对应实体配额，旧 EXPIRED 不与新任务重复计数
 ```
 

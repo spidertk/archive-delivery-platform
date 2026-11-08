@@ -62,7 +62,7 @@ public class TaskExecutionService {
 
     /** Worker 每次只推进一个任务的一个节点；这是任务状态与提交聚合的唯一写入口。 */
     public int executeNext(String workerId) {
-        var claimed = tasks.claimNext(workerId, properties.getMaxRunningTasks());
+        var claimed = tasks.claimNext(workerId, properties.getWorkerGroup(), properties.getMaxRunningTasks());
         if (claimed.isEmpty()) return 0;
         DeliveryTask task = claimed.get();
         PipelineDefinition rawPipeline = pipeline(task.deliveryId());

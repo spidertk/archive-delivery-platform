@@ -7,6 +7,7 @@ import com.aliyun.oss.model.OSSObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powerjob.archive.core.config.ArchiveProperties;
+import com.powerjob.archive.core.domain.DeliveryEntity;
 import com.powerjob.archive.core.domain.DeliverySubmit;
 import com.powerjob.archive.core.domain.DiscoveredObject;
 import com.powerjob.archive.core.pipeline.OssNodeConfig;
@@ -80,7 +81,7 @@ public class DeliveryPreparationService {
         for (int i = 0; i < objects.size(); i++) {
             DiscoveredObject object = objects.get(i);
             Assignment assignment = assignmentFor(targets, i);
-            deliveries.entity(assignment.deliveryEntityId());
+            DeliveryEntity entity = deliveries.entity(assignment.deliveryEntityId());
             transactions.executeWithoutResult(status -> {
                 SourceDataRepository.SourceInsert inserted = sources.insertDiscovered(deliveryId, object);
                 if (!inserted.deliverable()) {
@@ -91,11 +92,11 @@ public class DeliveryPreparationService {
                     return;
                 }
                 long taskId = tasks.createPlanned(submit, sources.findById(inserted.dataId()).orElseThrow(),
-                        assignment.deliveryEntityId(), assignment.targetSeq(), pipeline.firstNode());
+                        entity, assignment.targetSeq(), pipeline.firstNode());
                 events.append(deliveryId, taskId, null, assignment.deliveryEntityId(), inserted.dataId(), "TASK_PLANNED", "INFO", null,
                         "Source artifact assigned to delivery entity", mapper.createObjectNode().put("taskId", taskId)
                                 .put("dataId", inserted.dataId()).put("deliveryEntityId", assignment.deliveryEntityId())
-                                .put("targetSeq", assignment.targetSeq()), null, "task-planned-" + taskId);
+                                .put("workerGroup", entity.workerGroup()).put("targetSeq", assignment.targetSeq()), null, "task-planned-" + taskId);
             });
         }
         transactions.executeWithoutResult(status -> {

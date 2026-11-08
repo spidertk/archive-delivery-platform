@@ -28,7 +28,7 @@ public class DeliveryRepository {
                 rs.getObject("completed_at", java.time.OffsetDateTime.class));
         this.entityMapper = (rs, n) -> new DeliveryEntity(
                 rs.getLong("delivery_entity_id"), rs.getString("vendor_code"), rs.getString("entity_code"),
-                rs.getString("entity_name"), rs.getString("protocol"), rs.getString("account_name"),
+                rs.getString("entity_name"), rs.getString("protocol"), rs.getString("account_name"), rs.getString("worker_group"),
                 JdbcJson.read(mapper, rs.getString("endpoint_locator")), rs.getBoolean("enabled"));
     }
 

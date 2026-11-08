@@ -1,0 +1,43 @@
+x-worker-common: &worker-common
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.worker
+  network_mode: host
+  environment: &worker-environment
+    SPRING_PROFILES_ACTIVE: production
+    ARCHIVE_DB_URL: ${ARCHIVE_DB_URL:?ARCHIVE_DB_URL is required}
+    ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:-archive}
+    ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
+    ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group2}
+    ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-3}
+    POWERJOB_ENABLED: "true"
+    POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
+    POWERJOB_SERVER_ADDRESS: ${POWERJOB_SERVER_ADDRESS:?POWERJOB_SERVER_ADDRESS is required}
+  volumes:
+    - archive_data:/data
+
+services:
+  worker-4:
+    <<: *worker-common
+    environment:
+      <<: *worker-environment
+      HOSTNAME: worker-4
+      POWERJOB_WORKER_PORT: "27777"
+      JAVA_TOOL_OPTIONS: "-Dpowerjob.network.external.address=${POWERJOB_EXTERNAL_ADDRESS:?POWERJOB_EXTERNAL_ADDRESS is required} -Dpowerjob.network.external.port=27777"
+  worker-5:
+    <<: *worker-common
+    environment:
+      <<: *worker-environment
+      HOSTNAME: worker-5
+      POWERJOB_WORKER_PORT: "27778"
+      JAVA_TOOL_OPTIONS: "-Dpowerjob.network.external.address=${POWERJOB_EXTERNAL_ADDRESS:?POWERJOB_EXTERNAL_ADDRESS is required} -Dpowerjob.network.external.port=27778"
+  worker-6:
+    <<: *worker-common
+    environment:
+      <<: *worker-environment
+      HOSTNAME: worker-6
+      POWERJOB_WORKER_PORT: "27779"
+      JAVA_TOOL_OPTIONS: "-Dpowerjob.network.external.address=${POWERJOB_EXTERNAL_ADDRESS:?POWERJOB_EXTERNAL_ADDRESS is required} -Dpowerjob.network.external.port=27779"
+
+volumes:
+  archive_data:

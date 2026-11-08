@@ -42,8 +42,9 @@ V14 删除旧业务表并重建，不回填、不保留旧 ID、不创建兼容�
 
 - API/看板：`http://127.0.0.1:8080`
 - PowerJob：`http://127.0.0.1:7700`
-- PG：`jdbc:postgresql://127.0.0.1:55432/archive_delivery`，schema `archive_delivery`
-- 三个 Worker 只提供执行槽；FTP 服务不向宿主机开放端口。
+- PG：`jdbc:postgresql://127.0.0.1:5432/archive_delivery`，schema `archive_delivery`
+- 三个本地 Worker 默认属于 group1，提供同机执行槽；FTP 服务不向宿主机开放端口。
+- 实体创建必须提供 `workerGroup`，任务固化该组快照。单机验证的 `ENTITY_1/2/3_WORKER_GROUP` 默认均为 group1；多机时同组只能部署在一台服务器，其他服务器使用 `deploy/docker-compose.worker.yml` 连接主 PG/PowerJob，不共享 `/data`。
 
 ```bash
 ./scripts/mvp-test.sh

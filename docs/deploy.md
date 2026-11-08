@@ -44,8 +44,12 @@ ARCHIVE_CONFIRM_LOCAL_TEST_RESET=archive_delivery \
 
 禁止对 ECS/生产调用。禁止 `down -v`、清空 Bucket、清空 FTP 目录或同名不同 SHA 覆盖。
 
-## 5. ECS 部署边界（尚未部署）
+## 5. ECS 分组部署边界（尚未登录服务器验收）
 
-ECS 复用 server/Worker 镜像和不可变 PipelineVersion，但需重新设计内网、持久存储、Secret、副本、端口和健康检查。业务 PG 与 PowerJob MySQL 独立持久化，API/PowerJob 仅开放受控内网入口，Worker 使用有界执行槽和各自持久工作目录。
+主服务器运行 PostgreSQL、MySQL、PowerJob、archive-server 和 group1 Worker；其他任务服务器只运行 Worker，统一连接主 PostgreSQL 和 PowerJob。`delivery_entity.worker_group` 决定新任务的执行组，`delivery_task.worker_group` 固化快照；认领、retry/resume 和跨日新任务不得跨组。
 
-上线顺序：数据库与 PowerJob → server/Worker → 通用调度 → 发布 Pipeline → 真实预检 → 小批量三实体验收 → 外部 OSS/FTP 核验。不得照搬 loopback、宿主机路径、本地 FTP 密码或 reset-test-data.sh。滚动升级先停止新 claim 并等待节点安全结束，不删除租约或清理外部历史。
+一个执行组只对应一台服务器的本地 `archive_data` 卷，同组三个 Worker 共享该卷，不同组、不同服务器不共享工作目录。`ARCHIVE_MAX_RUNNING_TASKS` 按组统计 RUNNING，不是单 Worker 上限。新增服务器使用 `deploy/docker-compose.worker.yml` 和 `deploy/env.worker.example`，默认 group2；Linux `network_mode: host` 配合 27777–27779 让 PowerJob 回调对应 Worker。
+
+主子链路使用公网 IP：主服务器通过 `ARCHIVE_PG_BIND_ADDRESS=0.0.0.0` 和 `POWERJOB_BIND_ADDRESS=0.0.0.0` 监听，安全组只允许任务服务器公网 IP/32 访问 PG 5432/PowerJob 7700，并只允许主 PowerJob 公网 IP/32 访问任务机 27777–27779。主 PowerJob 用 `POWERJOB_JVMOPTIONS` 声明 `powerjob.network.external.address=<主服务器公网IP>` 和 external.port=7700；任务机用 `POWERJOB_EXTERNAL_ADDRESS=<任务服务器公网IP>` 注册各 Worker 公网回调地址。实际地址只写入未跟踪的本地配置，各组实体的 OSS/FTP 地址必须从对应任务服务器可达。
+
+上线顺序：数据库与 PowerJob → 主 server/Worker → 通用调度 → 发布带实体组的 Pipeline 和实体 → 任务服务器纯 Worker → 真实预检 → 小批量分组验收 → 外部 OSS/FTP 与各组本地文件核验。不得照搬 loopback、本地 FTP 密码或 reset-test-data.sh。滚动升级先停止新 claim 并等待节点安全结束，不删除租约或清理外部历史。

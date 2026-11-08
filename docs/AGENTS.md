@@ -9,13 +9,13 @@
 1. `superpowers/specs/2026-11-06-archive-delivery-platform-upgrade-design.md`：当前整体方案、集中 Pipeline、targets API、跨日和验收。
 2. `superpowers/specs/2026-11-06-archive-delivery-model-upgrade-design.md`：当前表关系、字段、JSONB、约束和 V14 清空重建。
 3. 根目录和模块 AGENTS：实施约束。
-4. `install.md`、`deploy.md`、`mvp-runbook.md`：当前环境操作手册。
+4. `install.md`、`deploy.md`、`mvp-runbook.md`：当前环境操作手册；真实主机、账户和凭据只保存在未跟踪的受控本地配置中。
 5. 2026-11-03 及更早 specs/plans 仅作历史参考，不进入新方案。
 
 ## 当前设计口径
 
 - 核心血缘为 `delivery_submit → source_data → delivery_task → delivery_node`。
-- 提交使用 targets 直接绑定实体；任务含 delivery_entity_id/target_seq，无交付组模型。
+- 提交使用 targets 直接绑定实体；任务含 delivery_entity_id/worker_group/target_seq，无交付组模型。worker_group 是单服务器本地执行域，组内认领和并发独立，跨机不共享目录。
 - 节点定义、规则、DAG、执行配置和 Secret 集中在 pipeline_version.definition，无平行节点/规则/绑定表。
 - 核心验证为杭州源 OSS 直下载、本地 repair、三个实体各一、另一 OSS、本地 FTP 下载验证。
 - 跨日旧任务 EXPIRED，新 task_id 按指定下一交付日接续并占次日实体配额，deliveryId/entity/targetSeq 不变；主单 PARTIALLY_DELIVERED 至全部成功后 DELIVERED。

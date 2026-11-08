@@ -95,8 +95,8 @@ class ArchiveModelIntegrationTest {
 
     @Test void rolloverCreatesNextDayTaskAndPreservesEntityTarget() {
         insertSubmit(200);
-        jdbc.update("INSERT INTO delivery_entity(vendor_code,entity_code,entity_name,protocol,account_name,endpoint_locator) " +
-                "VALUES('TEST','ENTITY-1','Test','FTP','entity1','{\"host\":\"localhost\",\"rootPath\":\"/\"}')");
+        jdbc.update("INSERT INTO delivery_entity(vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                "VALUES('TEST','ENTITY-1','Test','FTP','entity1','group2','{\"host\":\"localhost\",\"rootPath\":\"/\"}')");
         long entityId = jdbc.queryForObject("SELECT max(delivery_entity_id) FROM delivery_entity", Long.class);
         String sha = "a".repeat(64);
         String artifact = "[{\"artifactSeq\":1,\"originalFileName\":\"batch_00001.tar.gz\",\"newFileName\":\"batch_00001.tar.gz\"," +
@@ -104,8 +104,8 @@ class ArchiveModelIntegrationTest {
         jdbc.update("INSERT INTO source_data(delivery_id,original_locator,qualification,size_bytes,token_count,sha256,artifacts) " +
                 "VALUES(200,'{\"sourceUri\":\"oss://bucket/a\",\"sourceVersion\":\"1\"}','QUALIFIED',10,10,?,?::jsonb)", sha, artifact);
         long dataId = jdbc.queryForObject("SELECT max(data_id) FROM source_data", Long.class);
-        jdbc.update("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,target_seq,artifact_seq,delivery_date,cutoff_at," +
-                "original_file_name,new_file_name,size_bytes,token_count,sha256,current_node_id) VALUES(200,?,?,1,1,'2026-11-06',now()+interval '1 day'," +
+        jdbc.update("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq,delivery_date,cutoff_at," +
+                "original_file_name,new_file_name,size_bytes,token_count,sha256,current_node_id) VALUES(200,?,?,'group2',1,1,'2026-11-06',now()+interval '1 day'," +
                 "'batch_00001.tar.gz','batch_00001.tar.gz',10,10,?,'targetUpload')", dataId, entityId, sha);
         long oldTask = jdbc.queryForObject("SELECT max(task_id) FROM delivery_task", Long.class);
         DeliveryRolloverService rollovers = new DeliveryRolloverService(jdbc, transactions, new DeliveryTaskRepository(jdbc, transactions),
@@ -118,9 +118,42 @@ class ArchiveModelIntegrationTest {
         assertEquals(LocalDate.parse("2026-11-07"), jdbc.queryForObject("SELECT delivery_date FROM delivery_task WHERE task_id=?", LocalDate.class, newTask));
         assertEquals(200, jdbc.queryForObject("SELECT delivery_id FROM delivery_task WHERE task_id=?", Long.class, newTask));
         assertEquals(entityId, jdbc.queryForObject("SELECT delivery_entity_id FROM delivery_task WHERE task_id=?", Long.class, newTask));
+        assertEquals("group2", jdbc.queryForObject("SELECT worker_group FROM delivery_task WHERE task_id=?", String.class, newTask));
         assertEquals(1, jdbc.queryForObject("SELECT target_seq FROM delivery_task WHERE task_id=?", Integer.class, newTask));
         assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM delivery_task WHERE delivery_id=200 AND delivery_entity_id=? " +
                 "AND execution_status NOT IN('EXPIRED','CANCELLED')", Integer.class, entityId));
+    }
+
+    @Test void claimUsesEntityWorkerGroupSnapshotAndIndependentGroupConcurrency() {
+        long deliveryId = 3000;
+        insertSubmit(deliveryId);
+        long[] taskIds = new long[3];
+        for (int index = 0; index < 3; index++) {
+            long entityId = 301 + index;
+            String workerGroup = index == 1 ? "claim-group-b" : "claim-group-a";
+            String fileName = "claim-" + index + ".tar.gz";
+            String sha = String.valueOf((char) ('a' + index)).repeat(64);
+            jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                            "VALUES(?,'CLAIM',?,'Claim group','FTP',?,?,'{\"host\":\"localhost\",\"rootPath\":\"/\"}')",
+                    entityId, "ENTITY-" + entityId, "entity" + entityId, workerGroup);
+            String artifact = "[{\"artifactSeq\":1,\"originalFileName\":\"" + fileName + "\",\"newFileName\":\"" + fileName + "\"," +
+                    "\"sizeBytes\":10,\"sha256\":\"" + sha + "\",\"token\":10,\"file_mapping\":{}}]";
+            jdbc.update("INSERT INTO source_data(delivery_id,original_locator,qualification,size_bytes,token_count,sha256,artifacts) " +
+                            "VALUES(?,?::jsonb,'PENDING',10,10,?,?::jsonb)", deliveryId,
+                    "{\"sourceUri\":\"oss://bucket/" + fileName + "\",\"sourceVersion\":\"1\"}", sha, artifact);
+            long dataId = jdbc.queryForObject("SELECT max(data_id) FROM source_data WHERE delivery_id=?", Long.class, deliveryId);
+            jdbc.update("INSERT INTO delivery_task(delivery_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq,delivery_date,cutoff_at," +
+                            "original_file_name,new_file_name,size_bytes,token_count,sha256,current_node_id) " +
+                            "VALUES(?,?,?,?,?,1,'2026-11-09',now()+interval '1 day',?,?,10,10,?,'sourceDownload')",
+                    deliveryId, dataId, entityId, workerGroup, index + 1, fileName, fileName, sha);
+            taskIds[index] = jdbc.queryForObject("SELECT max(task_id) FROM delivery_task WHERE delivery_id=?", Long.class, deliveryId);
+        }
+        DeliveryTaskRepository repository = new DeliveryTaskRepository(jdbc, transactions);
+        assertEquals(taskIds[1], repository.claimNext("worker-4", "claim-group-b", 1).orElseThrow().taskId());
+        assertEquals(taskIds[0], repository.claimNext("worker-1", "claim-group-a", 1).orElseThrow().taskId());
+        assertTrue(repository.claimNext("worker-2", "claim-group-a", 1).isEmpty(), "group A reached its own running limit");
+        assertEquals(taskIds[2], jdbc.queryForObject("SELECT task_id FROM delivery_task WHERE task_id=? AND execution_status='READY'", Long.class, taskIds[2]));
+        assertThrows(IllegalArgumentException.class, () -> repository.claimNext("worker-1", "", 1));
     }
 
     @Test void threeEntitiesTwoEachDeliveredBeforeCutoff() {
@@ -180,9 +213,9 @@ class ArchiveModelIntegrationTest {
         jdbc.update("INSERT INTO ingest_source(source_id,oss_uri,channel_code,oss_type) VALUES(?,?,'STATE-CASE','ALIBABA_CLOUD')",
                 deliveryId, "oss://bucket/state-case/" + deliveryId + "/");
         for (int entityIndex = 1; entityIndex <= 3; entityIndex++) {
-            jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,endpoint_locator) " +
-                    "VALUES(?,'STATE-CASE',?,'State case','FTP',?,'{\"host\":\"localhost\",\"rootPath\":\"/\"}') ON CONFLICT(delivery_entity_id) DO NOTHING",
-                    entityIndex, "ENTITY-" + entityIndex, "entity" + entityIndex);
+            jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                    "VALUES(?,'STATE-CASE',?,'State case','FTP',?,?,'{\"host\":\"localhost\",\"rootPath\":\"/\"}') ON CONFLICT(delivery_entity_id) DO NOTHING",
+                    entityIndex, "ENTITY-" + entityIndex, "entity" + entityIndex, entityIndex == 3 ? "group2" : "group1");
         }
         String targets = "{\"schemaVersion\":1,\"targets\":[" +
                 "{\"targetCount\":2,\"deliveryEntityId\":1},{\"targetCount\":2,\"deliveryEntityId\":2},{\"targetCount\":2,\"deliveryEntityId\":3}]}";
@@ -201,16 +234,16 @@ class ArchiveModelIntegrationTest {
                         "\"sizeBytes\":" + sequence + ",\"sha256\":\"" + sha + "\",\"token\":" + sequence + ",\"file_mapping\":{}}]";
                 sources.add(new Object[]{id, deliveryId, locator, sequence, sequence, sha, artifact});
                 boolean succeeded = allSucceeded || sequence < 2;
-                tasks.add(new Object[]{id, deliveryId, id, entityIndex, sequence, deliveryDate, cutoff, fileName, fileName,
-                        sequence, sequence, sha, succeeded ? "ftpDownloadVerify" : "targetUpload", succeeded ? "SUCCEEDED" : "READY",
-                        succeeded ? OffsetDateTime.now() : null});
+                tasks.add(new Object[]{id, deliveryId, id, entityIndex, entityIndex == 3 ? "group2" : "group1", sequence,
+                        deliveryDate, cutoff, fileName, fileName, sequence, sequence, sha, succeeded ? "ftpDownloadVerify" : "targetUpload",
+                        succeeded ? "SUCCEEDED" : "READY", succeeded ? OffsetDateTime.now() : null});
             }
         }
         jdbc.batchUpdate("INSERT INTO source_data(data_id,delivery_id,original_locator,qualification,size_bytes,token_count,sha256,artifacts) " +
                 "VALUES(?,?,?::jsonb,'QUALIFIED',?,?,?,?::jsonb)", sources);
-        jdbc.batchUpdate("INSERT INTO delivery_task(task_id,delivery_id,data_id,delivery_entity_id,target_seq,artifact_seq,delivery_date,cutoff_at," +
+        jdbc.batchUpdate("INSERT INTO delivery_task(task_id,delivery_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq,delivery_date,cutoff_at," +
                 "original_file_name,new_file_name,size_bytes,token_count,sha256,current_node_id,execution_status,completed_at) " +
-                "VALUES(?,?,?,?,?,1,?,?,?,?,?,?,?,?,?,?)", tasks);
+                "VALUES(?,?,?,?,?,?,1,?,?,?,?,?,?,?,?,?,?)", tasks);
     }
 
     private void insertSubmit(long id) {

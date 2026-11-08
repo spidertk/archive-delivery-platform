@@ -5,7 +5,7 @@ spring:
   application:
     name: archive-delivery-server
   datasource:
-    url: ${ARCHIVE_DB_URL:jdbc:postgresql://localhost:55432/archive_delivery}
+    url: ${ARCHIVE_DB_URL:jdbc:postgresql://localhost:5432/archive_delivery}
     username: ${ARCHIVE_DB_USER:archive}
     password: ${ARCHIVE_DB_PASSWORD:archive_local}
     hikari:

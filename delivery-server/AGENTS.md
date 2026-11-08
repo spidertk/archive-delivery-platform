@@ -27,7 +27,7 @@ GET  /api/v1/dashboard/targets?deliveryId={deliveryId}
 |---|---|
 | `api/DeliveryController` | 提交、查询、resume 和 rollover |
 | `api/DeliveryTaskController` | 任务详情、timeline 和 expectedFence retry |
-| `api/DeliveryEntityController` | 实体、账户和非 Secret 定位管理 |
+| `api/DeliveryEntityController` | 实体、账户、workerGroup 和非 Secret 定位管理；新任务固化执行组 |
 | `api/DashboardController` | 提交总览和实体目标派生聚合 |
 | `api/PipelineController` | 版本、草稿、发布和 Secret 脱敏；无 binding API |
 | `service/DashboardQueryService` | 从 submit/source/task/delivery_node/event 查询 |

@@ -32,6 +32,7 @@ PipelineEngine 是通用节点执行器，节点顺序只来自当前 PipelineVe
 9. 人工 rollover 必须传 expectedDeliveryDate、deliveryDate 和原因，新日期必须晚于原日期；不得直接 UPDATE 日期或状态。
 10. Python 不直接写 PG；Shell 不拼 sh -c；路径、包名、URI 和 FTP 根目录必须校验。
 11. 同 URI 同 SHA 幂等，不同 SHA 阻断；禁止清空 Bucket/FTP 或覆盖其他任务。
+12. 实体和任务显式保存 `worker_group`；任务创建与跨日固化组快照，claim 只选本组且按组限制 RUNNING。一个组只能对应一台服务器的本地工作目录，禁止跨组读取节点文件。
 
 ## 集中配置与密钥
 

@@ -21,7 +21,7 @@
 2. 提交表单只维护 targets 的 targetCount/deliveryEntityId，不出现 groups/groupCode。
 3. 进度只统计最新有效任务；EXPIRED 只在时间轴展示。跨日未全部成功时主单和实体目标展示 PARTIALLY_DELIVERED，不能提前显示 DELIVERED。
 4. 阶段由后端 Pipeline 驱动，执行状态只做叠加展示。
-5. 任务展示实体、targetSeq、dataId、artifactSeq、文件名、size/token/SHA、日期和 locator。
+5. 任务展示实体、workerGroup、targetSeq、dataId、artifactSeq、文件名、size/token/SHA、日期和 locator；提交 targets 不传 workerGroup，由实体快照决定。
 6. 时间轴读取 `timeline.nodes`，不把 delivery_node 与旧 process 表混淆。
 7. retry 携带 expectedFence 和原因；EXPIRED 不提供恢复按钮。
 8. 请求失败保留上次成功数据并显示错误；不展示 Secret 或完整 definition。

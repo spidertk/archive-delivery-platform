@@ -45,6 +45,7 @@ CREATE TABLE delivery_entity (
   entity_name varchar(128) NOT NULL,
   protocol varchar(32) NOT NULL,
   account_name varchar(128) NOT NULL,
+  worker_group varchar(32) NOT NULL CHECK(worker_group~'^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$'),
   endpoint_locator jsonb NOT NULL DEFAULT '{}',
   enabled boolean NOT NULL DEFAULT true,
   created_at timestamptz NOT NULL DEFAULT now(),
@@ -61,6 +62,7 @@ COMMENT ON COLUMN delivery_entity.entity_code IS '厂商内交付实体编码。
 COMMENT ON COLUMN delivery_entity.entity_name IS '管理展示名称。';
 COMMENT ON COLUMN delivery_entity.protocol IS '实体交付能力协议，不决定 Pipeline 节点顺序。';
 COMMENT ON COLUMN delivery_entity.account_name IS '交付业务账户名，不是密码。';
+COMMENT ON COLUMN delivery_entity.worker_group IS '实体默认 Worker 执行组；一个组对应一台服务器的本地工作目录，新任务创建时保存快照。';
 COMMENT ON COLUMN delivery_entity.endpoint_locator IS 'schemaVersion/host/port/rootPath 白名单 JSONB，不含 Secret。';
 COMMENT ON COLUMN delivery_entity.enabled IS '是否允许新提交引用；历史任务关系不删除。';
 COMMENT ON COLUMN delivery_entity.created_at IS '创建时间，timestamptz。';
@@ -224,6 +226,7 @@ CREATE TABLE delivery_task (
   delivery_id bigint NOT NULL REFERENCES delivery_submit(delivery_id),
   data_id bigint NOT NULL REFERENCES source_data(data_id),
   delivery_entity_id bigint NOT NULL REFERENCES delivery_entity(delivery_entity_id),
+  worker_group varchar(32) NOT NULL CHECK(worker_group~'^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$'),
   target_seq int NOT NULL CHECK(target_seq>0),
   artifact_seq int NOT NULL CHECK(artifact_seq>0),
   delivery_date date NOT NULL,
@@ -258,14 +261,15 @@ CREATE UNIQUE INDEX uk_task_active_artifact ON delivery_task(delivery_id,deliver
 CREATE UNIQUE INDEX uk_task_active_target_seq ON delivery_task(delivery_id,delivery_entity_id,target_seq)
   WHERE execution_status NOT IN('EXPIRED','CANCELLED');
 CREATE INDEX idx_task_delivery ON delivery_task(delivery_id,execution_status,delivery_date,task_id);
-CREATE INDEX idx_task_claim ON delivery_task(execution_status,next_retry_at,delivery_date,task_id);
+CREATE INDEX idx_task_claim ON delivery_task(worker_group,execution_status,next_retry_at,delivery_date,task_id);
 CREATE INDEX idx_task_cutoff ON delivery_task(cutoff_at,task_id) WHERE execution_status NOT IN('SUCCEEDED','EXPIRED','CANCELLED');
 CREATE INDEX idx_task_entity ON delivery_task(delivery_entity_id,execution_status,task_id);
-COMMENT ON TABLE delivery_task IS '一个 artifact 面向一个交付实体的执行原子；直接保存实体和目标内序号，跨日以新 task_id 接续。';
+COMMENT ON TABLE delivery_task IS '一个 artifact 面向一个交付实体的执行原子；直接保存实体、执行组快照和目标内序号，跨日以新 task_id 接续。';
 COMMENT ON COLUMN delivery_task.task_id IS '交付任务 ID，每次跨日生成新值。';
 COMMENT ON COLUMN delivery_task.delivery_id IS '所属 delivery_submit 外键，跨日不变。';
 COMMENT ON COLUMN delivery_task.data_id IS 'source_data 外键。';
 COMMENT ON COLUMN delivery_task.delivery_entity_id IS '直接交付目标实体外键，替代独立交付组关系。';
+COMMENT ON COLUMN delivery_task.worker_group IS '任务创建时固化的 Worker 执行组；认领、重试和跨日接续均不跨组，避免访问其他服务器的本地文件。';
 COMMENT ON COLUMN delivery_task.target_seq IS '同一提交同一实体的目标内序号，从 1 开始且不超过 targetCount。';
 COMMENT ON COLUMN delivery_task.artifact_seq IS 'source_data.artifacts 内从 1 开始的序号。';
 COMMENT ON COLUMN delivery_task.delivery_date IS '当前交付业务日期。';

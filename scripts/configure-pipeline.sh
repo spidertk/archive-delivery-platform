@@ -104,10 +104,10 @@ raise SystemExit(0 if any(row["entityCode"] == "ENTITY-" + sys.argv[2] for row i
 PY
   then
     python3 - "$ENTITY" "$TEMP/entity-$ENTITY.json" <<'PY'
-import json, sys
+import json, os, sys
 entity = int(sys.argv[1])
 json.dump({"vendorCode": "LOCAL-FTP", "entityCode": f"ENTITY-{entity}", "entityName": f"本地 FTP 验证实体 {entity}",
-           "protocol": "FTP", "accountName": f"entity{entity}",
+           "protocol": "FTP", "accountName": f"entity{entity}", "workerGroup": os.environ.get(f"ENTITY_{entity}_WORKER_GROUP", "group1"),
            "endpointLocator": {"schemaVersion": 1, "host": f"ftp-entity-{entity}", "port": 21, "rootPath": "/"}}, open(sys.argv[2], "w"))
 PY
     curl -fsS --connect-timeout 5 --max-time 15 -H 'Content-Type: application/json' \

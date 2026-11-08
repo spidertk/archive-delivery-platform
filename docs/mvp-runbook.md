@@ -103,7 +103,7 @@ docker compose -f deploy/docker-compose.yml --env-file deploy/.env exec -T postg
 SET search_path TO archive_delivery;
 SELECT delivery_id,delivery_batch,status,target_strategy,discovery_completed_at,completed_at
 FROM delivery_submit WHERE delivery_id=<deliveryId>;
-SELECT task_id,data_id,delivery_entity_id,target_seq,artifact_seq,delivery_date,current_node_id,
+SELECT task_id,data_id,delivery_entity_id,worker_group,target_seq,artifact_seq,delivery_date,current_node_id,
        execution_status,size_bytes,token_count,sha256,superseded_by_task_id
 FROM delivery_task WHERE delivery_id=<deliveryId> ORDER BY task_id;
 SELECT process_id,task_id,node_id,node_type,stage_code,attempt,status,output_locator,error_code

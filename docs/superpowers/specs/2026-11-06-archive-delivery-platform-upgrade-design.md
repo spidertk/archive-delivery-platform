@@ -13,13 +13,14 @@
 
 1. 核心血缘为 `delivery_submit(delivery_id) → source_data(delivery_id) → delivery_task(task_id) → delivery_node(task_id,process_id)`。
 2. 交付提交直接表达“交付到哪些实体、每个实体多少产物”，不再建立交付组领域、组编码、组状态或组配额表。
-3. `delivery_task` 直接保存 `delivery_entity_id + target_seq`。多个交付实体只是多个 `targets`，不引入中间组对象。
+3. `delivery_task` 直接保存 `delivery_entity_id + worker_group + target_seq`。多个交付实体只是多个 `targets`，不引入中间交付组对象；`worker_group` 只是单服务器本地执行域。
 4. `delivery_pipeline_submit` 更名为 `delivery_submit`，`delivery_task_process` 更名为 `delivery_node`。`process_id` 仍是一次节点尝试主键，字符串 `node_id` 仍是 Pipeline DAG 节点标识。
 5. 节点元数据、规则、DAG、选择、目标分配、重试、跨日、并发和节点 Secret 统一汇集在 `pipeline_version.definition`。不保留 `node_definition`、`rule_set`、`source_pipeline_binding`。
 6. 核心真实链路为：杭州源 OSS 密钥直下载并保留本地文件 → 本地 repair → qualify → 三个交付实体各一个任务 → 上传另一 OSS Bucket → 本地 FTP 上传并重新下载验证 size/SHA → DELIVERED。
 7. 不使用 SSH 跳板机、CRR、新加坡中转、远端 SSH 发布或旧回执链。新协议只新增 Pipeline 节点。
-8. 超过 `cutoff_at` 未完成的任务 EXPIRED，并生成下一交付日的新 `task_id`；`delivery_id/data_id/delivery_entity_id/target_seq/artifact_seq` 保持不变。
+8. 超过 `cutoff_at` 未完成的任务 EXPIRED，并生成下一交付日的新 `task_id`；`delivery_id/data_id/delivery_entity_id/worker_group/target_seq/artifact_seq` 保持不变。
 9. 配置类信息以集中、可查找、统一维护为原则。只有具有独立生命周期和并发事实的 `pipeline` 与 `pipeline_version` 保留，不为节点、规则或来源绑定拆分平行配置表。
+10. 实体声明 `worker_group`，任务创建时保存不可变执行组快照。各服务器 Worker 以 `ARCHIVE_WORKER_GROUP` 只认领本组任务，组内并发独立计数；同组 Worker 共享一台服务器的本地 `/data`，不同服务器不共享工作目录。
 
 ## 2. 范围与边界
 
@@ -141,7 +142,7 @@ GET  /api/v1/dashboard/targets?deliveryId={deliveryId}
 
 服务端要求来源可用、版本已发布、实体启用且协议受当前 Pipeline 支持；目标实体在提交内不重复，targetCount 为正整数，selection.limit 等于 targetCount 总和。未知字段由 Jackson 拒绝。幂等键相同且规范化请求一致时返回原 deliveryId，不同请求返回 409。
 
-提交只写 `delivery_submit`。准备阶段按 targets 数组顺序和 targetCount 分配源产物，在任务写 `delivery_entity_id` 与从 1 开始的 `target_seq`。实体目标的数量、分配数、完成数和展示状态均从提交快照及任务事实派生，不冗余维护另一份状态。
+提交只写 `delivery_submit`。准备阶段按 targets 数组顺序和 targetCount 分配源产物，在任务写 `delivery_entity_id`、实体的 `worker_group` 快照与从 1 开始的 `target_seq`。实体目标的数量、分配数、完成数和展示状态均从提交快照及任务事实派生，不冗余维护另一份状态；提交 targets 不接收 workerGroup。
 
 ## 7. 执行时序与本地文件
 
@@ -168,6 +169,8 @@ sequenceDiagram
 ```
 
 源发现下载保存在 Worker 持久卷的 `work/discovery/{deliveryId}`；repair 和 OSS 回验文件也保存在持久工作目录。FTP 最终下载保存在 `/data/ftp-verify/{deliveryId}/{deliveryDate}/entity-{deliveryEntityId}/{fileName}`。所有下载使用受控目录、`.partial` 和原子 rename；不得清空历史目录或覆盖同名不同 SHA 文件。
+
+多服务器时，每个 `worker_group` 只部署在一台服务器，同组 Worker 共享该机持久卷，不同服务器不共享目录。`claimNext(workerId,workerGroup,maxRunning)` 只选择任务快照同组记录，并按组统计有效 RUNNING；后续节点、retry/resume 和 rollover 新任务均保持 worker_group，因此前一节点的本地文件始终位于同一执行域。纯 Worker 服务器统一通过公网连接主 PostgreSQL/PowerJob，主/子 PowerJob 以 external.address/port 显式注册公网地址，安全组仅允许对方公网 IP/32。
 
 ## 8. 状态、重试和跨日
 

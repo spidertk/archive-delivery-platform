@@ -30,7 +30,7 @@ public class DeliveryEntityController {
     @ResponseStatus(HttpStatus.CREATED)
     public DeliveryEntity create(@Valid @RequestBody EntityRequest request) {
         return entities.create(request.vendorCode(), request.entityCode(), request.entityName(), request.protocol(),
-                request.accountName(), request.endpointLocator());
+                request.accountName(), request.workerGroup(), request.endpointLocator());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -39,5 +39,6 @@ public class DeliveryEntityController {
     }
 
     public record EntityRequest(@NotBlank String vendorCode, @NotBlank String entityCode, @NotBlank String entityName,
-                                @NotBlank String protocol, @NotBlank String accountName, @NotNull JsonNode endpointLocator) {}
+                                @NotBlank String protocol, @NotBlank String accountName, @NotBlank String workerGroup,
+                                @NotNull JsonNode endpointLocator) {}
 }
