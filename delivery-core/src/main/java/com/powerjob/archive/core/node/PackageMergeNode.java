@@ -32,35 +32,48 @@ public class PackageMergeNode implements NodeHandler {
 
     /** 每个源包只解包一次，输出请求目录供 repair 直接消费，不生成中间压缩包。 */
     @Override public NodeResult execute(NodeContext context) throws Exception {
+        // 只有成功下载节点可以提供已核对 size/SHA 的源包路径。
         JsonNode download = NodeSupport.previousOutput(context, "oss.download");
+        // 下载输出顺序与 delivery_mapping.source_seq 一致。
         JsonNode sources = download.required("sources");
+        // 来源数量漂移或无效包上限必须阻断合并。
         if (sources.size() != context.sources().size() || context.pipeline().maxPackageBytes() <= 0) {
             throw new IllegalStateException("Downloaded source count or maxPackageBytes is invalid");
         }
+        // 每个任务使用独立 merge/requests 工作目录。
         Path target = Path.of(properties.getWorkRoot(), "delivery-" + context.task().deliveryId(),
                 "task-" + context.task().taskId(), "merge", "requests");
+        // manifest 持久保存成员键、originalPath 和来源序号血缘。
         Path manifest = target.resolveSibling("merge-result.json");
+        // 命令只允许受控 Python 脚本和显式路径参数。
         List<String> command = new ArrayList<>(List.of(properties.getPythonCommand(), properties.getPythonMergeScript(),
                 "--target", target.toString(), "--manifest", manifest.toString()));
+        // 按 mapping 顺序传入源包，禁止切分任何原始文件。
         sources.forEach(source -> {
             command.add("--source");
             command.add(source.required("localPath").asText());
         });
+        // 开始日志记录任务血缘、来源数和工作目录。
         log.info("Package merge started deliveryId={} taskId={} processId={} sourceCount={} workspace={}",
                 context.task().deliveryId(), context.task().taskId(), context.processId(), sources.size(), target);
+        // 非零退出或结构化结果非法时不会进入 repair。
         JsonNode merged = mapper.readTree(ProcessSupport.runJson(command, null, Duration.ofMinutes(10), "MERGE_RESULT "));
+        // 输入 locator 保存来源路径和包上限等脱敏事实。
         ObjectNode input = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
                 .put("sourceCount", sources.size()).put("maxPackageBytes", context.pipeline().maxPackageBytes())
                 .set("sources", download.get("sources"));
+        // 输出 locator 传递工作目录、成员清单和实际请求数。
         ObjectNode output = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
                 .put("workspacePath", merged.required("workspacePath").asText())
                 .put("manifestPath", manifest.toAbsolutePath().toString())
                 .put("sourceBytes", merged.required("sourceBytes").asLong())
                 .put("requestCount", merged.required("requestCount").asInt()).put("sourceCount", sources.size())
                 .put("verifiedAt", Instant.now().toString());
+        // 成功日志分别记录来源包数和包内请求目录数。
         log.info("Package merge succeeded deliveryId={} taskId={} processId={} sourceCount={} requestCount={} workspace={}",
                 context.task().deliveryId(), context.task().taskId(), context.processId(), sources.size(),
                 merged.required("requestCount").asInt(), target);
+        // repair 是否执行只由当前 Pipeline 后继定义决定。
         return NodeResult.success(context.pipeline().successor(context.node().id()), input, output);
     }
 }

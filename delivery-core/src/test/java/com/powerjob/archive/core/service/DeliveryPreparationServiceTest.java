@@ -52,6 +52,16 @@ class DeliveryPreparationServiceTest {
         assertEquals(List.of(3L), planned.get(1).sources().stream().map(SourceData::dataId).toList());
     }
 
+    @Test void backtrackingMovesBoundarySoBothPackagesReachMinimum() {
+        var planned = DeliveryPreparationService.planTasks(
+                sources(8 * MIB, 2 * MIB, 2 * MIB, 2 * MIB, 2 * MIB),
+                List.of(new DeliveryPreparationService.TargetSlot(1, 1, 1),
+                        new DeliveryPreparationService.TargetSlot(2, 1, 2)), 10 * MIB, 8 * MIB);
+        assertEquals(List.of(1, 4), planned.stream().map(task -> task.sources().size()).toList());
+        assertEquals(List.of(8 * MIB, 8 * MIB), planned.stream()
+                .map(task -> task.sources().stream().mapToLong(SourceData::sizeBytes).sum()).toList());
+    }
+
     @Test void requestedExampleAccumulatesWithoutSplittingAndIgnoresTrailingSource() {
         var planned = DeliveryPreparationService.planTasks(
                 sources(1 * MIB, 2 * MIB, 3 * MIB, 4 * MIB, 1 * MIB, 5 * MIB, 3 * MIB, 2 * MIB),
@@ -70,6 +80,13 @@ class DeliveryPreparationServiceTest {
                 List.of(new DeliveryPreparationService.TargetSlot(1, 1)), 10 * MIB);
         assertEquals(1, planned.size());
         assertEquals(List.of(1L), planned.get(0).sources().stream().map(SourceData::dataId).toList());
+    }
+
+    @Test void packageBelowMinimumIsRejectedInsteadOfDelivered() {
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+                () -> DeliveryPreparationService.planTasks(sources(3, MIB),
+                        List.of(new DeliveryPreparationService.TargetSlot(1, 1)), 10 * MIB, 8 * MIB));
+        assertEquals("Source package is below minPackageBytes without splitting: 3145728<8388608", error.getMessage());
     }
 
     @Test void invalidCapacityAndOversizedInputsFailBeforeAssignment() {

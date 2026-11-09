@@ -15,12 +15,12 @@
 ## 当前设计口径
 
 - 核心血缘为 `delivery_submit → source_data → delivery_mapping → delivery_task → delivery_node`。
-- 提交只使用 ossUri/pipelineCode/deliveryDate/deliveryBatch/cutoffAt/vendorCode+entityCode targets；同厂商实体整体分配，repair 使用 entityCode。
+- 提交只使用 ossUri/pipelineCode/deliveryDate/deliveryBatch/vendorCode+entityCode targets；cutoffAt 由 Pipeline 配置推导，同厂商实体整体分配，repair 使用 entityCode。
 - source_data 保存 original_file_name、单 artifact 和 created_at/updated_at；新增模型表默认同时带创建与更新时间。
-- 任务 sourceArtifact 等于 source_data.artifact，metadata_ids 与逐来源 file_mapping 全集一致；有效包名在同一 delivery_id 下全局唯一。
+- 任务 artifacts 仅含 dataId/sourceArtifact，sourceArtifact 等于 source_data.artifact，不保存 deliveryArtifact；metadata_ids 是与 mapping 同顺序的 data_id 数字数组，最终 size/SHA 取成功节点 locator；有效包名在同一 delivery_id 下全局唯一。
 - merge 只解包并输出请求目录，repair 直接修复并只最终封包一次，消除重复压缩/解压；超限包过滤，小源包合并且不切分。
 - PAUSED 只在节点边界设置，相同批次原样再提交继续；跨日新旧 taskId 由不可变事件关联。
-- 本地真实核心 case 使用指定 sg-storage products 来源，按每包 10 MiB 形成两个实体任务、每组上传一件，完成两个 OSS/FTP、暂停续交、retry 和跨日验收。
+- 本地真实核心 case 使用指定 sg-storage products 来源，持续下载到每包 8–10 MiB 形成两个实体任务、每组上传一件，完成两个 OSS/FTP、暂停续交、retry 和跨日验收。
 
 ## 维护规则
 

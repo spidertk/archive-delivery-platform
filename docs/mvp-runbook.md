@@ -10,10 +10,10 @@ sourceDownload → mergePackages → repair → qualify → targetUpload → ftp
 
 本地真实核心 case 必须同时证明：
 
-- 源 OSS 直接下载三份样本且本地文件保留，逐源 original_file_name/size/SHA/artifact 与 source_data 一致，created_at/updated_at 非空。
-- merge 输出请求目录且无 merged-source.tar.gz；repair/qualify 成功，三来源按每包 10 MiB 上限形成两个 entityCode 任务，每个实体 targetCount=1，repair 输入也是 entityCode。
-- delivery_mapping 合计三条有序映射，任务 artifacts 保留全部 dataId/sourceArtifact/deliveryArtifact 对，sourceArtifact 完全等于 source_data.artifact，file_mapping 仅含本来源 originalPath，metadata_ids 数量与各 merge requestCount 一致。
-- 两个有效任务的 new_file_name 不同且序号在整个 delivery_id 内连续，任务 size/token 与合并 deliveryArtifact 一致。
+- 新地址源 OSS 真实 GET 并保留，相同 URI+版本使用缓存；逐源 original_file_name/size/SHA/artifact 与 source_data 一致，created_at/updated_at 非空。
+- 持续扫描并下载足够来源，来源合计和最终包均为 8–10 MiB；merge 输出请求目录且无 merged-source.tar.gz，repair/qualify 成功，形成 alibaba/jun 与 alibaba/jun2 两个任务，repair 输入也是 entityCode。
+- delivery_mapping 覆盖每个入选来源且各分配一次，任务 artifacts 仅含 dataId/sourceArtifact 且 sourceArtifact 完全等于 source_data.artifact，不保存 deliveryArtifact；metadata_ids 与 sourceDataIds 完全相等且不存 requestId，repair manifest 保留逐来源 originalPath/newRequestId。
+- 两个有效任务的 new_file_name 不同且序号在整个 delivery_id 内连续，任务 size/token 与成功 repair locator 及实际文件一致，且都在 8–10 MiB 内。
 - request_id_allocation.request_namespace 等于全局唯一 deliveryBatch。
 - 两件合并产物上传到另一 OSS Bucket 并 GET 回验；两个本地 FTP 账户分别上传下载一件产物，文件保留、size/SHA 一致且无 .partial。
 - 同一 case 覆盖节点边界暂停、相同批次再提交继续、单任务 retry 和跨日新 taskId。
@@ -30,7 +30,7 @@ cd web && npm ci && npm run test && npm run build
 bash -n scripts/*.sh
 ```
 
-覆盖 V1–V17 迁移、全表全列注释、废弃对象不存在、source_data 单 artifact 白名单、来源时间戳、任务产物对一致性、delivery 内包名唯一、三来源映射、事件不可变、entityCode 提交、暂停再提交、请求编号外键、跨日完整血缘、集中 Pipeline 和前端。
+覆盖 V1–V20 迁移、全表全列注释、废弃对象不存在、source_data 单 artifact 白名单、来源时间戳、任务产物对一致性、delivery 内包名唯一、多来源映射、8–10 MiB 边界、事件不可变、复合业务键提交、Pipeline 推导 cutoffAt、暂停再提交、请求编号外键、跨日完整血缘、集中 Pipeline 和前端。
 
 核心状态集成案例位于 `ArchiveModelIntegrationTest`：
 
@@ -50,15 +50,15 @@ bash -n scripts/*.sh
 
 该入口具有真实 OSS/FTP 写副作用，并明确放弃旧本地业务数据。它会：
 
-1. 先携带 2026-11-06 授权完成 V13 并等待成功，再携带 2026-11-07 授权应用 V14–V17，配置通用调度、六节点 Pipeline、来源和三个 FTP 实体。
+1. 仅 V14 以下数据库先携带 2026-11-06 授权完成 V13，再携带 2026-11-07 授权应用 V14–V20；已有 V14+ 数据库直接进入增量迁移。随后配置通用调度、六节点 Pipeline、来源和三个 FTP 实体。
 2. 双确认清理运行事实，真实预检源 OSS、目标 Bucket 和三个 FTP 账户。
-3. 暂停前两个核心实体 FTP，以指定 sg-storage products 为 ossUri，显式 cutoffAt 并提交 alibaba/jun、alibaba/jun2、各 targetCount=1，按厂商整体以 10 MiB 上限形成两个任务。
+3. 暂停前两个核心实体 FTP，以指定 sg-storage products 为 ossUri，不传 cutoffAt，提交 alibaba/jun、alibaba/jun2、各 targetCount=1，持续下载到每包来源合计和最终产物均为 8–10 MiB。
 4. 在两个 ftpDownloadVerify 阻塞边界暂停，使用完全相同请求再次提交并确认 deliveryId 不变。
 5. 对两个旧任务 rollover，证明旧任务 EXPIRED、新 taskId 按下一日接续；新任务再次阻塞后恢复 FTP，逐任务 retry。
 6. 有界等待 DELIVERED，调用 verify-delivery.sh 独立读取 PG、OSS 和 FTP 核验。
-7. 再以 local-other/jun3 提交相同来源，等待第二个 delivery 成功，核对 sourceDownload 的所有 source.cacheHit=true，证明跨交付、跨厂商复用缓存而未重复 GET。
+7. 再以 local-other/jun3 提交相同来源，等待第二个 delivery 成功，核对 sourceDownload 的所有 source.cacheHit=true，证明跨交付、跨厂商复用缓存而未重复 GET，并核对复用包也在 8–10 MiB 内。
 
-任何预检、意外 BLOCKED、超时或 SHA 不一致都会非零停止，不用 SQL 修改状态绕过。
+任何预检、意外 BLOCKED、包大小不达标、超时或 SHA 不一致都会非零停止，不用 SQL 修改状态绕过。
 
 ## 4. 分步操作
 
@@ -67,7 +67,7 @@ bash -n scripts/*.sh
 ./scripts/bootstrap-powerjob.sh
 ./scripts/configure-pipeline.sh
 ./scripts/preflight.sh
-./scripts/submit-delivery.sh <ossUri> <pipelineCode> <deliveryDate> <cutoffAt> <deliveryBatch>
+./scripts/submit-delivery.sh <ossUri> <pipelineCode> <deliveryDate> <deliveryBatch>
 ./scripts/verify-delivery.sh <deliveryId>
 ```
 
@@ -117,7 +117,7 @@ WHERE request_namespace=(SELECT delivery_batch FROM delivery_submit WHERE delive
 
 ## 6. 外部证据与自助复核
 
-`verify-delivery.sh` 在独立容器中读取当前 Pipeline 受控配置，不打印 Secret；它实际 GET 三份源 OSS 和交付 OSS，重新登录 FTP 下载，并核对 Worker 最终文件、merge 目录、mapping、metadataIds 和 .partial。
+`verify-delivery.sh` 在独立容器中读取当前 Pipeline 受控配置，不打印 Secret；它实际 GET 全部入选源 OSS 和交付 OSS，重新登录 FTP 下载，并核对 Worker 最终文件、merge 目录、mapping、data_id metadataIds 和 .partial。
 
 Worker 持久卷中的最终 FTP 文件可用以下命令列出并计算 SHA（替换 deliveryId）：
 
@@ -126,7 +126,7 @@ docker run --rm -v deploy_archive_data:/data:ro alpine:3.22 \
   sh -c 'find /data/ftp-verify/<deliveryId> -type f -path "*/entity-*" ! -name "*.partial" -exec sha256sum {} \;'
 ```
 
-输出 SHA 应与 `delivery_task.artifacts->0->'deliveryArtifact'->>'sha256'` 一致。历史 V14 三实体验收仅作历史证据，不替代本次三来源合并 case。
+输出 SHA 应与最新成功 `python.repair` 的 `delivery_node.output_locator->>'sha256'` 一致。历史 V14 三实体验收仅作历史证据，不替代本次真实合并 case。
 
 ## 7. 本机 PostgreSQL 可见合并辅助 case
 
@@ -142,4 +142,4 @@ export ARCHIVE_DB_PASSWORD="${ARCHIVE_DB_PASSWORD:-archive_local}"
   '-Dtest=LocalMergedCaseVerificationTest' test
 ```
 
-成功日志必须包含实际 clean、V1–V13 与 V14–V17 两段迁移和 `LOCAL MERGED CASE PASSED`。核对 Flyway=17、source_data=3、原任务=1、每任务 delivery_mapping=3、sourceArtifact=source_data.artifact、跨日 taskId 不同且来源集合不变。该 case 不能替代真实 OSS/FTP 验收。
+成功日志必须包含实际 clean、V1–V13 与 V14–V20 两段迁移和 `LOCAL MERGED CASE PASSED`。核对 Flyway=20、source_data=3、原任务=1、每任务 delivery_mapping=3、sourceArtifact=source_data.artifact、跨日 taskId 不同且来源集合不变。该 case 不能替代真实 OSS/FTP 验收。

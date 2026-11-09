@@ -13,10 +13,10 @@
 | `bootstrap-powerjob.sh` | 创建通用准备、推进和截止 Job | 调度重试为 0 |
 | `configure-pipeline.sh` | 发布集中 Pipeline 并创建复合唯一实体 | 本地 alibaba/jun、alibaba/jun2、local-other/jun3，不打印 Secret |
 | `preflight.sh` | 检查源/目标 OSS、FTP 和数据库 | 失败非零退出 |
-| `submit-delivery.sh` | `ossUri pipelineCode deliveryDate cutoffAt deliveryBatch` 三实体提交 | 传 vendorCode+entityCode，不传 ID 或 idempotencyKey |
+| `submit-delivery.sh` | `ossUri pipelineCode deliveryDate deliveryBatch` 三实体提交 | 传 vendorCode+entityCode，不传 ID、cutoffAt 或 idempotencyKey |
 | `resume-delivery.sh` | 按 deliveryId/fromNode/taskIds/reason 续跑 | 前置不足 409 |
-| `real-e2e-test.sh` | 两阶段 V13/V14–V17 迁移、alibaba/jun+jun2、local-other/jun3 缓存复用 | 覆盖 cutoffAt、暂停再提交、retry、rollover、cacheHit |
-| `verify-delivery.sh` | 核验 PG、OSS、FTP、mapping、source artifact、metadataIds 和节点 | 实际 GET 和 SHA |
+| `real-e2e-test.sh` | 两阶段 V13/V14–V20 迁移、alibaba/jun+jun2、local-other/jun3 缓存复用 | 每包 8–10 MiB，覆盖暂停再提交、retry、rollover、cacheHit |
+| `verify-delivery.sh` | 核验 PG、OSS、FTP、mapping、source artifact、data_id metadataIds 和节点 | 实际 GET 和 SHA；metadataIds=sourceDataIds |
 | `reset-test-data.sh` | 双确认清理本地运行事实 | 保留配置和外部历史文件 |
 
 ## 开发约束

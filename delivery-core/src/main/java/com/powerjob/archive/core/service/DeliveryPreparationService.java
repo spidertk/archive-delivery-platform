@@ -82,16 +82,17 @@ public class DeliveryPreparationService {
         PipelineDefinition pipeline = pipeline(submit.pipelineVersionId());
         int limit = pipeline.selectionLimit();
         long maxPackageBytes = pipeline.maxPackageBytes();
+        long minPackageBytes = pipeline.minPackageBytes();
         List<Target> targets = targets(submit.targetStrategy().required("targets"));
         List<TargetSlot> slots = targetSlots(targets);
         if (slots.size() > limit) throw new IllegalArgumentException("Pipeline selection.limit must be at least the sum of targetCount");
         OssNodeConfig config = sourceConfig(pipeline);
         verifySourceLocation(submit.sourceId(), config);
-        log.info("Delivery preparation started deliveryId={} selectionLimit={} targetTaskCount={} maxPackageBytes={} sourcePrefix=oss://{}/{}",
-                deliveryId, limit, slots.size(), maxPackageBytes, config.bucket(), config.prefix());
+        log.info("Delivery preparation started deliveryId={} selectionLimit={} targetTaskCount={} minPackageBytes={} maxPackageBytes={} sourcePrefix=oss://{}/{}",
+                deliveryId, limit, slots.size(), minPackageBytes, maxPackageBytes, config.bucket(), config.prefix());
         Discovery discovery = discover(config, limit, deliveryId, maxPackageBytes);
         List<List<Integer>> assignments = planSourceIndexes(discovery.objects().stream().map(OSSObjectSummary::getSize).toList(),
-                slots.size(), maxPackageBytes);
+                slots.size(), maxPackageBytes, minPackageBytes);
         for (OSSObjectSummary skipped : discovery.oversized()) {
             String sourceUri = "oss://" + config.bucket() + "/" + skipped.getKey();
             ObjectNode payload = mapper.createObjectNode().put("sourceUri", sourceUri)
@@ -121,7 +122,7 @@ public class DeliveryPreparationService {
                     .put("packageSeq", plan.slot().packageSeq())
                     .put("sourceCount", plan.sources().size())
                     .put("sourceBytes", plan.sources().stream().mapToLong(SourceData::sizeBytes).sum())
-                    .put("maxPackageBytes", maxPackageBytes);
+                    .put("minPackageBytes", minPackageBytes).put("maxPackageBytes", maxPackageBytes);
             ArrayNode sourceIds = payload.putArray("sourceDataIds");
             plan.sources().forEach(source -> sourceIds.add(source.dataId()));
             events.append(deliveryId, taskId, null, entity.deliveryEntityId(), plan.sources().get(0).dataId(), "TASK_PLANNED", "INFO", null,
@@ -145,7 +146,12 @@ public class DeliveryPreparationService {
     }
 
     static List<PlannedTask> planTasks(List<SourceData> sources, List<TargetSlot> slots, long maxPackageBytes) {
-        List<List<Integer>> assignments = planSourceIndexes(sources.stream().map(SourceData::sizeBytes).toList(), slots.size(), maxPackageBytes);
+        return planTasks(sources, slots, maxPackageBytes, 1);
+    }
+
+    static List<PlannedTask> planTasks(List<SourceData> sources, List<TargetSlot> slots, long maxPackageBytes, long minPackageBytes) {
+        List<List<Integer>> assignments = planSourceIndexes(sources.stream().map(SourceData::sizeBytes).toList(),
+                slots.size(), maxPackageBytes, minPackageBytes);
         List<PlannedTask> result = new ArrayList<>();
         for (int index = 0; index < assignments.size(); index++) {
             List<SourceData> group = assignments.get(index).stream().map(sources::get).toList();
@@ -154,14 +160,32 @@ public class DeliveryPreparationService {
         return List.copyOf(result);
     }
 
-    /** 顺序装箱且不切分文件；最后一个目标无法容纳下一包时立即完成，避免把多余来源留在 PENDING。 */
     static List<List<Integer>> planSourceIndexes(List<Long> sizes, int slotCount, long maxPackageBytes) {
-        if (slotCount <= 0 || maxPackageBytes <= 0) throw new IllegalArgumentException("Targets and maxPackageBytes are required");
+        return planSourceIndexes(sizes, slotCount, maxPackageBytes, 1);
+    }
+
+    /** 顺序装箱且不切分文件；有限回溯调整相邻包边界，使全部目标满足下限后才允许交付。 */
+    static List<List<Integer>> planSourceIndexes(List<Long> sizes, int slotCount, long maxPackageBytes, long minPackageBytes) {
+        if (slotCount <= 0 || maxPackageBytes <= 0 || minPackageBytes <= 0 || minPackageBytes > maxPackageBytes) {
+            throw new IllegalArgumentException("Targets and package byte bounds are required");
+        }
         for (long size : sizes) {
             if (size <= 0 || size > maxPackageBytes) {
                 throw new IllegalArgumentException("Oversized or empty source must be filtered before planning");
             }
         }
+        List<List<Integer>> contiguous = planContiguous(sizes, slotCount, maxPackageBytes, minPackageBytes);
+        if (contiguous != null) return contiguous;
+        OrderedPackagePlanner planner = new OrderedPackagePlanner(sizes, slotCount, maxPackageBytes, minPackageBytes);
+        List<List<Integer>> result = planner.plan(0, planner.allIndexes());
+        if (result == null) {
+            throw new IllegalArgumentException("Source package is below minPackageBytes without splitting: "
+                    + planner.bestBelowMin + "<" + minPackageBytes);
+        }
+        return result;
+    }
+
+    private static List<List<Integer>> planContiguous(List<Long> sizes, int slotCount, long maxPackageBytes, long minPackageBytes) {
         List<List<Integer>> result = new ArrayList<>();
         int cursor = 0;
         for (int slotIndex = 0; slotIndex < slotCount; slotIndex++) {
@@ -174,13 +198,69 @@ public class DeliveryPreparationService {
                 group.add(cursor++);
                 groupBytes += candidate;
             }
-            if (group.isEmpty()) {
-                throw new IllegalArgumentException("Source OSS does not contain enough non-empty packages for all delivery targets");
-            }
+            if (groupBytes < minPackageBytes) return null;
             result.add(List.copyOf(group));
-            if (result.size() == slotCount) return List.copyOf(result);
         }
-        return List.copyOf(result);
+        return result;
+    }
+
+    private static final class OrderedPackagePlanner {
+        private final List<Long> sizes;
+        private final int slotCount;
+        private final long maxPackageBytes;
+        private final long minPackageBytes;
+        private long bestBelowMin;
+
+        private OrderedPackagePlanner(List<Long> sizes, int slotCount, long maxPackageBytes, long minPackageBytes) {
+            this.sizes = sizes;
+            this.slotCount = slotCount;
+            this.maxPackageBytes = maxPackageBytes;
+            this.minPackageBytes = minPackageBytes;
+        }
+
+        private List<Integer> allIndexes() {
+            return java.util.stream.IntStream.range(0, sizes.size()).boxed().toList();
+        }
+
+        private List<List<Integer>> plan(int slotIndex, List<Integer> remaining) {
+            List<List<Integer>> candidates = candidates(remaining);
+            if (slotIndex == slotCount - 1) {
+                return candidates.isEmpty() ? null : List.of(candidates.get(0));
+            }
+            for (List<Integer> group : candidates) {
+                java.util.Set<Integer> selected = new java.util.HashSet<>(group);
+                List<Integer> next = remaining.stream().filter(index -> !selected.contains(index)).toList();
+                List<List<Integer>> tail = plan(slotIndex + 1, next);
+                if (tail != null) {
+                    List<List<Integer>> result = new ArrayList<>();
+                    result.add(group);
+                    result.addAll(tail);
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        private List<List<Integer>> candidates(List<Integer> remaining) {
+            Map<Long, List<Integer>> byBytes = new HashMap<>();
+            byBytes.put(0L, List.of());
+            for (int index : remaining) {
+                for (Map.Entry<Long, List<Integer>> entry : new ArrayList<>(byBytes.entrySet())) {
+                    long nextBytes = entry.getKey() + sizes.get(index);
+                    if (nextBytes > maxPackageBytes) continue;
+                    byBytes.computeIfAbsent(nextBytes, key -> {
+                        List<Integer> group = new ArrayList<>(entry.getValue());
+                        group.add(index);
+                        return group;
+                    });
+                }
+            }
+            bestBelowMin = Math.max(bestBelowMin, byBytes.keySet().stream()
+                    .filter(bytes -> bytes < minPackageBytes).mapToLong(Long::longValue).max().orElse(0));
+            return byBytes.entrySet().stream().filter(entry -> entry.getKey() >= minPackageBytes)
+                    .sorted(Map.Entry.comparingByKey(java.util.Comparator.reverseOrder()))
+                    .map(Map.Entry::getValue).toList();
+        }
     }
 
     private SourceData register(long deliveryId, OssNodeConfig config, OSSObjectSummary object, int sequence) {

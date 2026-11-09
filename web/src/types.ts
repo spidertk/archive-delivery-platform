@@ -38,7 +38,6 @@ export interface Artifact {
 export interface ArtifactPair {
   dataId: number
   sourceArtifact: Artifact
-  deliveryArtifact?: Artifact
 }
 
 export interface DeliveryTask {
@@ -65,7 +64,7 @@ export interface DeliveryTask {
   retryCount: number
   lastErrorCode?: string
   artifacts: ArtifactPair[]
-  metadataIds: string[]
+  metadataIds: number[]
 }
 
 export interface NodeItem {
@@ -114,6 +113,5 @@ export interface SubmitDelivery {
   pipelineCode: string
   deliveryDate: string
   deliveryBatch: string
-  cutoffAt: string
   targets: SubmitTarget[]
 }

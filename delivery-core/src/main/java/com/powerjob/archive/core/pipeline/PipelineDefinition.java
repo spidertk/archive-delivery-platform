@@ -67,6 +67,7 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
         if (!(assignment instanceof Map<?, ?> map) || !"SUBMIT_TARGETS".equals(map.get("strategySource"))) {
             throw new IllegalArgumentException("Pipeline config.assignment.strategySource must be SUBMIT_TARGETS");
         }
+        minPackageBytes();
         PipelineNodeConfig configs = new PipelineNodeConfig(new com.fasterxml.jackson.databind.ObjectMapper());
         for (NodeDefinition node : nodes) {
             if (node.type().equals("oss.download")) configs.oss(node, true);
@@ -88,6 +89,16 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
         Object configured = assignment instanceof Map<?, ?> map ? map.get("maxPackageBytes") : null;
         long value = configured instanceof Number number ? number.longValue() : -1;
         if (value <= 0) throw new IllegalArgumentException("config.assignment.maxPackageBytes must be positive");
+        return value;
+    }
+
+    public long minPackageBytes() {
+        Object assignment = config.get("assignment");
+        Object configured = assignment instanceof Map<?, ?> map ? map.get("minPackageBytes") : null;
+        long value = configured instanceof Number number ? number.longValue() : maxPackageBytes() * 4 / 5;
+        if (value <= 0 || value > maxPackageBytes()) {
+            throw new IllegalArgumentException("config.assignment.minPackageBytes must be positive and no greater than maxPackageBytes");
+        }
         return value;
     }
 }

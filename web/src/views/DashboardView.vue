@@ -14,7 +14,6 @@
         <el-form-item label="Pipeline Code"><el-input v-model="submission.pipelineCode" /></el-form-item>
         <el-form-item label="交付日"><el-date-picker v-model="submission.deliveryDate" type="date" value-format="YYYY-MM-DD" /></el-form-item>
         <el-form-item label="交付批次"><el-input v-model="submission.deliveryBatch" /></el-form-item>
-        <el-form-item label="截止时间"><el-input v-model="submission.cutoffAt" placeholder="2026-11-09T18:00:00+08:00" /></el-form-item>
         <el-form-item v-for="(target, index) in submission.targets" :key="index" :label="`目标 ${index + 1} vendorCode / entityCode`">
           <el-input v-model="target.vendorCode" placeholder="alibaba" />
           <el-input v-model="target.entityCode" placeholder="jun" />
@@ -56,10 +55,9 @@
     <el-drawer v-model="drawer" size="58%" :title="selected ? `Task ${selected.taskId} · ${selected.newFileName}` : '任务时间轴'">
       <el-descriptions v-if="selected" :column="1" border>
         <el-descriptions-item label="来源 Data IDs">{{ selected.sourceDataIds?.join(', ') }}</el-descriptions-item>
-        <el-descriptions-item label="Metadata requestIds">{{ selected.metadataIds?.join(', ') }}</el-descriptions-item>
-        <el-descriptions-item label="SHA-256">{{ selected.artifacts?.[0]?.deliveryArtifact?.sha256 }}</el-descriptions-item>
+        <el-descriptions-item label="来源 metadata dataIds">{{ selected.metadataIds?.join(', ') }}</el-descriptions-item>
+        <el-descriptions-item label="SHA-256">{{ selected.sha256 }}</el-descriptions-item>
         <el-descriptions-item label="Size / Token">{{ selected.sizeBytes }} / {{ selected.tokenCount }}</el-descriptions-item>
-        <el-descriptions-item label="请求映射">{{ selected.artifacts?.[0]?.deliveryArtifact?.file_mapping }}</el-descriptions-item>
         <el-descriptions-item label="错误">{{ selected.lastErrorCode }}</el-descriptions-item>
       </el-descriptions>
       <DeliveryTaskTimeline v-if="timeline" :timeline="timeline" />
@@ -76,7 +74,7 @@ import type { DeliveryTask, SubmitDelivery, Summary, Timeline } from '../types'
 const deliveryId = ref(1)
 const today = new Date().toISOString().slice(0, 10)
 const submission = reactive<SubmitDelivery>({ ossUri: 'oss://bucket/prefix/', pipelineCode: 'archive-delivery', deliveryDate: today,
-  deliveryBatch: `BATCH-${Date.now()}`, cutoffAt: new Date(Date.now() + 86400000).toISOString(),
+  deliveryBatch: `BATCH-${Date.now()}`,
   targets: ['jun', 'jun2'].map(entityCode => ({ targetCount: 1, vendorCode: 'alibaba', entityCode })) })
 const submitting = ref(false)
 const emptySummary: Summary = { deliveryStatus: 'SUBMITTED', taskTotal: 0, targetTotal: 0, succeeded: 0,

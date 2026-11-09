@@ -14,7 +14,7 @@ cp deploy/pipeline.example.json deploy/pipeline.local.json
 chmod 600 deploy/.env deploy/pipeline.local.json
 ```
 
-编辑 deploy/.env 的数据库、PowerJob 和 LOCAL_FTP_ENTITY_1/2/3_PASSWORD。编辑 pipeline.local.json 的 sourceDownload/targetUpload OSS 配置，以及 ftpDownloadVerify.ftpCredential 的 entity1/entity2/entity3 密码。源 prefix 至少包含三份非空 `.tar.gz`，所有 `replace-` 占位必须移除。该文件已被 Git 忽略，不得打印或提交。
+编辑 deploy/.env 的数据库、PowerJob 和 LOCAL_FTP_ENTITY_1/2/3_PASSWORD。编辑 pipeline.local.json 的 sourceDownload/targetUpload OSS 配置，以及 ftpDownloadVerify.ftpCredential 的 entity1/entity2/entity3 密码。源 prefix 必须包含足够非空 `.tar.gz`，使 alibaba/jun 与 alibaba/jun2 的来源合计和最终包均达到 8–10 MiB；本地 selection.limit=32，所有 `replace-` 占位必须移除。该文件已被 Git 忽略，不得打印或提交。
 
 ## 3. 构建、升级与启动
 

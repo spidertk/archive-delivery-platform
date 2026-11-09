@@ -83,6 +83,8 @@ public class DeliveryRolloverService {
                     old.artifacts().toString(), old.metadataIds().toString(), pipeline.rolloverStartNode());
             jdbc.update("INSERT INTO delivery_mapping(task_id,delivery_id,data_id,source_seq) " +
                     "SELECT ?,delivery_id,data_id,source_seq FROM delivery_mapping WHERE task_id=? ORDER BY source_seq", newTaskId, old.taskId());
+            // targetUpload 等非首节点跨日时，新任务必须同时继承 repair/qualify 等前置成功 locator。
+            copyPrerequisiteNodes(old.taskId(), newTaskId, pipeline);
             ObjectNode expiredPayload = mapper.createObjectNode().put("taskId", old.taskId()).put("oldTaskId", old.taskId())
                     .put("newTaskId", newTaskId).put("oldDeliveryDate", old.deliveryDate().toString()).put("newDeliveryDate", nextDate.toString());
             Long sourceDataId = jdbc.queryForObject("SELECT data_id FROM delivery_mapping WHERE task_id=? ORDER BY source_seq LIMIT 1",
@@ -96,6 +98,37 @@ public class DeliveryRolloverService {
         if (expectedDate != null && changed == 0) throw new ResumeConflictException("No unfinished tasks matched expectedDeliveryDate");
         if (changed > 0) projections.refresh(deliveryId);
         return changed;
+    }
+
+    private void copyPrerequisiteNodes(long oldTaskId, long newTaskId, PipelineDefinition pipeline) {
+        // 按 DAG 顺序收集跨日起点之前的节点，绝不复制目标节点自身或后续失败记录。
+        List<String> prerequisiteIds = new ArrayList<>();
+        String cursor = pipeline.firstNode();
+        while (!cursor.equals(pipeline.rolloverStartNode())) {
+            prerequisiteIds.add(cursor);
+            cursor = pipeline.node(cursor).next();
+        }
+        // 跨日起点就是首节点时没有任何前置 locator 需要复制。
+        if (prerequisiteIds.isEmpty()) return;
+        // IN 列表只来自当前不可变 Pipeline 的节点 ID，不接收外部 SQL。
+        String placeholders = String.join(",", java.util.Collections.nCopies(prerequisiteIds.size(), "?"));
+        // 每个前置节点只复制最新成功 attempt，新 process_id 由数据库生成。
+        String sql = "INSERT INTO delivery_node(delivery_id,task_id,original_file_name,new_file_name,node_id,node_type,stage_code," +
+                "attempt,fence,status,worker_instance_id,input_locator,output_locator,error_code,error_detail,started_at,heartbeat_at,finished_at) " +
+                "SELECT delivery_id,?,original_file_name,new_file_name,node_id,node_type,stage_code,attempt,fence,status,worker_instance_id," +
+                "input_locator,output_locator,error_code,error_detail,started_at,heartbeat_at,finished_at FROM (" +
+                "SELECT DISTINCT ON(node_id) * FROM delivery_node WHERE task_id=? AND status='SUCCEEDED' AND node_id IN(" + placeholders + ") " +
+                "ORDER BY node_id,attempt DESC) prerequisite";
+        // 参数顺序依次为新 task、旧 task 和 DAG 前置节点 ID。
+        List<Object> arguments = new ArrayList<>();
+        arguments.add(newTaskId);
+        arguments.add(oldTaskId);
+        arguments.addAll(prerequisiteIds);
+        int copied = jdbc.update(sql, arguments.toArray());
+        // 日志记录新旧任务及复制数量，便于核对跨日 locator 血缘。
+        org.slf4j.LoggerFactory.getLogger(DeliveryRolloverService.class).info(
+                "Rollover prerequisite locators copied oldTaskId={} newTaskId={} rolloverStartNode={} copiedNodes={}",
+                oldTaskId, newTaskId, pipeline.rolloverStartNode(), copied);
     }
 
     private PipelineDefinition pipeline(long deliveryId) {

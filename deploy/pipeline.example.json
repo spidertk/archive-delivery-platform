@@ -16,8 +16,8 @@
     "businessTimezone": "Asia/Shanghai",
     "deliveryCutoffTime": "18:00:00",
     "rolloverStartNode": "targetUpload",
-    "selection": {"orderBy": "key", "limit": 3, "duplicatePolicy": "FILTER_WITH_REASON"},
-    "assignment": {"strategySource": "SUBMIT_TARGETS", "maxPackageBytes": 10485760},
+    "selection": {"orderBy": "key", "limit": 32, "duplicatePolicy": "FILTER_WITH_REASON"},
+    "assignment": {"strategySource": "SUBMIT_TARGETS", "minPackageBytes": 8388608, "maxPackageBytes": 10485760},
     "concurrency": {"maxRunningTasks": 3},
     "retry": {"maxAttempts": 5}
   },

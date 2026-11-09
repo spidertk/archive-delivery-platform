@@ -6,9 +6,9 @@
 
 ## 开发约束
 
-1. 提交表单只维护 ossUri、pipelineCode、deliveryDate、deliveryBatch、cutoffAt 和 targets[targetCount/vendorCode/entityCode]，不出现来源/版本/实体 ID 或 idempotencyKey。
+1. 提交表单只维护 ossUri、pipelineCode、deliveryDate、deliveryBatch 和 targets[targetCount/vendorCode/entityCode]，不出现来源/版本/实体 ID、cutoffAt 或 idempotencyKey。
 2. 相同批次原样提交按钮同时承担暂停后的继续；暂停调用 `/pause`，只在节点边界生效。
-3. 任务展示 entityCode 及其 vendorCode，使用 sourceDataIds、artifacts 产物对、metadataIds 和 newFileName，不展示 targetSeq/artifactSeq/supersededByTaskId 等已删除字段。
+3. 任务展示 entityCode 及其 vendorCode，使用 sourceDataIds、artifacts[dataId/sourceArtifact]、metadataIds 和任务级 newFileName；metadataIds 是与 sourceDataIds 相同的 data_id 数字数组，不展示 requestId 或 deliveryArtifact，也不展示 targetSeq/artifactSeq/supersededByTaskId 等旧字段。SHA 从任务投影读取，其事实来源为成功 repair 节点。
 4. 进度只统计最新有效任务；PAUSED、EXPIRED 和 PARTIALLY_DELIVERED 不能提前显示 DELIVERED。
 5. 阶段由后端 Pipeline 驱动；retry 携带 expectedFence，EXPIRED 不提供恢复按钮。
 6. 请求失败保留上次成功数据并显示错误；不展示 Secret 或完整 definition。

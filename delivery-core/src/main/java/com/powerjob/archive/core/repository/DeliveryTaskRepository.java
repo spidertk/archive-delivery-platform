@@ -1,9 +1,7 @@
 package com.powerjob.archive.core.repository;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.NullNode;
 import com.powerjob.archive.core.domain.DeliveryEntity;
 import com.powerjob.archive.core.domain.DeliverySubmit;
 import com.powerjob.archive.core.domain.DeliveryTask;
@@ -41,7 +39,7 @@ public class DeliveryTaskRepository {
         this.transactions = transactions;
     }
 
-    /** 规划时固化每个来源的原始产物对；packageSeq 在整个 delivery_id 内连续，交付产物在 repair 后补齐。 */
+    /** 规划时只固化 dataId/sourceArtifact；packageSeq 在整个 delivery_id 内连续，最终 size/token 由 repair 补丁更新。 */
     public long createPlanned(DeliverySubmit submit, List<SourceData> sourceList, DeliveryEntity entity, int packageSeq, String firstNode) {
         if (sourceList == null || sourceList.isEmpty() || entity.deliveryEntityId() <= 0 || packageSeq <= 0) {
             throw new IllegalArgumentException("Task sources and package sequence are required");
@@ -55,7 +53,6 @@ public class DeliveryTaskRepository {
             var pair = artifactPairs.addObject();
             pair.put("dataId", source.dataId());
             pair.set("sourceArtifact", source.artifact().deepCopy());
-            pair.set("deliveryArtifact", NullNode.instance);
         }
         String workerGroup = WorkerGroups.requireValid(entity.workerGroup());
         String newFileName = String.format("batch_%05d.tar.gz", packageSeq);
@@ -101,19 +98,20 @@ public class DeliveryTaskRepository {
 
     public void complete(long taskId, long fence, String workerId, String nextNode,
                          SourceDataPatch patch, boolean terminal) {
-        JsonNode artifact = patch == null || patch.artifacts() == null ? null : patch.artifacts().path(0).path("deliveryArtifact");
+        // repair 补丁显式携带最终 size/token，任务 artifacts 不再保存交付产物。
+        // fence、租约和 RUNNING 条件保证只有当前持有者可提交节点结果。
         int changed = jdbc.update("UPDATE delivery_task SET current_node_id=?,execution_status=?," +
-                "new_file_name=COALESCE(?,new_file_name),size_bytes=COALESCE(?,size_bytes),token_count=COALESCE(?,token_count)," +
+                "size_bytes=COALESCE(?,size_bytes),token_count=COALESCE(?,token_count)," +
                 "artifacts=COALESCE(?::jsonb,artifacts),metadata_ids=COALESCE(?::jsonb,metadata_ids)," +
                 "lease_owner=NULL,lease_until=NULL,retry_count=0,next_retry_at=NULL,last_error_code=NULL," +
                 "completed_at=CASE WHEN ? THEN COALESCE(completed_at,now()) ELSE completed_at END,updated_at=now() " +
                 "WHERE task_id=? AND fence=? AND lease_owner=? AND execution_status='RUNNING'",
-                nextNode, terminal ? "SUCCEEDED" : "READY", artifact == null || !artifact.isObject() ? null : artifact.path("newFileName").asText(null),
-                artifact == null || !artifact.isObject() ? null : artifact.path("sizeBytes").asLong(),
-                artifact == null || !artifact.isObject() ? null : artifact.path("token").asLong(),
+                nextNode, terminal ? "SUCCEEDED" : "READY",
+                patch == null ? null : patch.sizeBytes(), patch == null ? null : patch.tokenCount(),
                 patch == null || patch.artifacts() == null ? null : patch.artifacts().toString(),
                 patch == null || patch.metadataIds() == null ? null : patch.metadataIds().toString(),
                 terminal, taskId, fence, workerId);
+        // 晚到提交或租约丢失必须失败，不能推进其他执行纪元。
         if (changed != 1) throw new IllegalStateException("Stale task fence for task " + taskId);
     }
 

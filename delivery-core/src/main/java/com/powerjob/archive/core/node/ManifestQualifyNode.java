@@ -21,7 +21,6 @@ import java.util.Set;
 @Component
 public class ManifestQualifyNode implements NodeHandler {
     private static final Logger log = LoggerFactory.getLogger(ManifestQualifyNode.class);
-    private static final Set<String> ARTIFACT_FIELDS = Set.of("artifactSeq", "originalFileName", "newFileName", "sizeBytes", "sha256", "token", "file_mapping");
     private final FileTransferService files;
     private final ObjectMapper mapper;
 
@@ -32,27 +31,51 @@ public class ManifestQualifyNode implements NodeHandler {
 
     @Override public String type() { return "manifest.qualify"; }
 
-    /** qualify 核对原始 source_data.artifact、任务产物对、metadata 全集和最终文件的真实 size/SHA。 */
+    /** qualify 核对原始 artifact、同下标 data_id 以及 repair locator 中的最终 size/SHA。 */
     @Override public NodeResult execute(NodeContext context) throws Exception {
-        JsonNode artifact = context.task().deliveryArtifact();
-        if (artifact == null || context.task().artifacts().size() != context.sources().size()) {
-            throw new IllegalStateException("Every mapped source must have one repaired delivery artifact pair");
-        }
-        validateArtifactContract(artifact);
-        if (artifact.required("sizeBytes").asLong() != context.task().sizeBytes()
-                || artifact.required("token").asLong() != context.task().tokenCount()
-                || !artifact.required("newFileName").asText().equals(context.task().newFileName())) {
-            throw new IllegalStateException("Task size/token/fileName differ from the repaired delivery artifact");
-        }
-        Set<String> metadataIds = new HashSet<>();
-        context.task().metadataIds().forEach(id -> {
-            if (!metadataIds.add(id.asText())) throw new IllegalStateException("metadataIds contain duplicates");
-        });
-        Set<String> mappedIds = new HashSet<>();
+        // repair 成功 locator 是最终包大小、SHA、路径和请求总数的唯一执行事实。
+        JsonNode repairOutput = NodeSupport.previousOutput(context, "python.repair");
+        // mapping 顺序是 artifacts 与 metadata_ids 的共同下标依据。
         List<SourceData> sources = context.sources();
+        // 最终包事实不再从 delivery_task.artifacts 读取。
+        long packageSize = repairOutput.required("sizeBytes").asLong();
+        String packageSha = repairOutput.required("sha256").asText();
+        // 开始日志分别暴露来源数和请求目录数。
+        log.info("Manifest qualification started deliveryId={} taskId={} processId={} entityCode={} sourceCount={} requestCount={}",
+                context.task().deliveryId(), context.task().taskId(), context.processId(), context.task().entityCode(),
+                sources.size(), repairOutput.required("requestCount").asInt());
+        // 每个来源必须恰好有一个原始 artifact 和一个 data_id。
+        if (context.task().artifacts() == null || context.task().artifacts().size() != sources.size()
+                || context.task().metadataIds() == null || !context.task().metadataIds().isArray()
+                || context.task().metadataIds().size() != sources.size()) {
+            throw new IllegalStateException("Every mapped source must have one sourceArtifact and one metadata dataId");
+        }
+        // repair locator 与任务落库的来源 data_id 列表必须完全一致。
+        if (!context.task().metadataIds().equals(repairOutput.required("metadataIds"))) {
+            throw new IllegalStateException("Task metadataIds differ from the repair dataId output");
+        }
+        // 最终包不能低于当前不可变 Pipeline 的下限。
+        if (packageSize < context.pipeline().minPackageBytes()) {
+            throw new IllegalStateException("Repaired artifact is below minPackageBytes: " + packageSize
+                    + "<" + context.pipeline().minPackageBytes());
+        }
+        // 数据库任务汇总值必须与 repair 最终包一致。
+        if (packageSize != context.task().sizeBytes() || repairOutput.required("requestCount").asInt() <= 0
+                || !packageSha.matches("[0-9a-f]{64}")) {
+            throw new IllegalStateException("Task size or repair request/SHA facts are invalid");
+        }
+        // data_id 集合用于拒绝重复或错序来源。
+        Set<Long> sourceDataIds = new HashSet<>();
+        // 逐下标校验可避免来源、原始产物和 data_id 发生错位。
         for (int index = 0; index < sources.size(); index++) {
+            // 当前 mapping 来源提供原始 artifact 的权威值。
             SourceData source = sources.get(index);
+            // 同下标产物项只允许 dataId/sourceArtifact 两字段。
             JsonNode pair = context.task().artifacts().required(index);
+            if (pair.size() != 2 || !pair.has("dataId") || !pair.has("sourceArtifact") || pair.has("deliveryArtifact")) {
+                throw new IllegalStateException("Task artifacts must contain only dataId and sourceArtifact");
+            }
+            // 原始对象及其大小、摘要、文件名均不得被合并产物覆盖。
             if (pair.required("dataId").asLong() != source.dataId()
                     || !pair.required("sourceArtifact").equals(source.artifact())
                     || pair.required("sourceArtifact").required("sizeBytes").asLong() != source.sizeBytes()
@@ -60,45 +83,30 @@ public class ManifestQualifyNode implements NodeHandler {
                     || !pair.required("sourceArtifact").required("originalFileName").asText().equals(source.originalFileName())) {
                 throw new IllegalStateException("sourceArtifact differs from source_data.artifact for dataId=" + source.dataId());
             }
-            JsonNode delivery = pair.required("deliveryArtifact");
-            validateArtifactContract(delivery);
-            ObjectNode deliveryPackage = delivery.deepCopy();
-            deliveryPackage.remove("file_mapping");
-            ObjectNode expectedPackage = artifact.deepCopy();
-            expectedPackage.remove("file_mapping");
-            if (!deliveryPackage.equals(expectedPackage) || delivery.required("file_mapping").isEmpty()) {
-                throw new IllegalStateException("Source artifact mappings must share the verified package and be non-empty");
+            // metadata_ids 必须是与当前来源相同且全任务唯一的正整数 data_id。
+            JsonNode metadataId = context.task().metadataIds().required(index);
+            if (!metadataId.isIntegralNumber() || metadataId.asLong() <= 0 || metadataId.asLong() != source.dataId()
+                    || !sourceDataIds.add(metadataId.asLong())) {
+                throw new IllegalStateException("metadataIds must contain unique source_data dataId values in mapping order");
             }
-            delivery.required("file_mapping").forEach(value -> {
-                if (!mappedIds.add(value.asText())) throw new IllegalStateException("requestId is duplicated across source mappings");
-            });
         }
-        if (!metadataIds.equals(mappedIds) || context.task().metadataIds().size() != mappedIds.size()) {
-            throw new IllegalStateException("metadataIds and file_mapping requestIds differ");
-        }
-        Path path = Path.of(NodeSupport.previousOutput(context, "python.repair").required("localPath").asText());
-        if (!Files.isRegularFile(path) || Files.size(path) != artifact.required("sizeBytes").asLong()
-                || !files.sha256(path).equals(artifact.required("sha256").asText())) {
+        // 最终文件路径只接受成功 repair 节点输出。
+        Path path = Path.of(repairOutput.required("localPath").asText());
+        // 独立读取文件大小和 SHA，防止仅数据库字段自洽。
+        if (!Files.isRegularFile(path) || Files.size(path) != packageSize || !files.sha256(path).equals(packageSha)) {
             throw new IllegalStateException("Repair artifact size/SHA verification failed");
         }
+        // locator 同时记录来源数与请求总数，metadataIds 只含 data_id。
         ObjectNode locator = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
                 .put("localPath", path.toAbsolutePath().toString()).put("sizeBytes", Files.size(path))
-                .put("sourceCount", sources.size()).put("metadataCount", metadataIds.size())
-                .put("sha256", artifact.required("sha256").asText()).put("verifiedAt", Instant.now().toString());
-        log.info("Manifest qualification succeeded deliveryId={} taskId={} processId={} entityCode={} sourceCount={} requestMappings={} sizeBytes={} sha256={}",
+                .put("sourceCount", sources.size()).put("metadataCount", context.task().metadataIds().size())
+                .put("requestCount", repairOutput.required("requestCount").asInt())
+                .put("sha256", packageSha).put("verifiedAt", Instant.now().toString());
+        // 成功日志明确区分 metadataCount 和 requestCount。
+        log.info("Manifest qualification succeeded deliveryId={} taskId={} processId={} entityCode={} sourceCount={} metadataCount={} requestCount={} sizeBytes={} sha256={}",
                 context.task().deliveryId(), context.task().taskId(), context.processId(), context.task().entityCode(), sources.size(),
-                metadataIds.size(), Files.size(path), artifact.required("sha256").asText());
+                context.task().metadataIds().size(), repairOutput.required("requestCount").asInt(), Files.size(path), packageSha);
+        // 输入输出复用同一脱敏 locator，供上传节点继续执行。
         return NodeResult.success(context.pipeline().successor(context.node().id()), locator, locator);
-    }
-
-    private static void validateArtifactContract(JsonNode artifact) {
-        artifact.fieldNames().forEachRemaining(name -> {
-            if (!ARTIFACT_FIELDS.contains(name)) throw new IllegalArgumentException("Unknown artifact field " + name);
-        });
-        if (artifact.size() != 7 || artifact.required("artifactSeq").asInt() != 1
-                || !artifact.required("sha256").asText().matches("[0-9a-f]{64}")
-                || !artifact.required("file_mapping").isObject()) {
-            throw new IllegalStateException("Artifact contract or request mapping is invalid");
-        }
     }
 }

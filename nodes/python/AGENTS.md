@@ -34,7 +34,7 @@ archive_repair.py:
 2. repair 在私有 staging 副本修复，只有一次最终 tar/gzip 封存；缺协议文件或验证失败必须非零退出，不产空包。
 3. 合法 39 位非空 requestId 保留，缺失或旧格式使用号段确定性补号并保留 originalRequestId；不同来源的同名目录以来源序号隔离成员键并保留 originalPath；目录名=requestId，requestTime 为 UTC 纳秒格式。
 4. 相同输入、规则和 startNumber 必须产生一致 file_mapping 和 SHA；重试复用 Java 原 allocation。
-5. repair manifest 的 artifacts 只输出严格七字段；Java 将 sourceArtifact 原样取自 source_data.artifact，并按来源拆分 deliveryArtifact.file_mapping，metadataIds 与映射全集一致。
+5. repair manifest 的 artifacts 和 mappings 保留完整七字段与 originalPath/newRequestId 供复核；Java 在 delivery_task.artifacts 中只保存 dataId/sourceArtifact，不写 deliveryArtifact，metadataIds 只保存与 mapping 同顺序的 source_data.data_id。
 6. merge/repair 清理本次临时目录和 .tmp，源包、merge 工作目录和有效最终包保留。
 7. 新规则放在独立可测试函数中，注释说明协议输入输出和失败边界。
 
@@ -45,4 +45,4 @@ python3 -m unittest nodes/python/test_archive_repair.py -v
 ./scripts/mvn.sh -pl delivery-worker -am test
 ```
 
-单元测试覆盖三来源目录合并、无中间 tar、entityCode、requestId 保留、缺失补号、确定性、重复目录、协议失败、路径安全、10 MiB 小样本边界和临时文件清理；真实本地验收上限同为每包 10 MiB。测试后清理 __pycache__ 和临时产物。
+单元测试覆盖三来源目录合并、无中间 tar、entityCode、requestId 保留、缺失补号、确定性、重复目录、协议失败、路径安全、10 MiB 小样本边界和临时文件清理；真实本地验收每包来源合计和最终产物均为 8–10 MiB。测试后清理 __pycache__ 和临时产物。

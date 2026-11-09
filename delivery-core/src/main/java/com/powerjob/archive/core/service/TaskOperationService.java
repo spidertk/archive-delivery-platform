@@ -106,7 +106,7 @@ public class TaskOperationService {
 
     private void verifyPrerequisites(DeliveryTask task, PipelineDefinition pipeline, NodeDefinition from, SourceData source) {
         if (from.id().equals(pipeline.firstNode())) return;
-        if (from.id().equals(pipeline.rolloverStartNode()) && task.sha256() != null && task.deliveryArtifact() != null) return;
+        if (from.id().equals(pipeline.rolloverStartNode()) && task.metadataIds() != null && !task.metadataIds().isEmpty()) return;
         String cursor = pipeline.firstNode();
         while (!cursor.equals(from.id())) {
             if (!nodes.succeededOutputs(task.taskId()).containsKey(cursor)) {

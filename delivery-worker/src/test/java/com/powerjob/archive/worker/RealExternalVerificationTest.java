@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-/** 真实核心验收读取 PG、OSS 与 FTP；三来源按 10 MiB 上限形成一个或连续多个合并任务。 */
+/** 真实核心验收读取 PG、OSS 与 FTP；持续下载到每包来源合计和最终产物均处于配置大小边界。 */
 class RealExternalVerificationTest {
     private final ObjectMapper mapper = new ObjectMapper();
     private final FileTransferService files = new FileTransferService();
@@ -49,10 +49,15 @@ class RealExternalVerificationTest {
                             && object.getSize() <= pipeline.maxPackageBytes())
                     .sorted(java.util.Comparator.comparing(com.aliyun.oss.model.OSSObjectSummary::getKey))
                     .limit(pipeline.selectionLimit()).toList();
-            assertEquals(pipeline.selectionLimit(), selected.size(), "Real source archives must satisfy Pipeline selection.limit");
+            long candidateBytes = selected.stream().mapToLong(com.aliyun.oss.model.OSSObjectSummary::getSize).sum();
+            assertTrue(selected.size() >= 2 && candidateBytes >= 2 * pipeline.minPackageBytes(),
+                    "Real source archives must fill two packages within the configured bounds: count=" + selected.size()
+                            + " bytes=" + candidateBytes);
             assertTrue(selected.stream().allMatch(object -> object.getSize() <= pipeline.maxPackageBytes()),
                     "Every selected source must fit maxPackageBytes before a delivery is submitted: " + selected.stream()
                             .map(object -> object.getKey() + "=" + object.getSize()).toList());
+            System.out.println("REAL SOURCE CANDIDATES count=" + selected.size() + " bytes=" + candidateBytes
+                    + " minPackageBytes=" + pipeline.minPackageBytes() + " maxPackageBytes=" + pipeline.maxPackageBytes());
         } finally {
             client.shutdown();
         }
@@ -68,7 +73,7 @@ class RealExternalVerificationTest {
                 .stream().filter(entity -> ftp.ftpCredential().containsKey(entity.get("account_name").toString())).toList();
         assertEquals(3, entities.size(), "Exactly three Pipeline-configured FTP entities are required");
         for (Map<String, Object> entity : entities) ftpPreflight(entity, ftp);
-        System.out.println("REAL PREFLIGHT PASSED: source OSS archives fit 10 MiB, target OSS bucket, three FTP accounts/directories");
+        System.out.println("REAL PREFLIGHT PASSED: source OSS archives meet configured package bounds, target OSS bucket, three FTP accounts/directories");
     }
 
     @Test void verifyRealDelivery() throws Exception {
@@ -90,28 +95,36 @@ class RealExternalVerificationTest {
                 "Package names must be globally unique within the delivery");
         int totalSources = 0;
         java.util.Set<Long> deliveredEntities = new java.util.HashSet<>();
+        java.util.Set<Long> assignedDataIds = new java.util.HashSet<>();
         for (Map<String, Object> task : tasks) {
             long taskId = ((Number) task.get("task_id")).longValue();
             long entityId = ((Number) task.get("delivery_entity_id")).longValue();
             assertTrue(deliveredEntities.add(entityId), "Each delivery group must use a distinct vendor entity");
             assertEquals("SUCCEEDED", jdbc.queryForObject("SELECT execution_status FROM delivery_task WHERE task_id=?", String.class, taskId));
             JsonNode artifactPairs = mapper.readTree(task.get("artifacts").toString());
-            JsonNode deliveryArtifact = artifactPairs.required(0).required("deliveryArtifact");
-            String expectedSha = deliveryArtifact.required("sha256").asText();
-            long expectedSize = deliveryArtifact.required("sizeBytes").asLong();
-            assertTrue(expectedSize > 0 && expectedSize <= 10L * 1024 * 1024, "Merged artifact must be within 10 MiB");
-            assertEquals(expectedSize, ((Number) task.get("size_bytes")).longValue());
             long sourceTaskId = jdbc.queryForObject("SELECT COALESCE((SELECT (payload->>'oldTaskId')::bigint FROM delivery_event " +
                     "WHERE delivery_id=? AND event_type='TASK_REGENERATED' AND (payload->>'newTaskId')::bigint=?),?)",
                     Long.class, deliveryId, taskId, taskId);
+            JsonNode repairOutput = output(jdbc, sourceTaskId, "python.repair");
+            String expectedSha = repairOutput.required("sha256").asText();
+            long expectedSize = repairOutput.required("sizeBytes").asLong();
+            assertTrue(expectedSize >= pipeline.minPackageBytes() && expectedSize <= pipeline.maxPackageBytes(),
+                    "Merged artifact must reach minPackageBytes without exceeding maxPackageBytes: " + expectedSize);
+            assertEquals(expectedSize, ((Number) task.get("size_bytes")).longValue());
             int sourceCount = jdbc.queryForObject("SELECT count(*) FROM delivery_mapping WHERE task_id=?", Integer.class, sourceTaskId);
             assertEquals(sourceCount, artifactPairs.size());
             assertEquals(sourceCount, jdbc.queryForObject("SELECT count(*) FROM delivery_mapping WHERE task_id=?", Integer.class, taskId));
             totalSources += sourceCount;
-            int mappedRequests = 0;
-            for (JsonNode pair : artifactPairs) {
-                assertEquals(expectedSha, pair.required("deliveryArtifact").required("sha256").asText());
+            JsonNode metadataIds = mapper.readTree(task.get("metadata_ids").toString());
+            assertEquals(sourceCount, metadataIds.size(), "metadataIds size must equal the source count");
+            for (int pairIndex = 0; pairIndex < artifactPairs.size(); pairIndex++) {
+                JsonNode pair = artifactPairs.required(pairIndex);
+                assertEquals(2, pair.size());
+                assertFalse(pair.has("deliveryArtifact"));
                 long dataId = pair.required("dataId").asLong();
+                assertTrue(metadataIds.required(pairIndex).isIntegralNumber());
+                assertEquals(dataId, metadataIds.required(pairIndex).asLong());
+                assertTrue(assignedDataIds.add(dataId), "A source dataId must be assigned only once: " + dataId);
                 Map<String, Object> sourceFact = jdbc.queryForMap("SELECT original_file_name,size_bytes,sha256,request_namespace," +
                         "artifact::text AS artifact,created_at,updated_at FROM source_data WHERE data_id=?", dataId);
                 assertEquals(deliveryBatch, sourceFact.get("request_namespace"));
@@ -122,15 +135,13 @@ class RealExternalVerificationTest {
                 assertEquals(pair.required("sourceArtifact").required("sha256").asText(), sourceFact.get("sha256"));
                 assertNotNull(sourceFact.get("created_at"));
                 assertNotNull(sourceFact.get("updated_at"));
-                JsonNode fileMapping = pair.required("deliveryArtifact").required("file_mapping");
-                mappedRequests += fileMapping.size();
-                fileMapping.fieldNames().forEachRemaining(key -> assertFalse(key.startsWith("source-"),
-                        "Task file_mapping must use originalPath instead of synthetic member keys"));
             }
 
             JsonNode sourceOutput = output(jdbc, sourceTaskId, "oss.download");
             assertEquals(sourceCount, sourceOutput.required("sources").size());
+            long sourceBytes = 0;
             for (JsonNode source : sourceOutput.required("sources")) {
+                sourceBytes += source.required("sizeBytes").asLong();
                 URI sourceUri = URI.create(source.required("uri").asText());
                 Path sourceFile = temp.resolve("source-" + taskId + "-" + source.required("dataId").asLong() + ".tar.gz");
                 transfers.download(sourceConfig, sourceUri.getHost(), sourceUri.getPath().replaceFirst("^/", ""), sourceFile,
@@ -138,15 +149,35 @@ class RealExternalVerificationTest {
                 assertEquals(source.required("sha256").asText(), jdbc.queryForObject("SELECT sha256 FROM source_data WHERE data_id=?",
                         String.class, source.required("dataId").asLong()));
             }
+            assertTrue(sourceBytes >= pipeline.minPackageBytes() && sourceBytes <= pipeline.maxPackageBytes(),
+                    "Assigned source bytes must meet the configured package bounds: " + sourceBytes);
             JsonNode mergeOutput = output(jdbc, sourceTaskId, "package.merge");
             Path mergeWorkspace = Path.of(mergeOutput.required("workspacePath").asText());
             assertTrue(Files.isDirectory(mergeWorkspace), "Merge must retain a directory rather than an intermediate tar");
             assertFalse(Files.exists(mergeWorkspace.resolveSibling("merged-source.tar.gz")));
-            JsonNode repairOutput = output(jdbc, sourceTaskId, "python.repair");
             assertEquals(task.get("entity_code").toString(), repairOutput.required("entityCode").asText());
-            assertTrue(repairOutput.required("sizeBytes").asLong() <= 10L * 1024 * 1024);
-            assertEquals(mergeOutput.required("requestCount").asInt(), mapper.readTree(task.get("metadata_ids").toString()).size());
-            assertEquals(mergeOutput.required("requestCount").asInt(), mappedRequests);
+            assertEquals(expectedSize, repairOutput.required("sizeBytes").asLong());
+            assertEquals(sourceCount, repairOutput.required("metadataCount").asInt());
+            assertEquals(metadataIds, repairOutput.required("metadataIds"));
+            assertEquals(mergeOutput.required("requestCount").asInt(), repairOutput.required("requestCount").asInt());
+            JsonNode mergeManifest = mapper.readTree(Files.readString(Path.of(mergeOutput.required("manifestPath").asText())));
+            JsonNode repairManifest = mapper.readTree(Files.readString(Path.of(repairOutput.required("localPath").asText())
+                    .resolveSibling("repair-result.json")));
+            java.util.Map<String, Integer> memberSources = new java.util.HashMap<>();
+            mergeManifest.required("members").forEach(member ->
+                    memberSources.put(member.required("memberKey").asText(), member.required("sourceSeq").asInt()));
+            int[] sourceRequestCounts = new int[sourceCount];
+            java.util.Set<String> requestIds = new java.util.HashSet<>();
+            for (JsonNode mapping : repairManifest.required("mappings")) {
+                assertFalse(mapping.required("originalPath").asText().startsWith("source-"),
+                        "Repair manifest must retain originalPath instead of synthetic member keys");
+                int sourceSeq = memberSources.get(mapping.required("memberKey").asText());
+                sourceRequestCounts[sourceSeq - 1]++;
+                assertTrue(requestIds.add(mapping.required("newRequestId").asText()));
+            }
+            int mappedRequests = repairManifest.required("requestCount").asInt();
+            assertEquals(mappedRequests, requestIds.size());
+            for (int count : sourceRequestCounts) assertTrue(count > 0);
 
             JsonNode targetOutput = output(jdbc, taskId, "oss.upload");
             URI targetUri = URI.create(targetOutput.required("uri").asText());
@@ -182,13 +213,17 @@ class RealExternalVerificationTest {
                 assertEquals(oldDate.toLocalDate().plusDays(1), newDate.toLocalDate());
             }
             System.out.println("REAL VERIFIED deliveryId=" + deliveryId + " taskId=" + taskId + " deliveryEntityId=" + entityId
-                    + " sources=" + sourceCount + " size=" + expectedSize + " sha256=" + expectedSha);
+                    + " sources=" + sourceCount + " metadata=" + metadataIds.size() + " requests=" + mappedRequests
+                    + " size=" + expectedSize + " sha256=" + expectedSha);
         }
-        assertEquals(3, totalSources, "All three real OSS sources must be assigned exactly once");
+        assertTrue(totalSources > 3, "The real case must download enough sources to approach 10 MiB per package");
+        assertEquals(totalSources, assignedDataIds.size(), "Every real OSS source must be assigned exactly once");
         assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='TASK_RETRIED'", Integer.class, deliveryId) >= 1);
         assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='DELIVERY_PAUSED'", Integer.class, deliveryId) >= 1);
         assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='DELIVERY_RESUMED'", Integer.class, deliveryId) >= 1);
-        System.out.println("REAL E2E PASSED deliveryId=" + deliveryId + " tasks=2 sources=3 maxPackageBytes=10MiB pause/resume/retry/rollover verified");
+        System.out.println("REAL E2E PASSED deliveryId=" + deliveryId + " tasks=2 sources=" + totalSources
+                + " packageBounds=" + pipeline.minPackageBytes() + "-" + pipeline.maxPackageBytes()
+                + " pause/resume/retry/rollover verified");
     }
 
     private JdbcTemplate jdbc() {

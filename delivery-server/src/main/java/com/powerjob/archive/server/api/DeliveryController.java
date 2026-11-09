@@ -24,7 +24,6 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -49,7 +48,7 @@ public class DeliveryController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public DeliverySubmissionService.Submission submit(@Valid @RequestBody SubmitDeliveryRequest request) {
         return submission.submit(new DeliverySubmissionService.SubmissionCommand(request.ossUri(), request.pipelineCode(),
-                request.deliveryDate(), request.deliveryBatch(), request.cutoffAt(), request.targets().stream()
+                request.deliveryDate(), request.deliveryBatch(), request.targets().stream()
                 .map(target -> new DeliverySubmissionService.TargetCommand(target.targetCount(), target.vendorCode(), target.entityCode())).toList()));
     }
 
@@ -93,7 +92,7 @@ public class DeliveryController {
     public record TargetRequest(@Positive int targetCount, @NotBlank String vendorCode, @NotBlank String entityCode) {}
     public record SubmitDeliveryRequest(@NotBlank String ossUri, @NotBlank String pipelineCode,
             @NotNull @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deliveryDate,
-            @NotBlank String deliveryBatch, @NotNull OffsetDateTime cutoffAt, @NotEmpty List<@Valid TargetRequest> targets) {}
+            @NotBlank String deliveryBatch, @NotEmpty List<@Valid TargetRequest> targets) {}
     public record PauseRequest(@NotBlank String reason) {}
     public record ResumeRequest(@NotBlank String fromNode, List<Long> taskIds, @NotBlank String reason) {}
     public record RolloverRequest(@NotNull LocalDate expectedDeliveryDate, @NotNull LocalDate deliveryDate, @NotBlank String reason) {}

@@ -7,15 +7,19 @@ set -a
 source deploy/.env
 set +a
 COMPOSE=(docker compose -f deploy/docker-compose.yml --env-file deploy/.env)
-# 本入口显式授权真实 OSS/FTP 写与本地旧业务数据放弃；全新库先完成 V13，再执行 V14–V17。
-ARCHIVE_UPGRADE_AUTHORIZED=2026-11-06 ./scripts/mvp-up.sh
-for attempt in $(seq 1 90); do
-  VERSION="$("${COMPOSE[@]}" exec -T postgres psql -U archive -d archive_delivery -Atc \
-    "SELECT COALESCE((SELECT version FROM archive_delivery.flyway_schema_history WHERE success ORDER BY installed_rank DESC LIMIT 1),'0')" 2>/dev/null || true)"
-  [[ "$VERSION" == "13" ]] && break
-  [[ "$attempt" -lt 90 ]] || { echo "V13 migration did not complete" >&2; exit 1; }
-  sleep 2
-done
+# 本入口显式授权真实 OSS/FTP 写与本地旧业务数据放弃；仅 V14 以下数据库需要第一阶段授权。
+VERSION="$("${COMPOSE[@]}" exec -T postgres psql -U archive -d archive_delivery -Atc \
+  "SELECT COALESCE((SELECT version FROM archive_delivery.flyway_schema_history WHERE success ORDER BY installed_rank DESC LIMIT 1),'0')" 2>/dev/null || true)"
+if ((10#${VERSION:-0} < 14)); then
+  ARCHIVE_UPGRADE_AUTHORIZED=2026-11-06 ./scripts/mvp-up.sh
+  for attempt in $(seq 1 90); do
+    VERSION="$("${COMPOSE[@]}" exec -T postgres psql -U archive -d archive_delivery -Atc \
+      "SELECT COALESCE((SELECT version FROM archive_delivery.flyway_schema_history WHERE success ORDER BY installed_rank DESC LIMIT 1),'0')" 2>/dev/null || true)"
+    [[ "$VERSION" == "13" ]] && break
+    [[ "$attempt" -lt 90 ]] || { echo "V13 migration did not complete" >&2; exit 1; }
+    sleep 2
+  done
+fi
 ARCHIVE_UPGRADE_AUTHORIZED=2026-11-07 ./scripts/mvp-up.sh
 for attempt in $(seq 1 60); do
   if curl -fsS --connect-timeout 2 --max-time 3 http://127.0.0.1:8080/actuator/health >/dev/null 2>&1; then break; fi
@@ -34,9 +38,8 @@ curl -fsS --connect-timeout 5 --max-time 15 http://127.0.0.1:8080/api/v1/ingest-
 curl -fsS --connect-timeout 5 --max-time 15 http://127.0.0.1:8080/api/v1/delivery-entities -o "$TEMP/entities.json"
 DELIVERY_DATE="$(python3 -c 'from datetime import datetime,timedelta; print((datetime.now().astimezone()+timedelta(days=1)).date().isoformat())')"
 NEXT_DELIVERY_DATE="$(python3 -c 'from datetime import datetime,timedelta; print((datetime.now().astimezone()+timedelta(days=2)).date().isoformat())')"
-CUTOFF_AT="$(python3 -c 'from datetime import datetime,timedelta; print((datetime.now().astimezone()+timedelta(days=1)).replace(hour=18,minute=0,second=0,microsecond=0).isoformat())')"
 BATCH="real-e2e-$(date +%s)"
-python3 - "$TEMP" "$DELIVERY_DATE" "$CUTOFF_AT" "$BATCH" <<'PY'
+python3 - "$TEMP" "$DELIVERY_DATE" "$BATCH" <<'PY'
 import json, pathlib, sys
 root = pathlib.Path(sys.argv[1])
 definition = json.loads(pathlib.Path("deploy/pipeline.local.json").read_text())
@@ -46,7 +49,7 @@ sources = [row for row in json.loads((root / "sources.json").read_text()) if row
 entities = sorted(json.loads((root / "entities.json").read_text()), key=lambda row: row["entityCode"])
 assert len(sources) == 1 and len(entities) >= 2 and entities[0]["vendorCode"] == entities[1]["vendorCode"]
 request = {"ossUri": sources[0]["ossUri"], "pipelineCode": "archive-delivery", "deliveryDate": sys.argv[2],
-           "deliveryBatch": sys.argv[4], "cutoffAt": sys.argv[3],
+           "deliveryBatch": sys.argv[3],
            "targets": [{"targetCount": 1, "vendorCode": entities[0]["vendorCode"], "entityCode": entities[0]["entityCode"]},
                        {"targetCount": 1, "vendorCode": entities[1]["vendorCode"], "entityCode": entities[1]["entityCode"]}]}
 (root / "submit.json").write_text(json.dumps(request))
@@ -57,7 +60,7 @@ ENTITIES="$(python3 -c 'import json,sys; print(",".join(row["entityCode"] for ro
 curl -fsS --connect-timeout 5 --max-time 20 -H 'Content-Type: application/json' --data-binary "@$TEMP/submit.json" \
   http://127.0.0.1:8080/api/v1/deliveries -o "$TEMP/response.json"
 DELIVERY_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["deliveryId"])' < "$TEMP/response.json")"
-echo "Submitted real three-source deliveryId=$DELIVERY_ID entities=$ENTITIES maxPackageBytes=10485760 twoGroups=1+1"
+echo "Submitted real deliveryId=$DELIVERY_ID entities=$ENTITIES packageBounds=8388608-10485760 twoGroups=1+1"
 
 TASKS_URL="http://127.0.0.1:8080/api/v1/deliveries/$DELIVERY_ID/tasks"
 wait_blocked() {
@@ -120,7 +123,7 @@ done
 ./scripts/verify-delivery.sh "$DELIVERY_ID"
 
 REUSE_BATCH="$BATCH-reuse"
-python3 - "$TEMP" "$DELIVERY_DATE" "$CUTOFF_AT" "$REUSE_BATCH" <<'PY'
+python3 - "$TEMP" "$DELIVERY_DATE" "$REUSE_BATCH" <<'PY'
 import json, pathlib, sys
 root = pathlib.Path(sys.argv[1])
 original = json.loads((root / "submit.json").read_text())
@@ -128,7 +131,7 @@ entities = sorted(json.loads((root / "entities.json").read_text()), key=lambda r
 target = entities[2]
 assert target["vendorCode"] != original["targets"][0]["vendorCode"]
 request = {"ossUri": original["ossUri"], "pipelineCode": original["pipelineCode"], "deliveryDate": sys.argv[2],
-           "deliveryBatch": sys.argv[4], "cutoffAt": sys.argv[3],
+           "deliveryBatch": sys.argv[3],
            "targets": [{"targetCount": 1, "vendorCode": target["vendorCode"], "entityCode": target["entityCode"]}]}
 (root / "reuse-submit.json").write_text(json.dumps(request))
 PY
@@ -154,10 +157,23 @@ root = pathlib.Path(sys.argv[1])
 tasks = json.loads((root / "reuse-tasks.json").read_text())["items"]
 assert len(tasks) == 1 and tasks[0]["entityCode"] == "jun3"
 for task in tasks:
+    assert 8388608 <= task["sizeBytes"] <= 10485760, f"Reuse package is outside 8-10 MiB: {task['sizeBytes']}"
+    assert len(task["artifacts"]) == len(task["sourceDataIds"])
+    assert task["metadataIds"] == task["sourceDataIds"]
+    for pair, data_id in zip(task["artifacts"], task["metadataIds"]):
+        assert set(pair) == {"dataId", "sourceArtifact"}
+        assert pair["dataId"] == data_id
+        assert isinstance(data_id, int) and data_id > 0
     timeline = json.loads((root / f"reuse-timeline-{task['taskId']}.json").read_text())
+    repair = next(node for node in timeline["nodes"] if node["nodeType"] == "python.repair" and node["status"] == "SUCCEEDED")
+    assert repair["outputLocator"]["metadataIds"] == task["metadataIds"]
+    assert repair["outputLocator"]["requestCount"] > 0
+    assert repair["outputLocator"]["sizeBytes"] == task["sizeBytes"]
+    assert repair["outputLocator"]["sha256"] == task["sha256"]
     download = next(node for node in timeline["nodes"] if node["nodeType"] == "oss.download" and node["status"] == "SUCCEEDED")
     sources = download["outputLocator"]["sources"]
     assert sources and all(source["cacheHit"] is True for source in sources), "Reassigned sources must reuse the verified local cache"
-print(f"CACHE REUSE PASSED deliveryId={task['deliveryId']} taskId={task['taskId']} sourceCount={len(sources)} cacheHit=true")
+    assert 8388608 <= sum(source["sizeBytes"] for source in sources) <= 10485760
+print(f"CACHE REUSE PASSED deliveryId={task['deliveryId']} taskId={task['taskId']} sourceCount={len(sources)} metadataCount={len(task['metadataIds'])} requestCount={repair['outputLocator']['requestCount']} cacheHit=true size={task['sizeBytes']}")
 PY
-echo "Real E2E passed: deliveryId=$DELIVERY_ID, sources=3, mergedTasks=$NEW_TASK_IDS, maxPackageBytes=10MiB, sameVendor=alibaba/jun+jun2, pause/resume/retry/rollover DELIVERED; reuseDeliveryId=$REUSE_DELIVERY_ID cacheHit=true."
+echo "Real E2E passed: deliveryId=$DELIVERY_ID, mergedTasks=$NEW_TASK_IDS, packageBounds=8-10MiB, sameVendor=alibaba/jun+jun2, pause/resume/retry/rollover DELIVERED; reuseDeliveryId=$REUSE_DELIVERY_ID cacheHit=true."

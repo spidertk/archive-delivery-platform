@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,7 +50,7 @@ public class DeliverySubmissionService {
         this.sources = sources;
     }
 
-    /** 提交使用 vendorCode+entityCode 复合业务键和显式 cutoffAt，deliveryBatch 全局幂等并支持暂停单原样续交。 */
+    /** 提交使用 vendorCode+entityCode 复合业务键；cutoffAt 由不可变 Pipeline 配置推导，deliveryBatch 全局幂等。 */
     public Submission submit(SubmissionCommand command) {
         ObjectNode strategy = validateAndSnapshot(command);
         var existing = deliveries.findByDeliveryBatch(command.deliveryBatch());
@@ -59,10 +61,10 @@ public class DeliverySubmissionService {
                 long deliveryId = jdbc.queryForObject("INSERT INTO delivery_submit(delivery_batch,source_id," +
                                 "pipeline_version_id,delivery_date,cutoff_at,target_strategy) VALUES(?,?,?,?,?,?::jsonb) RETURNING delivery_id",
                         Long.class, command.deliveryBatch(), references.sourceId(), references.pipelineVersionId(),
-                        command.deliveryDate(), command.cutoffAt(), strategy.toString());
+                        command.deliveryDate(), references.cutoffAt(), strategy.toString());
                 events.append(deliveryId, null, null, null, null, "DELIVERY_SUBMITTED", "INFO", null,
                         "Delivery accepted", mapper.createObjectNode().put("deliveryId", deliveryId), "api", "submitted");
-                return new Submission(deliveryId, "SUBMITTED", command.deliveryDate(), command.cutoffAt());
+                return new Submission(deliveryId, "SUBMITTED", command.deliveryDate(), references.cutoffAt());
             });
         } catch (DuplicateKeyException e) {
             var concurrent = deliveries.findByDeliveryBatch(command.deliveryBatch());
@@ -73,9 +75,9 @@ public class DeliverySubmissionService {
 
     private ObjectNode validateAndSnapshot(SubmissionCommand command) {
         if (command == null || blank(command.ossUri()) || blank(command.pipelineCode()) || blank(command.deliveryBatch())
-                || command.deliveryBatch().length() > 128 || command.deliveryDate() == null || command.cutoffAt() == null
+                || command.deliveryBatch().length() > 128 || command.deliveryDate() == null
                 || command.targets() == null || command.targets().isEmpty()) {
-            throw new IllegalArgumentException("ossUri, pipelineCode, deliveryDate, deliveryBatch, cutoffAt and targets are required");
+            throw new IllegalArgumentException("ossUri, pipelineCode, deliveryDate, deliveryBatch and targets are required");
         }
         Set<String> entities = new HashSet<>();
         ObjectNode strategy = mapper.createObjectNode().put("schemaVersion", 1);
@@ -113,20 +115,18 @@ public class DeliverySubmissionService {
             boolean supported = pipeline.nodes().stream().anyMatch(node -> node.type().startsWith(entity.protocol().toLowerCase(java.util.Locale.ROOT) + "."));
             if (!supported) throw new IllegalArgumentException("Pipeline does not support entity protocol " + entity.protocol());
         }
-        if (!command.cutoffAt().isAfter(OffsetDateTime.now())) {
-            throw new IllegalArgumentException("Submitted cutoffAt must be in the future");
-        }
-        return new ResolvedReferences(sourceId, row.id());
+        OffsetDateTime cutoff = command.deliveryDate().atTime(LocalTime.parse(String.valueOf(pipeline.config().getOrDefault("deliveryCutoffTime", "18:00:00"))))
+                .atZone(ZoneId.of(String.valueOf(pipeline.config().getOrDefault("businessTimezone", "Asia/Shanghai")))).toOffsetDateTime();
+        if (!cutoff.isAfter(OffsetDateTime.now())) throw new IllegalArgumentException("Pipeline delivery cutoff must be in the future");
+        return new ResolvedReferences(sourceId, row.id(), cutoff);
     }
 
     private Submission sameRequest(DeliverySubmit existing, SubmissionCommand command, ObjectNode strategy) {
         String sourceUri = jdbc.queryForObject("SELECT oss_uri FROM ingest_source WHERE source_id=?", String.class, existing.sourceId());
         String pipelineCode = jdbc.queryForObject("SELECT p.pipeline_code FROM pipeline p JOIN pipeline_version pv ON p.pipeline_id=pv.pipeline_id " +
                 "WHERE pv.pipeline_version_id=?", String.class, existing.pipelineVersionId());
-        boolean sameCutoff = Boolean.TRUE.equals(jdbc.queryForObject("SELECT cutoff_at=? FROM delivery_submit WHERE delivery_id=?",
-                Boolean.class, command.cutoffAt(), existing.deliveryId()));
-        boolean same = existing.deliveryDate().equals(command.deliveryDate()) && sameCutoff
-                && existing.targetStrategy().equals(strategy) && sourceUri.equals(command.ossUri()) && pipelineCode.equals(command.pipelineCode());
+        boolean same = existing.deliveryDate().equals(command.deliveryDate()) && existing.targetStrategy().equals(strategy)
+                && sourceUri.equals(command.ossUri()) && pipelineCode.equals(command.pipelineCode());
         if (!same) throw new IdempotencyConflictException("deliveryBatch is already used by different delivery parameters");
         if ("PAUSED".equals(existing.status())) {
             transactions.executeWithoutResult(status -> {
@@ -147,9 +147,9 @@ public class DeliverySubmissionService {
     private static boolean blank(String value) { return value == null || value.isBlank(); }
 
     private record PipelineRow(long id, String definition) {}
-    private record ResolvedReferences(long sourceId, long pipelineVersionId) {}
+    private record ResolvedReferences(long sourceId, long pipelineVersionId, OffsetDateTime cutoffAt) {}
     public record TargetCommand(int targetCount, String vendorCode, String entityCode) {}
     public record SubmissionCommand(String ossUri, String pipelineCode, LocalDate deliveryDate, String deliveryBatch,
-                                    OffsetDateTime cutoffAt, List<TargetCommand> targets) {}
+                                    List<TargetCommand> targets) {}
     public record Submission(long deliveryId, String status, LocalDate deliveryDate, OffsetDateTime cutoffAt) {}
 }

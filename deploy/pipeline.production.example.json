@@ -17,7 +17,7 @@
     "deliveryCutoffTime": "18:00:00",
     "rolloverStartNode": "targetUpload",
     "selection": {"orderBy": "key", "limit": 10, "duplicatePolicy": "FILTER_WITH_REASON"},
-    "assignment": {"strategySource": "SUBMIT_TARGETS", "maxPackageBytes": 10485760},
+    "assignment": {"strategySource": "SUBMIT_TARGETS", "minPackageBytes": 8388608, "maxPackageBytes": 10485760},
     "concurrency": {"maxRunningTasks": 3},
     "retry": {"maxAttempts": 5}
   },

@@ -1,6 +1,7 @@
 package com.powerjob.archive.core.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.powerjob.archive.core.domain.DeliveryTask;
 import com.powerjob.archive.core.domain.SourceData;
 import com.powerjob.archive.core.pipeline.PipelineRepository;
 import com.powerjob.archive.core.repository.DeliveryEventRepository;
@@ -119,14 +120,13 @@ class ArchiveModelIntegrationTest {
         DeliveryProjectionService projections = new DeliveryProjectionService(jdbc);
         DeliverySubmissionService submission = new DeliverySubmissionService(jdbc, transactions, mapper, deliveries, tasks, events,
                 projections, new PipelineRepository(mapper), new IngestSourceService(jdbc));
-        OffsetDateTime cutoffAt = OffsetDateTime.now().plusDays(2);
         var command = new DeliverySubmissionService.SubmissionCommand("oss://bucket/business-submit/", "archive-delivery",
-                LocalDate.now().plusDays(2), "BUSINESS-PAUSE-150", cutoffAt,
+                LocalDate.now().plusDays(2), "BUSINESS-PAUSE-150",
                 List.of(new DeliverySubmissionService.TargetCommand(1, "VENDOR-150", "ENTITY-150")));
         long deliveryId = submission.submit(command).deliveryId();
         assertEquals(deliveryId, submission.submit(command).deliveryId());
         assertThrows(IdempotencyConflictException.class, () -> submission.submit(new DeliverySubmissionService.SubmissionCommand(
-                command.ossUri(), command.pipelineCode(), command.deliveryDate(), command.deliveryBatch(), command.cutoffAt(),
+                command.ossUri(), command.pipelineCode(), command.deliveryDate(), command.deliveryBatch(),
                 List.of(new DeliverySubmissionService.TargetCommand(2, "VENDOR-150", "ENTITY-150")))));
         SourceData source = new SourceDataRepository(jdbc, mapper).findById(insertSource(deliveryId, "business", 10)).orElseThrow();
         long taskId = tasks.createPlanned(deliveries.find(deliveryId).orElseThrow(), List.of(source), deliveries.entity(150), 1, "sourceDownload");
@@ -154,6 +154,9 @@ class ArchiveModelIntegrationTest {
         long taskId = tasks.createPlanned(deliveries.find(deliveryId).orElseThrow(), planned, deliveries.entity(250), 1, "sourceDownload");
         assertEquals(3, jdbc.queryForObject("SELECT count(*) FROM delivery_mapping WHERE task_id=?", Integer.class, taskId));
         assertEquals(3, jdbc.queryForObject("SELECT jsonb_array_length(artifacts) FROM delivery_task WHERE task_id=?", Integer.class, taskId));
+        jdbc.update("INSERT INTO delivery_node(delivery_id,task_id,original_file_name,new_file_name,node_id,node_type,stage_code,attempt,fence,status,output_locator) " +
+                        "VALUES(?,?,'source-1.tar.gz','batch_00001.tar.gz','repair','python.repair','REPAIR',1,0,'SUCCEEDED',?::jsonb)",
+                deliveryId, taskId, "{\"nodeId\":\"repair\",\"localPath\":\"/tmp/batch_00001.tar.gz\",\"sha256\":\"" + "a".repeat(64) + "\"}");
         DeliveryRolloverService rollovers = new DeliveryRolloverService(jdbc, transactions, tasks,
                 new DeliveryEventRepository(jdbc, mapper), new DeliveryProjectionService(jdbc), new PipelineRepository(mapper), mapper);
         assertEquals(1, rollovers.rolloverDelivery(deliveryId, LocalDate.parse("2026-11-06"), LocalDate.parse("2026-11-07"), "merge lineage", "test"));
@@ -165,6 +168,8 @@ class ArchiveModelIntegrationTest {
         assertEquals(planned.stream().map(SourceData::dataId).toList(), sourceRepository.byTaskId(newTask).stream().map(SourceData::dataId).toList());
         assertEquals(jdbc.queryForObject("SELECT artifacts::text FROM delivery_task WHERE task_id=?", String.class, taskId),
                 jdbc.queryForObject("SELECT artifacts::text FROM delivery_task WHERE task_id=?", String.class, newTask));
+        assertEquals("/tmp/batch_00001.tar.gz", jdbc.queryForObject("SELECT output_locator->>'localPath' FROM delivery_node WHERE task_id=? AND node_id='repair' AND status='SUCCEEDED'",
+                String.class, newTask));
         assertEquals("MERGED", jdbc.queryForObject("SELECT entity_code FROM delivery_task WHERE task_id=?", String.class, newTask));
     }
 
@@ -198,6 +203,38 @@ class ArchiveModelIntegrationTest {
         assertEquals(first.artifact(), tasks.findById(taskId).orElseThrow().artifacts().required(0).required("sourceArtifact"));
         assertThrows(RuntimeException.class, () -> tasks.createPlanned(deliveries.find(400).orElseThrow(), List.of(second),
                 deliveries.entity(401), 1, "sourceDownload"));
+    }
+
+    @Test void sourceOnlyArtifactsAndOrderedMetadataDataIdsAreEnforced() {
+        insertSubmit(500);
+        jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                "VALUES(500,'VENDOR-500','ENTITY-500','Metadata case','FTP','entity500','group1','{\"host\":\"localhost\",\"rootPath\":\"/\"}')");
+        SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
+        DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions);
+        SourceData first = sources.findById(insertSource(500, "metadata-a", 10)).orElseThrow();
+        SourceData second = sources.findById(insertSource(500, "metadata-b", 20)).orElseThrow();
+        long taskId = tasks.createPlanned(deliveries.find(500).orElseThrow(), List.of(first, second),
+                deliveries.entity(500), 1, "sourceDownload");
+        var pairs = mapper.createArrayNode();
+        var firstPair = pairs.addObject().put("dataId", first.dataId());
+        firstPair.set("sourceArtifact", first.artifact());
+        var secondPair = pairs.addObject().put("dataId", second.dataId());
+        secondPair.set("sourceArtifact", second.artifact());
+        var metadata = mapper.createArrayNode().add(first.dataId()).add(second.dataId());
+        jdbc.update("UPDATE delivery_task SET artifacts=?::jsonb,metadata_ids=?::jsonb,size_bytes=30,token_count=30 WHERE task_id=?",
+                pairs.toString(), metadata.toString(), taskId);
+        DeliveryTask saved = tasks.findById(taskId).orElseThrow();
+        assertEquals(2, saved.metadataIds().size());
+        assertEquals(first.dataId(), saved.metadataIds().required(0).asLong());
+        assertEquals(second.dataId(), saved.metadataIds().required(1).asLong());
+        assertEquals(2, saved.artifacts().required(0).size());
+        assertFalse(saved.artifacts().required(0).has("deliveryArtifact"));
+        assertEquals(first.artifact(), saved.artifacts().required(0).required("sourceArtifact"));
+        assertThrows(RuntimeException.class, () -> jdbc.update("UPDATE delivery_task SET metadata_ids='[\"request-a\",\"request-b\"]'::jsonb WHERE task_id=?", taskId));
+        assertThrows(RuntimeException.class, () -> jdbc.update("UPDATE delivery_task SET metadata_ids=jsonb_build_array(?::bigint,?::bigint) WHERE task_id=?",
+                second.dataId(), first.dataId(), taskId));
+        assertThrows(RuntimeException.class, () -> jdbc.update("UPDATE delivery_task SET artifacts=jsonb_set(artifacts,'{0,deliveryArtifact}','{}'::jsonb) WHERE task_id=?", taskId));
     }
 
     @Test void threeEntitiesTwoEachDeliveredBeforeCutoff() {

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-/** 合并交付包的执行原子；逐来源产物对和 metadata requestId 保存完整溯源，跨日仍保持同执行组。 */
+/** 合并交付包的执行原子；artifacts[i] 与 metadataIds[i] 描述同一来源，跨日仍保持同执行组。 */
 public record DeliveryTask(
         long taskId, long deliveryId, long deliveryEntityId, String entityCode, String workerGroup,
         LocalDate deliveryDate, OffsetDateTime cutoffAt, String newFileName,
@@ -12,20 +12,6 @@ public record DeliveryTask(
         String currentNodeId, String executionStatus, String leaseOwner,
         OffsetDateTime leaseUntil, long fence, int retryCount, OffsetDateTime nextRetryAt,
         String lastErrorCode, OffsetDateTime completedAt) {
-
-    public JsonNode deliveryArtifact() {
-        if (artifacts == null) return null;
-        for (JsonNode pair : artifacts) {
-            JsonNode artifact = pair.path("deliveryArtifact");
-            if (artifact.isObject()) return artifact;
-        }
-        return null;
-    }
-
-    public String sha256() {
-        JsonNode artifact = deliveryArtifact();
-        return artifact == null ? null : artifact.path("sha256").asText(null);
-    }
 
     public String originalFileName() {
         if (artifacts != null && artifacts.isArray() && !artifacts.isEmpty()) {
