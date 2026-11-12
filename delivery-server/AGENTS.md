@@ -28,7 +28,7 @@ deliveryBatch 全局幂等；同参数返回原单，不同参数 409。pause �
 2. target_strategy 只保存 vendorCode/entityCode/targetCount；看板通过复合业务键关联实体，任务聚合不含 targetSeq。
 3. 任务投影暴露 entityCode、sourceDataIds、artifacts[dataId/sourceArtifact]、metadataIds 和 newFileName；metadataIds 是与 sourceDataIds 相同的正整数 data_id 数组，不保存 requestId 或 deliveryArtifact。JSONB 必须直接输出 JSON 数组/对象，禁止把 JDBC PGobject 的 type/value 包装泄漏到 API。SHA 从最新成功 repair 节点 output_locator 派生展示，不恢复数据库冗余列。
 4. 看板只统计最新有效任务，PAUSED 和 PARTIALLY_DELIVERED 不得提前显示 DELIVERED。
-5. Pipeline 已发布不可改；nodeDefinitions/ruleSets/DAG/Secret 集中在 definition。
+5. Pipeline 已发布不可改；nodeDefinitions/DAG/assignment/Secret 集中在 definition，不再接受独立 ruleSets、selection 或 repair.ruleSet；三个 Python 节点的 scriptPath 只能是固定脚本目录内的规范化相对 .py 路径。
 6. 修改 API 同步前端、脚本、测试、设计和 AGENTS，不保留旧适配。
 
 ## 测试

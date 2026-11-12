@@ -71,7 +71,7 @@ erDiagram
 
 `pipeline` 保存内部 pipeline_id、唯一 pipeline_code、description、created_at。`pipeline_version` 保存内部版本 ID、pipeline_id、version_no、状态、definition、definition_sha256、created_by、published_at、created_at。
 
-`pipeline_code` 提交时选择 version_no 最大的 PUBLISHED 版本，提交后固化 pipeline_version_id。definition 顶层只有 `pipelineCode/version/nodeDefinitions/ruleSets/config/nodes` 契约；PUBLISHED 不可改。提交不传 cutoffAt，服务端根据不可变 config.businessTimezone/deliveryCutoffTime 推导。assignment.minPackageBytes/maxPackageBytes 同时约束来源合计和最终包，默认下限为上限的 80%。
+`pipeline_code` 提交时选择 version_no 最大的 PUBLISHED 版本，提交后固化 pipeline_version_id。definition 顶层只有 `pipelineCode/version/nodeDefinitions/config/nodes` 契约；PUBLISHED 不可改，不再有独立 ruleSets、selection 或 repair.ruleSet。提交不传 cutoffAt，服务端根据不可变 config.businessTimezone/deliveryCutoffTime 推导。assignment.minPackageBytes/maxPackageBytes 同时约束来源合计和最终包，默认下限为上限的 80%。targetCount 展开为任务槽位，来源按 key 顺序分页扫描到全部槽位满足，不另设条数上限。
 
 ## 4. 提交、来源与请求编号
 
@@ -104,7 +104,7 @@ erDiagram
 
 ### 4.2 source_data
 
-保留 data_id、delivery_id、original_file_name、request_namespace、original/output_locator、qualification、过滤原因、affected_count、rule_version、原始 size_bytes/token_count/sha256、单个 artifact、created_at/updated_at；不保存 original_request_id、new_request_id 或 artifacts 数组。repair 后同任务来源的 request_namespace 统一为 deliveryBatch，updated_at 由触发器维护。
+保留 data_id、delivery_id、original_file_name、request_namespace、original/output_locator、qualification、过滤原因、affected_count、原始 size_bytes/token_count/sha256、单个 artifact、created_at/updated_at；不保存 original_request_id、new_request_id、artifacts 数组或重复 rule_version。repair 后同任务来源的 request_namespace 统一为 deliveryBatch，updated_at 由触发器维护，清洗执行版本通过 delivery_submit.pipeline_version_id 追溯。
 
 original_locator 白名单为 schemaVersion/sourceUri/sourceVersion/cachePath/memberPath/responsePaths；cachePath 是 URI+版本确定的同机共享源包缓存，跨 delivery 和其他厂商分配复用时不重复 OSS GET，其他执行组缓存缺失时回退 OSS。output_locator 白名单为 schemaVersion/memberPath/manifestPath。artifact 是严格七字段对象，并与 original_file_name/size/token/SHA 完全一致：
 
@@ -208,8 +208,8 @@ DELIVERED 要求 discovery 完成、有效任务数等于 targetCount 总和且�
 
 新任务复制 delivery_id、entity/entity_code、worker_group、new_file_name、artifacts、metadata_ids 和完整 delivery_mapping，从 rolloverStartNode 开始，retryCount 清零；同时复制跨日起点之前各节点最新成功 delivery_node locator，新 process_id 由数据库生成，使 targetUpload 能从 repair locator 读取旧最终包 size/SHA。
 
-## 7. V20 最终对象与安全约束
+## 7. V23 最终对象与安全约束
 
-V17 形成复合实体、单原始 artifact 和来源分配模型，V18/V19 是任务产物结构调整过程，V20 最终删除 deliveryArtifact，artifacts 只含 dataId/sourceArtifact，metadata_ids 只含同顺序 data_id。完整 originalPath/newRequestId 只保留在 repair manifest，最终 size/SHA 只取成功节点 locator。不保留 source_data.original/new_request_id、artifacts 数组、delivery_task_source、旧任务字段、idempotency_key、兼容视图或旧 ID 映射。所有新表、列、枚举和触发器有注释；数据库触发器强制 source_data 原始事实与 artifact 一致、任务 sourceArtifact 与 source_data.artifact 一致、metadata_ids 与 artifacts 的 dataId 同序相等。
+V17 形成复合实体、单原始 artifact 和来源分配模型，V18/V19 是任务产物结构调整过程，V20 删除 deliveryArtifact，artifacts 只含 dataId/sourceArtifact，metadata_ids 只含同顺序 data_id；V21 删除 selection/ruleSets 和 source_data.rule_version，清洗版本统一通过主单 pipeline_version_id 追溯；V22 将 merge/repair/FTP 三个 Python 节点的 scriptPath 固化到对应 PipelineVersion；V23 将路径统一为固定挂载目录内相对路径。完整 originalPath/newRequestId 只保留在 repair manifest，最终 size/SHA 只取成功节点 locator。不保留 source_data.original/new_request_id、artifacts 数组、delivery_task_source、旧任务字段、idempotency_key、兼容视图或旧 ID 映射。所有新表、列、枚举和触发器有注释；数据库触发器强制 source_data 原始事实与 artifact 一致、任务 sourceArtifact 与 source_data.artifact 一致、metadata_ids 与 artifacts 的 dataId 同序相等。
 
-源文件、merge 工作目录、repair 包和 FTP 下载文件均位于 Worker 受控持久目录。非模板 OSS 路径包含 `deliveryBatch/deliveryId/entity/date`，本地 FTP 模板包含 deliveryBatch；生产使用 `{providerCode}/{deliveryDate}-{deliveryBatch}-{providerCode}` 模板。所有路径都隔离不同批次；同 URI 同 SHA 幂等，不同 SHA 阻断且不覆盖历史。
+源文件、merge 工作目录、repair 包和 FTP 下载文件均位于 Worker 受控持久目录。非模板 OSS 路径包含 `deliveryBatch/deliveryId/entity/date`，本地 FTP 模板包含 deliveryBatch；生产使用 `{accountName}/{deliveryDate}-{deliveryBatch}-{accountName}` 分隔 june/june-2 等业务账户目录，FTP 使用 `{deliveryDate}/{deliveryBatch}`。所有路径都隔离不同批次且包名在 delivery_id 内全局连续；同 URI 同 SHA 幂等，不同 SHA 阻断且不覆盖历史。

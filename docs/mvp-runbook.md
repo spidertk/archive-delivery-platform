@@ -30,7 +30,7 @@ cd web && npm ci && npm run test && npm run build
 bash -n scripts/*.sh
 ```
 
-覆盖 V1–V20 迁移、全表全列注释、废弃对象不存在、source_data 单 artifact 白名单、来源时间戳、任务产物对一致性、delivery 内包名唯一、多来源映射、8–10 MiB 边界、事件不可变、复合业务键提交、Pipeline 推导 cutoffAt、暂停再提交、请求编号外键、跨日完整血缘、集中 Pipeline 和前端。
+覆盖 V1–V23 迁移、全表全列注释、废弃对象不存在、source_data 单 artifact 白名单、来源时间戳、任务产物对一致性、delivery 内包名唯一、多来源映射、8–10 MiB 边界、事件不可变、复合业务键提交、Pipeline 推导 cutoffAt、暂停再提交、请求编号外键、跨日完整血缘、集中 Pipeline 和前端。
 
 核心状态集成案例位于 `ArchiveModelIntegrationTest`：
 
@@ -50,7 +50,7 @@ bash -n scripts/*.sh
 
 该入口具有真实 OSS/FTP 写副作用，并明确放弃旧本地业务数据。它会：
 
-1. 仅 V14 以下数据库先携带 2026-11-06 授权完成 V13，再携带 2026-11-07 授权应用 V14–V20；已有 V14+ 数据库直接进入增量迁移。随后配置通用调度、六节点 Pipeline、来源和三个 FTP 实体。
+1. 仅 V14 以下数据库先携带 2026-11-06 授权完成 V13，再携带 2026-11-07 授权应用 V14–V23；已有 V14+ 数据库直接进入增量迁移。随后配置通用调度、六节点 Pipeline、来源和三个 FTP 实体。
 2. 双确认清理运行事实，真实预检源 OSS、目标 Bucket 和三个 FTP 账户。
 3. 暂停前两个核心实体 FTP，以指定 sg-storage products 为 ossUri，不传 cutoffAt，提交 alibaba/jun、alibaba/jun2、各 targetCount=1，持续下载到每包来源合计和最终产物均为 8–10 MiB。
 4. 在两个 ftpDownloadVerify 阻塞边界暂停，使用完全相同请求再次提交并确认 deliveryId 不变。
@@ -142,4 +142,4 @@ export ARCHIVE_DB_PASSWORD="${ARCHIVE_DB_PASSWORD:-archive_local}"
   '-Dtest=LocalMergedCaseVerificationTest' test
 ```
 
-成功日志必须包含实际 clean、V1–V13 与 V14–V20 两段迁移和 `LOCAL MERGED CASE PASSED`。核对 Flyway=20、source_data=3、原任务=1、每任务 delivery_mapping=3、sourceArtifact=source_data.artifact、跨日 taskId 不同且来源集合不变。该 case 不能替代真实 OSS/FTP 验收。
+成功日志必须包含实际 clean、V1–V13 与 V14–V23 两段迁移和 `LOCAL MERGED CASE PASSED`。核对 Flyway=23、source_data=3、原任务=1、每任务 delivery_mapping=3、sourceArtifact=source_data.artifact、跨日 taskId 不同且来源集合不变。该 case 不能替代真实 OSS/FTP 验收。

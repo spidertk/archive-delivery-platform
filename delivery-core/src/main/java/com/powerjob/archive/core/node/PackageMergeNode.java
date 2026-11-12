@@ -7,6 +7,7 @@ import com.powerjob.archive.core.config.ArchiveProperties;
 import com.powerjob.archive.core.pipeline.NodeContext;
 import com.powerjob.archive.core.pipeline.NodeHandler;
 import com.powerjob.archive.core.pipeline.NodeResult;
+import com.powerjob.archive.core.pipeline.PipelineNodeConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -21,10 +22,12 @@ import java.util.List;
 public class PackageMergeNode implements NodeHandler {
     private static final Logger log = LoggerFactory.getLogger(PackageMergeNode.class);
     private final ArchiveProperties properties;
+    private final PipelineNodeConfig configs;
     private final ObjectMapper mapper;
 
-    public PackageMergeNode(ArchiveProperties properties, ObjectMapper mapper) {
+    public PackageMergeNode(ArchiveProperties properties, PipelineNodeConfig configs, ObjectMapper mapper) {
         this.properties = properties;
+        this.configs = configs;
         this.mapper = mapper;
     }
 
@@ -45,9 +48,9 @@ public class PackageMergeNode implements NodeHandler {
                 "task-" + context.task().taskId(), "merge", "requests");
         // manifest 持久保存成员键、originalPath 和来源序号血缘。
         Path manifest = target.resolveSibling("merge-result.json");
-        // 命令只允许受控 Python 脚本和显式路径参数。
-        List<String> command = new ArrayList<>(List.of(properties.getPythonCommand(), properties.getPythonMergeScript(),
-                "--target", target.toString(), "--manifest", manifest.toString()));
+        // 当前 PipelineVersion 决定脚本实现，Worker 执行前核对本地文件且不使用 Shell。
+        List<String> command = new ArrayList<>(List.of(properties.getPythonCommand(),
+                NodeSupport.script(configs, context.node()), "--target", target.toString(), "--manifest", manifest.toString()));
         // 按 mapping 顺序传入源包，禁止切分任何原始文件。
         sources.forEach(source -> {
             command.add("--source");
@@ -60,6 +63,7 @@ public class PackageMergeNode implements NodeHandler {
         JsonNode merged = mapper.readTree(ProcessSupport.runJson(command, null, Duration.ofMinutes(10), "MERGE_RESULT "));
         // 输入 locator 保存来源路径和包上限等脱敏事实。
         ObjectNode input = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
+                .put("scriptPath", configs.script(context.node()))
                 .put("sourceCount", sources.size()).put("maxPackageBytes", context.pipeline().maxPackageBytes())
                 .set("sources", download.get("sources"));
         // 输出 locator 传递工作目录、成员清单和实际请求数。

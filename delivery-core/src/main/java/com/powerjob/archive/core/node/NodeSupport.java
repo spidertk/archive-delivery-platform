@@ -2,6 +2,10 @@ package com.powerjob.archive.core.node;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.powerjob.archive.core.pipeline.NodeContext;
+import com.powerjob.archive.core.pipeline.NodeDefinition;
+import com.powerjob.archive.core.pipeline.PipelineNodeConfig;
+
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 final class NodeSupport {
@@ -11,6 +15,15 @@ final class NodeSupport {
         return context.pipeline().nodes().stream().filter(node -> node.type().equals(nodeType))
                 .map(node -> context.previousOutputs().get(node.id())).filter(java.util.Objects::nonNull).findFirst()
                 .orElseThrow(() -> new IllegalStateException("Missing succeeded " + nodeType + " output"));
+    }
+
+    static String script(PipelineNodeConfig configs, NodeDefinition node) {
+        // Pipeline 只提供相对文件名，实际路径始终由固定挂载根目录解析。
+        String script = configs.script(node);
+        if (!Files.isRegularFile(Path.of(script))) {
+            throw new IllegalStateException("Pipeline script is not a regular file on this Worker: " + node.type());
+        }
+        return script;
     }
 
     static Path repairedPath(NodeContext context) {

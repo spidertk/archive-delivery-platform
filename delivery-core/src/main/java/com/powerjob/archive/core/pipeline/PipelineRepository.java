@@ -17,19 +17,26 @@ public class PipelineRepository {
         this.objectMapper = objectMapper;
     }
 
-    /** 节点实现元数据和规则与 DAG 同版快照，避免流程引用另一套可变配置表。 */
+    /** 节点实现元数据与 DAG 同版快照，拒绝已删除的独立规则和来源条数配置。 */
     public PipelineDefinition read(JsonNode snapshot) {
+        if (snapshot.has("ruleSets") || snapshot.path("config").has("selection")) {
+            throw new IllegalArgumentException("Pipeline ruleSets and config.selection are no longer supported");
+        }
         List<NodeDefinition> nodes = new ArrayList<>();
-        snapshot.required("nodes").forEach(node -> nodes.add(new NodeDefinition(
-                node.required("id").asText(), node.required("type").asText(),
-                node.path("stageCode").asText(node.required("id").asText()),
-                node.path("displayName").asText(node.required("id").asText()),
-                node.hasNonNull("next") ? node.get("next").asText() : null,
-                objectMapper.convertValue(node.path("config"), new TypeReference<Map<String, Object>>() {}))));
+        snapshot.required("nodes").forEach(node -> {
+            if (node.path("type").asText().equals("python.repair") && node.path("config").has("ruleSet")) {
+                throw new IllegalArgumentException("python.repair config.ruleSet is no longer supported");
+            }
+            nodes.add(new NodeDefinition(
+                    node.required("id").asText(), node.required("type").asText(),
+                    node.path("stageCode").asText(node.required("id").asText()),
+                    node.path("displayName").asText(node.required("id").asText()),
+                    node.hasNonNull("next") ? node.get("next").asText() : null,
+                    objectMapper.convertValue(node.path("config"), new TypeReference<Map<String, Object>>() {})));
+        });
         Map<String, Object> config = objectMapper.convertValue(snapshot.required("config"), new TypeReference<Map<String, Object>>() {});
         Map<String, Object> nodeDefinitions = objectMapper.convertValue(snapshot.required("nodeDefinitions"), new TypeReference<Map<String, Object>>() {});
-        Map<String, Object> ruleSets = objectMapper.convertValue(snapshot.required("ruleSets"), new TypeReference<Map<String, Object>>() {});
         return new PipelineDefinition(snapshot.required("pipelineCode").asText(), snapshot.required("version").asInt(),
-                Map.copyOf(config), Map.copyOf(nodeDefinitions), Map.copyOf(ruleSets), List.copyOf(nodes));
+                Map.copyOf(config), Map.copyOf(nodeDefinitions), List.copyOf(nodes));
     }
 }

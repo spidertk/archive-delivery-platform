@@ -20,12 +20,12 @@ x-worker-common: &worker-common
     POWERJOB_SERVER_ADDRESS: powerjob-server:7700
   volumes:
     - archive_data:/data
+    - ../nodes/python:/app/nodes/python:ro
 
 x-ftp-common: &ftp-common
   build:
     context: ..
     dockerfile: deploy/Dockerfile.ftp
-  expose: ["21", "30000-30009"]
 
 services:
   postgres:

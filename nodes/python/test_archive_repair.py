@@ -167,6 +167,20 @@ class ArchiveRepairTest(unittest.TestCase):
             self.assertRegex(mapping["newRequestId"], r"^\d{14}[A-Za-z0-9]{25}$")
             self.assertNotEqual(mapping["newRequestId"], mapping["originalRequestId"])
 
+    def test_gzip_level_is_bounded_and_changes_only_compression(self):
+        source = self.make_source("compression.tar.gz", [
+            ("compressible", {"requestId": self.request_id(4), "requestMode": "SYNC",
+                              "payload": "x" * 20000}, "biz_response.json")])
+        merged = self.merge_sources([source], "merged-compression")
+        default = self.run_script("--source", merged["workspacePath"], *self.repair_args(
+            self.root / "compression-default")).json
+        level_five = self.run_script("--source", merged["workspacePath"], *self.repair_args(
+            self.root / "compression-level-five") + ("--gzip-level", "5")).json
+        self.assertGreater(level_five["artifacts"][0]["sizeBytes"], default["artifacts"][0]["sizeBytes"])
+        self.assertEqual(level_five["requestCount"], default["requestCount"])
+        self.run_script("--source", merged["workspacePath"], *self.repair_args(
+            self.root / "compression-invalid") + ("--gzip-level", "0"), expected=2)
+
     def test_unsafe_archive_member_is_rejected(self):
         source = self.root / "unsafe.tar.gz"
         with tarfile.open(source, "w:gz") as archive:

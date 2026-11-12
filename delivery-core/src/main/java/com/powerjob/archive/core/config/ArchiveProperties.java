@@ -14,9 +14,6 @@ public class ArchiveProperties {
     private String workRoot = "/data/work";
     private String ftpVerificationRoot = "/data/ftp-verify";
     private String pythonCommand = "python3";
-    private String pythonScript = "/app/nodes/python/archive_repair.py";
-    private String pythonMergeScript = "/app/nodes/python/archive_merge.py";
-    private String ftpVerifyScript = "/app/nodes/python/ftp_download_verify.py";
 
     public String getWorkerId() { return workerId; }
     public void setWorkerId(String workerId) { this.workerId = workerId; }
@@ -30,10 +27,4 @@ public class ArchiveProperties {
     public void setFtpVerificationRoot(String ftpVerificationRoot) { this.ftpVerificationRoot = ftpVerificationRoot; }
     public String getPythonCommand() { return pythonCommand; }
     public void setPythonCommand(String pythonCommand) { this.pythonCommand = pythonCommand; }
-    public String getPythonScript() { return pythonScript; }
-    public void setPythonScript(String pythonScript) { this.pythonScript = pythonScript; }
-    public String getPythonMergeScript() { return pythonMergeScript; }
-    public void setPythonMergeScript(String pythonMergeScript) { this.pythonMergeScript = pythonMergeScript; }
-    public String getFtpVerifyScript() { return ftpVerifyScript; }
-    public void setFtpVerifyScript(String ftpVerifyScript) { this.ftpVerifyScript = ftpVerifyScript; }
 }

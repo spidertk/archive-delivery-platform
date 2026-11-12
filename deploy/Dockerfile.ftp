@@ -1,4 +1,4 @@
-FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17
+FROM maven:3.9-eclipse-temurin-17
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pyftpdlib \
     && rm -rf /var/lib/apt/lists/*
 COPY deploy/ftp_server.py /usr/local/bin/ftp_server.py

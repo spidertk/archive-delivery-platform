@@ -99,7 +99,7 @@ public class TaskExecutionService {
             }
             boolean terminal = result.nextNode() == null;
             transactions.executeWithoutResult(status -> {
-                if (result.sourcePatch() != null) sources.markSourcesQualified(task.taskId(), result.sourcePatch().ruleVersion(), result.sourcePatch().requestNamespace());
+                if (result.sourcePatch() != null) sources.markSourcesQualified(task.taskId(), result.sourcePatch().requestNamespace());
                 nodes.finish(processId, "SUCCEEDED", result.inputLocator(), result.outputLocator(), null, null);
                 tasks.complete(task.taskId(), task.fence(), workerId, terminal ? node.id() : result.nextNode(), result.sourcePatch(), terminal);
                 events.append(task.deliveryId(), task.taskId(), processId, task.deliveryEntityId(), source.dataId(), "NODE_SUCCEEDED", "INFO",
@@ -142,7 +142,7 @@ public class TaskExecutionService {
 
     /** 当前节点上下文移除其他节点配置，Worker 不会把完整 Secret 集合交给 NodeHandler。 */
     private PipelineDefinition onlyCurrentNodeConfig(PipelineDefinition source, String currentNodeId) {
-        return new PipelineDefinition(source.pipelineCode(), source.version(), source.config(), source.nodeDefinitions(), source.ruleSets(),
+        return new PipelineDefinition(source.pipelineCode(), source.version(), source.config(), source.nodeDefinitions(),
                 source.nodes().stream().map(node -> new NodeDefinition(node.id(), node.type(), node.stageCode(), node.displayName(), node.next(),
                         node.id().equals(currentNodeId) ? node.config() : Map.of())).toList());
     }

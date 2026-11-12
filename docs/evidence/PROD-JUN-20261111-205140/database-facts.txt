@@ -1,0 +1,40 @@
+ version | success |        installed_on
+---------+---------+----------------------------
+ 23      | t       | 2026-11-11 09:54:46.197057
+ 22      | t       | 2026-11-11 09:54:46.161984
+ 21      | t       | 2026-11-11 09:54:46.117942
+ 20      | t       | 2026-11-11 09:54:46.086958
+ 19      | t       | 2026-11-11 09:54:46.027341
+(5 rows)
+
+ delivery_id |      delivery_batch      | delivery_date |       cutoff_at        |  status   | pipeline_version_id
+-------------+--------------------------+---------------+------------------------+-----------+---------------------
+           2 | PROD-JUN-20261111-205140 | 2026-11-12    | 2026-11-12 10:00:00+00 | DELIVERED |                   5
+(1 row)
+
+ task_id | entity_code | worker_group | execution_status |   new_file_name    | size_bytes
+---------+-------------+--------------+------------------+--------------------+------------
+       2 | jun         | group1       | SUCCEEDED        | batch_00001.tar.gz |    8469625
+(1 row)
+
+ data_id | original_file_name | size_bytes |                              sha256                              |                                                                                                                  artifact                                                                                                                   |          created_at           |          updated_at
+---------+--------------------+------------+------------------------------------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+-------------------------------+-------------------------------
+       3 | batch_00002.tar.gz |    3034797 | 606ccf9e47077c84f6cbd077dd69a04455cd0938572c6549bfd35e42bdfdec1a | {"token": 3034797, "sha256": "606ccf9e47077c84f6cbd077dd69a04455cd0938572c6549bfd35e42bdfdec1a", "sizeBytes": 3034797, "artifactSeq": 1, "newFileName": "batch_00002.tar.gz", "file_mapping": {}, "originalFileName": "batch_00002.tar.gz"} | 2026-11-11 12:52:04.726924+00 | 2026-11-11 12:52:31.291901+00
+       4 | batch_00003.tar.gz |    6878486 | 9a77edee076258d1cfba9238ed13ece6e30e60d57b0cb8de3c488cd98d5b5eba | {"token": 6878486, "sha256": "9a77edee076258d1cfba9238ed13ece6e30e60d57b0cb8de3c488cd98d5b5eba", "sizeBytes": 6878486, "artifactSeq": 1, "newFileName": "batch_00003.tar.gz", "file_mapping": {}, "originalFileName": "batch_00003.tar.gz"} | 2026-11-11 12:52:04.781384+00 | 2026-11-11 12:52:31.291901+00
+(2 rows)
+
+ task_id | data_id | source_seq
+---------+---------+------------
+       2 |       3 |          1
+       2 |       4 |          2
+(2 rows)
+
+ process_id | task_id |      node_id      |  status   | worker_instance_id |                                                                                                                                                                                                                                                                                                                                                                                                            output_locator
+------------+---------+-------------------+-----------+--------------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+          5 |       2 | sourceDownload    | SUCCEEDED | worker-1           | {"nodeId": "sourceDownload", "sources": [{"uri": "oss://sg-oss-external-channel-source/jayden-incoming/maasData/archive/YY：@feiji777888/2026-11-09/batch_00002.tar.gz", "dataId": 3, "sha256": "606ccf9e47077c84f6cbd077dd69a04455cd0938572c6549bfd35e42bdfdec1a", "cacheHit": true, "localPath": "/data/work/delivery-2/task-2/sources/data-3/batch_00002.tar.gz", "sizeBytes": 3034797}, {"uri": "oss://sg-oss-external-channel-source/jayden-incoming/maasData/archive/YY：@feiji777888/2026-11-09/batch_00003.tar.gz", "dataId": 4, "sha256": "9a77edee076258d1cfba9238ed13ece6e30e60d57b0cb8de3c488cd98d5b5eba", "cacheHit": true, "localPath": "/data/work/delivery-2/task-2/sources/data-4/batch_00003.tar.gz", "sizeBytes": 6878486}], "verifiedAt": "2026-11-11T12:52:19.131863885Z", "sourceCount": 2, "schemaVersion": 1}
+          6 |       2 | mergePackages     | SUCCEEDED | worker-1           | {"nodeId": "mergePackages", "verifiedAt": "2026-11-11T12:52:25.813427088Z", "sourceBytes": 9913283, "sourceCount": 2, "manifestPath": "/data/work/delivery-2/task-2/merge/merge-result.json", "requestCount": 25, "schemaVersion": 1, "workspacePath": "/data/work/delivery-2/task-2/merge/requests"}
+          7 |       2 | repair            | SUCCEEDED | worker-1           | {"nodeId": "repair", "sha256": "a16d8f829c64e11fa1eb6f1e24630fa3925ea15264f1bd664c581bd2bc312e87", "localPath": "/data/work/delivery-2/task-2/repair/batch_00001.tar.gz", "sizeBytes": 8469625, "entityCode": "jun", "verifiedAt": "2026-11-11T12:52:31.290167770Z", "metadataIds": [3, 4], "sourceCount": 2, "requestCount": 25, "metadataCount": 2, "schemaVersion": 1}
+          8 |       2 | qualify           | SUCCEEDED | worker-1           | {"nodeId": "qualify", "sha256": "a16d8f829c64e11fa1eb6f1e24630fa3925ea15264f1bd664c581bd2bc312e87", "localPath": "/data/work/delivery-2/task-2/repair/batch_00001.tar.gz", "sizeBytes": 8469625, "verifiedAt": "2026-11-11T12:52:33.165754164Z", "sourceCount": 2, "requestCount": 25, "metadataCount": 2, "schemaVersion": 1}
+          9 |       2 | targetUpload      | SUCCEEDED | worker-1           | {"uri": "oss://sg-storage-20261013-6vmlk/june/2026-11-12-PROD-JUN-20261111-205140-june/batch_00001.tar.gz", "nodeId": "targetUpload", "sha256": "a16d8f829c64e11fa1eb6f1e24630fa3925ea15264f1bd664c581bd2bc312e87", "localPath": "/data/work/delivery-2/task-2/oss-verified/2026-11-12/entity-1/batch_00001.tar.gz", "sizeBytes": 8469625, "verifiedAt": "2026-11-11T12:52:39.971204405Z", "schemaVersion": 1}
+         10 |       2 | ftpDownloadVerify | SUCCEEDED | worker-1           | {"uri": "ftp://ftp-june/2026-11-12/PROD-JUN-20261111-205140/batch_00001.tar.gz", "nodeId": "ftpDownloadVerify", "sha256": "a16d8f829c64e11fa1eb6f1e24630fa3925ea15264f1bd664c581bd2bc312e87", "sizeBytes": 8469625, "verifiedAt": "2026-11-11T12:52:43.442870348Z", "downloadPath": "/data/ftp-verify/2/2026-11-12/entity-1/batch_00001.tar.gz", "schemaVersion": 1}
+(6 rows)

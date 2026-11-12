@@ -1,0 +1,119 @@
+x-worker-common: &worker-common
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.worker
+  depends_on:
+    postgres:
+      condition: service_healthy
+    powerjob-server:
+      condition: service_started
+  environment:
+    SPRING_PROFILES_ACTIVE: production
+    ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
+    ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
+    ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
+    ARCHIVE_UPGRADE_AUTHORIZED: ${ARCHIVE_UPGRADE_AUTHORIZED:-}
+    ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group1}
+    ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-3}
+    POWERJOB_ENABLED: "true"
+    POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
+    POWERJOB_SERVER_ADDRESS: powerjob-server:7700
+  volumes:
+    - archive_data:/data
+    - ../nodes/python:/app/nodes/python:ro
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: archive_delivery
+      POSTGRES_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
+      POSTGRES_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
+    ports: ["${ARCHIVE_PG_BIND_ADDRESS:-127.0.0.1}:5432:5432"]
+    volumes: [archive_pg:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ARCHIVE_DB_USER} -d archive_delivery"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
+  mysql:
+    image: mysql:8.0.36
+    environment:
+      MYSQL_ROOT_PASSWORD: ${POWERJOB_MYSQL_ROOT_PASSWORD:?POWERJOB_MYSQL_ROOT_PASSWORD is required}
+      MYSQL_DATABASE: powerjob
+    volumes:
+      - powerjob_mysql:/var/lib/mysql
+      - ./powerjob-mysql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  powerjob-server:
+    image: powerjob/powerjob-server:v5.1.7
+    environment:
+      JVMOPTIONS: ${POWERJOB_JVMOPTIONS:-}
+      PARAMS: >-
+        --spring.datasource.core.jdbc-url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+        --spring.datasource.core.username=root --spring.datasource.core.password=${POWERJOB_MYSQL_ROOT_PASSWORD}
+        --oms.storage.dfs.mysql_series.url=jdbc:mysql://mysql:3306/powerjob?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+        --oms.storage.dfs.mysql_series.username=root --oms.storage.dfs.mysql_series.password=${POWERJOB_MYSQL_ROOT_PASSWORD}
+        --oms.mongodb.enable=false
+      TZ: Asia/Shanghai
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports: ["${POWERJOB_BIND_ADDRESS:-127.0.0.1}:7700:7700"]
+
+  archive-server:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.server
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
+      ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
+      ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
+      ARCHIVE_UPGRADE_AUTHORIZED: ${ARCHIVE_UPGRADE_AUTHORIZED:-}
+    ports: ["127.0.0.1:8080:8080"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "--connect-timeout", "2", "--max-time", "3", "http://127.0.0.1:8080/actuator/health"]
+      interval: 3s
+      timeout: 3s
+      retries: 40
+
+  worker-1:
+    <<: *worker-common
+    environment:
+      HOSTNAME: worker-1
+      SPRING_PROFILES_ACTIVE: production
+      ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
+      ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
+      ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
+      ARCHIVE_UPGRADE_AUTHORIZED: ${ARCHIVE_UPGRADE_AUTHORIZED:-}
+      ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group1}
+      ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-3}
+      POWERJOB_ENABLED: "true"
+      POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
+      POWERJOB_SERVER_ADDRESS: powerjob-server:7700
+
+  ftp-june:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.ftp
+    environment:
+      FTP_USER_NAME: june
+      FTP_USER_PASS: ${PROD_FTP_ENTITY_1_PASSWORD:?PROD_FTP_ENTITY_1_PASSWORD is required}
+      FTP_USER_HOME: /home/ftpusers/june
+      PUBLICHOST: ftp-june
+    volumes:
+      - ${PROD_JUNE_HOST_ROOT:?PROD_JUNE_HOST_ROOT is required}:/home/ftpusers/june
+
+volumes:
+  archive_pg:
+  powerjob_mysql:
+  archive_data:

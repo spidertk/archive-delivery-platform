@@ -1,0 +1,1 @@
+a16d8f829c64e11fa1eb6f1e24630fa3925ea15264f1bd664c581bd2bc312e87  /srv/maas-sftp/maasData/archive/june/2026-11-12/PROD-JUN-20261111-205140/batch_00001.tar.gz

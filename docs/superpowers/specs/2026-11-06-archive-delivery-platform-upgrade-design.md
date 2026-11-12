@@ -33,7 +33,7 @@ PowerJob 实例成功不等于交付成功。只有最终节点成功且外部 s
 
 ## 3. 集中 PipelineVersion 与优化后的 DAG
 
-definition 集中 nodeDefinitions、ruleSets、nodes、selection、assignment、retry、concurrency、rollover 和节点 Secret。PUBLISHED 不可改，换配置发布新版本。
+definition 集中 nodeDefinitions、nodes、assignment、retry、concurrency、rollover 和节点 Secret。PUBLISHED 不可改，换配置发布新版本；不再维护带独立状态/版本的 ruleSets，清洗版本统一由提交绑定的 PipelineVersion 追溯。
 
 ```text
 sourceDownload → mergePackages → repair → qualify → targetUpload → ftpDownloadVerify
@@ -44,13 +44,12 @@ config:
   businessTimezone: Asia/Shanghai
   deliveryCutoffTime: "18:00:00"
   rolloverStartNode: targetUpload
-  selection: {orderBy: key, limit: 32, duplicatePolicy: FILTER_WITH_REASON}
   assignment: {strategySource: SUBMIT_TARGETS, minPackageBytes: 8388608, maxPackageBytes: 10485760}
   concurrency: {maxRunningTasks: 3}
   retry: {maxAttempts: 5}
 ```
 
-selection.limit 是扫描入选来源包数上限，targetCount 是合并后的任务数。发现阶段在下载前过滤单包超过 maxPackageBytes 的对象并记录 SOURCE_FILTERED，避免无效大流量。规划器按 vendorCode 将目标分组，在同一厂商内优先按连续来源装包；无法满足下限时再按字节和回溯其他组合，组内保持来源顺序，最后目标满足后忽略后续来源，禁止切分文件。来源合计低于 minPackageBytes 时规划失败并置主单 BLOCKED，不再每 15 秒重复下载。qualify 还要求最终包处于 min/max 边界内。
+targetCount 展开为合并任务槽位数，不另设 selection.limit。发现阶段按 key 顺序分页扫描，每页尝试为全部槽位装包，满足后停止；下载前过滤单包超过 maxPackageBytes 的对象并记录 SOURCE_FILTERED，避免无效大流量。规划器按 vendorCode 将目标分组，在同一厂商内优先按连续来源装包；无法满足下限时再按字节和回溯其他组合，组内保持来源顺序，禁止切分文件。列表耗尽后来源合计仍低于 minPackageBytes 时规划失败并置主单 BLOCKED，不再每 15 秒重复下载。qualify 还要求最终包处于 min/max 边界内。
 
 例如 minPackageBytes=8 MiB、maxPackageBytes=10 MiB，来源依次为 1/2/3/4/12/1/5/3/2 MiB：12 MiB 下载前过滤；首任务为 1+2+3+4=10 MiB，第二任务为 1+5+3=9 MiB，末尾 2 MiB 不再纳入。包名按 delivery_id 跨实体连续生成 batch_00001、batch_00002。若只取得约 2 MiB 来源，必须失败，不能交付。
 
@@ -62,11 +61,17 @@ selection.limit 是扫描入选来源包数上限，targetCount 是合并后的�
 
 1. merge 按 delivery_mapping.source_seq 对每个来源只执行一次安全解包，把请求目录移动到任务受控 `merge/requests/`。不同来源的同名目录以来源序号生成唯一成员键，manifest 同时保留 memberKey、originalPath、sourceSeq 和 sourceFileName。
 2. merge 输出 locator 使用 `workspacePath/manifestPath/requestCount/sourceCount/sourceBytes`，不再输出 artifactPath 或中间包 SHA。
-3. repair 直接读取 merge 请求目录，在 repair 私有 staging 副本上修改 metadata 和目录名，避免失败污染 merge 结果。CLI 接收 `--entity-code`，协议 metadata.providerCode 写 entityCode；vendorCode 仅用于厂商分配和外部路径。合法 39 位 requestId 保留，缺失或旧格式使用 deliveryBatch 号段确定性补号，originalRequestId 始终保留。
+3. repair 直接读取 merge 请求目录，在 repair 私有 staging 副本上修改 metadata 和目录名，避免失败污染 merge 结果。CLI 接收 `--entity-code` 和 1–9 的 `--gzip-level`，协议 metadata.providerCode 写 entityCode；压缩级别由不可变 Pipeline 的 gzipCompressLevel 固定，默认 9、生产当前 5，仍只有一次最终封包且必须满足 min/max。vendorCode 用于厂商分配，外部路径模板支持 providerCode/entityCode/accountName，生产以 accountName 分隔 june/june-2 目录。合法 39 位 requestId 保留，缺失或旧格式使用 deliveryBatch 号段确定性补号，originalRequestId 始终保留。
 4. 只有 repair 最终执行一次确定性 tar/gzip 封存，并检查 maxPackageBytes、协议结构、size/SHA；qualify 再检查 minPackageBytes。
 5. 重试清理本次 `.archive_merge_*`、`.archive_repair_*` 和 `.tmp`；源包、merge 目录和有效最终包保留。
 
 因此仍有一次必要的 staging 文件复制，但不再有重复压缩/解压；最终包大小约束没有被跳过。
+
+### 3.2 脚本位置与动态清洗边界
+
+当前 merge、repair、FTP 上传/下载核验脚本分别为仓库 `nodes/python/archive_merge.py`、`archive_repair.py`、`ftp_download_verify.py`。三个节点都必须通过 `config.scriptPath` 保存该目录内规范化相对 .py 路径。Worker 固定从 `/app/nodes/python` 解析，本地和生产 Compose 均将仓库 `nodes/python` 整目录只读挂载到此路径；新增脚本不需要修改挂载、环境变量或重启 Worker。发布时校验路径格式和仓库文件存在，Worker 执行前再次核对，以固定 argv 启动，不经过 Shell，也不再使用 Worker 脚本路径环境变量。解析后的实际路径写入节点 input_locator 供审计。生产动态迭代使用版本化文件名并发布新 PipelineVersion，避免覆盖同名文件影响旧任务重试。
+
+本地或生产需要不同实现时发布不同 PipelineVersion，旧任务继续使用原路径快照。生产脚本内容仍须受控发布，不能通过覆盖同一路径绕过审计。常用字段清洗可进一步抽象为白名单声明式规则，由 Java 校验后通过结构化输入交给脚本；规则变更同样发布新 PipelineVersion，不恢复独立规则状态或版本。
 
 ## 4. 提交与操作 API
 
@@ -146,7 +151,7 @@ worker_group 是单服务器本地执行域。Worker 只认领同组任务，组
 
 Secret 只在 Pipeline 对应节点维护；管理 API 脱敏，Worker 只获得当前节点配置。Secret 不进入实体、locator、artifacts、metadata_ids、事件、日志或前端。外部 IO、业务决策和事务提交分离，NodeHandler 不直接更新任务或提交状态。
 
-V14 只在显式授权环境清空旧业务表；V15 增加 PARTIALLY_DELIVERED；V16 形成 delivery_mapping 和任务产物对；V17 形成 entityCode 提交/repair、source_data 单原始 artifact、original_file_name、来源时间戳、任务 entity_code 和 delivery 内有效包名唯一约束；V18/V19 调整任务产物结构；V20 最终形成 dataId/sourceArtifact 与 data_id metadata_ids。普通启动不得隐式携带清库授权。
+V14 只在显式授权环境清空旧业务表；V15 增加 PARTIALLY_DELIVERED；V16 形成 delivery_mapping 和任务产物对；V17 形成 entityCode 提交/repair、source_data 单原始 artifact、original_file_name、来源时间戳、任务 entity_code 和 delivery 内有效包名唯一约束；V18/V19 调整任务产物结构；V20 形成 dataId/sourceArtifact 与 data_id metadata_ids；V21 删除 selection/ruleSets 和重复 rule_version，统一由 PipelineVersion 追溯清洗执行版本；V22 将三个 Python 节点的 scriptPath 纳入不可变配置；V23 将 scriptPath 统一为固定挂载目录内相对路径。普通启动不得隐式携带清库授权。
 
 ## 9. 验证与验收
 
@@ -154,7 +159,7 @@ V14 只在显式授权环境清空旧业务表；V15 增加 PARTIALLY_DELIVERED�
 
 本地真实核心 case 固定为：
 
-1. 真实 Compose 启动 server/Worker/PG/PowerJob/FTP，执行实际 V1–V20 迁移。
+1. 真实 Compose 启动 server/Worker/PG/PowerJob/FTP，执行实际 V1–V23 迁移。
 2. 从 `oss://sg-storage-20261013-6vmlk/internal/gpt-delta-seven-20261105-accepted-20261106-v1/products/` 新地址真实 GET tar.gz，本地保留并逐源核对 original_file_name/size/SHA/artifact；相同 URI+版本不重复下载。
 3. 提交不传 cutoffAt，由不可变 Pipeline 推导。同 vendorCode=alibaba 的 jun/jun2 各 targetCount=1，持续下载到每包来源合计和最终产物均为 8–10 MiB，repair 输入为 entityCode。merge 保留请求目录且无 merged-source.tar.gz。
 4. 入选来源各分配一次，artifacts 仅含 dataId/sourceArtifact 且 sourceArtifact 完全等于 source_data.artifact；metadata_ids 与 sourceDataIds 完全相等且不存 requestId；repair manifest 保留逐来源 originalPath/newRequestId，最终 size/SHA 来自成功节点 locator，有效包名在 delivery_id 下唯一，request_namespace 等于 deliveryBatch。

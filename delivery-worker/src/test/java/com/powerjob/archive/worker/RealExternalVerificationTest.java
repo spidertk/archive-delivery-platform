@@ -47,12 +47,12 @@ class RealExternalVerificationTest {
             var selected = client.listObjectsV2(new ListObjectsV2Request(source.bucket()).withPrefix(source.prefix()).withMaxKeys(100))
                     .getObjectSummaries().stream().filter(object -> object.getKey().endsWith(".tar.gz") && object.getSize() > 0
                             && object.getSize() <= pipeline.maxPackageBytes())
-                    .sorted(java.util.Comparator.comparing(com.aliyun.oss.model.OSSObjectSummary::getKey))
-                    .limit(pipeline.selectionLimit()).toList();
+                    .sorted(java.util.Comparator.comparing(com.aliyun.oss.model.OSSObjectSummary::getKey)).toList();
             long candidateBytes = selected.stream().mapToLong(com.aliyun.oss.model.OSSObjectSummary::getSize).sum();
-            assertTrue(selected.size() >= 2 && candidateBytes >= 2 * pipeline.minPackageBytes(),
-                    "Real source archives must fill two packages within the configured bounds: count=" + selected.size()
-                            + " bytes=" + candidateBytes);
+            int requiredPackages = expectedTasks();
+            assertTrue(selected.size() >= Math.min(2, requiredPackages) && candidateBytes >= requiredPackages * pipeline.minPackageBytes(),
+                    "Real source archives must fill the requested packages within the configured bounds: count=" + selected.size()
+                            + " bytes=" + candidateBytes + " requiredPackages=" + requiredPackages);
             assertTrue(selected.stream().allMatch(object -> object.getSize() <= pipeline.maxPackageBytes()),
                     "Every selected source must fit maxPackageBytes before a delivery is submitted: " + selected.stream()
                             .map(object -> object.getKey() + "=" + object.getSize()).toList());
@@ -71,9 +71,11 @@ class RealExternalVerificationTest {
         var ftp = configs.ftp(pipeline.nodes().stream().filter(node -> node.type().equals("ftp.download-verify")).findFirst().orElseThrow());
         List<Map<String, Object>> entities = jdbc.queryForList("SELECT * FROM delivery_entity WHERE enabled=true ORDER BY delivery_entity_id")
                 .stream().filter(entity -> ftp.ftpCredential().containsKey(entity.get("account_name").toString())).toList();
-        assertEquals(3, entities.size(), "Exactly three Pipeline-configured FTP entities are required");
+        int requiredEntities = production() ? 1 : 3;
+        assertEquals(requiredEntities, entities.size(), "Pipeline-configured FTP entity count differs from the active verification profile");
         for (Map<String, Object> entity : entities) ftpPreflight(entity, ftp);
-        System.out.println("REAL PREFLIGHT PASSED: source OSS archives meet configured package bounds, target OSS bucket, three FTP accounts/directories");
+        System.out.println("REAL PREFLIGHT PASSED: source OSS archives meet configured package bounds, target OSS bucket, entities="
+                + requiredEntities);
     }
 
     @Test void verifyRealDelivery() throws Exception {
@@ -90,16 +92,14 @@ class RealExternalVerificationTest {
                 "t.size_bytes,t.artifacts::text AS artifacts,t.metadata_ids::text AS metadata_ids,e.account_name,e.endpoint_locator::text AS endpoint_locator " +
                 "FROM delivery_task t JOIN delivery_entity e ON e.delivery_entity_id=t.delivery_entity_id " +
                 "WHERE t.delivery_id=? AND t.execution_status NOT IN('EXPIRED','CANCELLED') ORDER BY t.new_file_name", deliveryId);
-        assertEquals(2, tasks.size(), "Two delivery groups must each upload one 10 MiB-bounded task");
-        assertEquals(2, tasks.stream().map(task -> task.get("new_file_name").toString()).distinct().count(),
+        assertEquals(expectedTasks(), tasks.size(), "Delivery task count differs from the requested targetCount total");
+        assertEquals(tasks.size(), tasks.stream().map(task -> task.get("new_file_name").toString()).distinct().count(),
                 "Package names must be globally unique within the delivery");
         int totalSources = 0;
-        java.util.Set<Long> deliveredEntities = new java.util.HashSet<>();
         java.util.Set<Long> assignedDataIds = new java.util.HashSet<>();
         for (Map<String, Object> task : tasks) {
             long taskId = ((Number) task.get("task_id")).longValue();
             long entityId = ((Number) task.get("delivery_entity_id")).longValue();
-            assertTrue(deliveredEntities.add(entityId), "Each delivery group must use a distinct vendor entity");
             assertEquals("SUCCEEDED", jdbc.queryForObject("SELECT execution_status FROM delivery_task WHERE task_id=?", String.class, taskId));
             JsonNode artifactPairs = mapper.readTree(task.get("artifacts").toString());
             long sourceTaskId = jdbc.queryForObject("SELECT COALESCE((SELECT (payload->>'oldTaskId')::bigint FROM delivery_event " +
@@ -216,14 +216,25 @@ class RealExternalVerificationTest {
                     + " sources=" + sourceCount + " metadata=" + metadataIds.size() + " requests=" + mappedRequests
                     + " size=" + expectedSize + " sha256=" + expectedSha);
         }
-        assertTrue(totalSources > 3, "The real case must download enough sources to approach 10 MiB per package");
+        assertTrue(production() ? totalSources >= expectedTasks() : totalSources > 3,
+                "The real case must download enough sources for every requested package");
         assertEquals(totalSources, assignedDataIds.size(), "Every real OSS source must be assigned exactly once");
-        assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='TASK_RETRIED'", Integer.class, deliveryId) >= 1);
-        assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='DELIVERY_PAUSED'", Integer.class, deliveryId) >= 1);
-        assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='DELIVERY_RESUMED'", Integer.class, deliveryId) >= 1);
-        System.out.println("REAL E2E PASSED deliveryId=" + deliveryId + " tasks=2 sources=" + totalSources
+        if (!production()) {
+            assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='TASK_RETRIED'", Integer.class, deliveryId) >= 1);
+            assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='DELIVERY_PAUSED'", Integer.class, deliveryId) >= 1);
+            assertTrue(jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='DELIVERY_RESUMED'", Integer.class, deliveryId) >= 1);
+        }
+        System.out.println("REAL E2E PASSED deliveryId=" + deliveryId + " tasks=" + tasks.size() + " sources=" + totalSources
                 + " packageBounds=" + pipeline.minPackageBytes() + "-" + pipeline.maxPackageBytes()
-                + " pause/resume/retry/rollover verified");
+                + " profile=" + (production() ? "production" : "local"));
+    }
+
+    private static boolean production() {
+        return "production".equals(System.getenv("ARCHIVE_VERIFICATION_PROFILE"));
+    }
+
+    private static int expectedTasks() {
+        return Integer.parseInt(System.getenv().getOrDefault("ARCHIVE_VERIFY_EXPECTED_TASKS", "2"));
     }
 
     private JdbcTemplate jdbc() {

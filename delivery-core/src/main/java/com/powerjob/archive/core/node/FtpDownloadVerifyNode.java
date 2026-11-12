@@ -64,7 +64,8 @@ public class FtpDownloadVerifyNode implements NodeHandler {
         String template = String.valueOf(context.node().config().getOrDefault("remotePathTemplate",
                 "{deliveryId}/{deliveryDate}/entity-{deliveryEntityId}"));
         // 模板只替换受控业务字段，不接受任意 Shell。
-        String relative = paths.ftpRelativePath(template, context.task(), context.entity().vendorCode(), deliveryBatch);
+        String relative = paths.ftpRelativePath(template, context.task(), context.entity().vendorCode(),
+                context.entity().accountName(), deliveryBatch);
         // 上传源使用 OSS 已 GET 回验的副本。
         Path ossCopy = NodeSupport.ossVerifiedPath(context, properties.getWorkRoot());
         // 下载文件按 delivery、日期和实体隔离，并保留任务级唯一包名。
@@ -82,10 +83,11 @@ public class FtpDownloadVerifyNode implements NodeHandler {
                 context.task().deliveryId(), context.task().taskId(), context.processId(), context.task().entityCode(),
                 host, port, rootPath, relative, context.task().sizeBytes(), expectedSha);
         // 上传、重新下载、size/SHA 和 .partial 清理由受控脚本一次完成。
-        JsonNode result = mapper.readTree(ProcessSupport.runJson(List.of(properties.getPythonCommand(), properties.getFtpVerifyScript()),
-                request.toString(), Duration.ofMinutes(5), "FTP_RESULT "));
+        JsonNode result = mapper.readTree(ProcessSupport.runJson(List.of(properties.getPythonCommand(),
+                NodeSupport.script(configs, context.node())), request.toString(), Duration.ofMinutes(5), "FTP_RESULT "));
         // 输入 locator 不包含密码或完整请求 JSON。
         ObjectNode input = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
+                .put("scriptPath", configs.script(context.node()))
                 .put("localPath", ossCopy.toAbsolutePath().toString()).put("deliveryEntityId", context.task().deliveryEntityId());
         // 输出 locator 保留远端 URI 和本地下载文件的复核事实。
         ObjectNode output = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())

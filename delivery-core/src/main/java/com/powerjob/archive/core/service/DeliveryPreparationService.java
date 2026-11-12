@@ -74,25 +74,22 @@ public class DeliveryPreparationService {
         this.mapper = mapper;
     }
 
-    /** selection.limit 限制扫描入选数；按厂商整体顺序累计来源，超限包过滤，所有目标装满后忽略后续来源。 */
+    /** targetCount 展开为任务槽位；持续分页扫描到全部槽位可装包，超限包过滤且不设置额外来源条数上限。 */
     public int prepare(long deliveryId) {
         DeliverySubmit submit = deliveries.find(deliveryId).orElseThrow();
         if (submit.discoveryCompletedAt() != null) return tasks.byDelivery(deliveryId).size();
         deliveries.markDiscovering(deliveryId);
         PipelineDefinition pipeline = pipeline(submit.pipelineVersionId());
-        int limit = pipeline.selectionLimit();
         long maxPackageBytes = pipeline.maxPackageBytes();
         long minPackageBytes = pipeline.minPackageBytes();
         List<Target> targets = targets(submit.targetStrategy().required("targets"));
         List<TargetSlot> slots = targetSlots(targets);
-        if (slots.size() > limit) throw new IllegalArgumentException("Pipeline selection.limit must be at least the sum of targetCount");
         OssNodeConfig config = sourceConfig(pipeline);
         verifySourceLocation(submit.sourceId(), config);
-        log.info("Delivery preparation started deliveryId={} selectionLimit={} targetTaskCount={} minPackageBytes={} maxPackageBytes={} sourcePrefix=oss://{}/{}",
-                deliveryId, limit, slots.size(), minPackageBytes, maxPackageBytes, config.bucket(), config.prefix());
-        Discovery discovery = discover(config, limit, deliveryId, maxPackageBytes);
-        List<List<Integer>> assignments = planSourceIndexes(discovery.objects().stream().map(OSSObjectSummary::getSize).toList(),
-                slots.size(), maxPackageBytes, minPackageBytes);
+        log.info("Delivery preparation started deliveryId={} targetTaskCount={} minPackageBytes={} maxPackageBytes={} sourcePrefix=oss://{}/{}",
+                deliveryId, slots.size(), minPackageBytes, maxPackageBytes, config.bucket(), config.prefix());
+        Discovery discovery = discover(config, deliveryId, slots.size(), maxPackageBytes, minPackageBytes);
+        List<List<Integer>> assignments = discovery.assignments();
         for (OSSObjectSummary skipped : discovery.oversized()) {
             String sourceUri = "oss://" + config.bucket() + "/" + skipped.getKey();
             ObjectNode payload = mapper.createObjectNode().put("sourceUri", sourceUri)
@@ -288,32 +285,50 @@ public class DeliveryPreparationService {
         }
     }
 
-    private Discovery discover(OssNodeConfig config, int limit, long deliveryId, long maxPackageBytes) {
+    private Discovery discover(OssNodeConfig config, long deliveryId, int slotCount, long maxPackageBytes, long minPackageBytes) {
         OSS client = clients.create(config);
         List<OSSObjectSummary> selected = new ArrayList<>();
         List<OSSObjectSummary> oversized = new ArrayList<>();
+        List<List<Integer>> assignments = null;
         try {
             String continuation = null;
             do {
+                // OSS 页大小只控制列表请求，不再截断可用于装包的来源集合。
                 ListObjectsV2Result page = client.listObjectsV2(new ListObjectsV2Request(config.bucket())
-                        .withPrefix(config.prefix()).withMaxKeys(Math.max(100, limit)).withContinuationToken(continuation));
+                        .withPrefix(config.prefix()).withMaxKeys(100).withContinuationToken(continuation));
                 for (OSSObjectSummary object : page.getObjectSummaries()) {
                     if (!object.getKey().endsWith(".tar.gz") || object.getSize() <= 0) continue;
                     if (object.getSize() > maxPackageBytes) {
                         oversized.add(object);
                         log.warn("Source filtered before download because it exceeds maxPackageBytes deliveryId={} key={} sizeBytes={} maxPackageBytes={}",
                                 deliveryId, object.getKey(), object.getSize(), maxPackageBytes);
-                    } else if (selected.size() < limit) {
+                    } else {
                         selected.add(object);
                     }
                 }
+                // 每页按 key 固定顺序后尝试满足全部 targetCount 槽位，成功即停止扫描和后续下载。
+                selected.sort(Comparator.comparing(OSSObjectSummary::getKey));
+                assignments = planOrNull(selected.stream().map(OSSObjectSummary::getSize).toList(),
+                        slotCount, maxPackageBytes, minPackageBytes);
                 continuation = page.getNextContinuationToken();
-            } while (selected.size() < limit && continuation != null && !continuation.isBlank());
-            selected.sort(Comparator.comparing(OSSObjectSummary::getKey));
+            } while (assignments == null && continuation != null && !continuation.isBlank());
             oversized.sort(Comparator.comparing(OSSObjectSummary::getKey));
-            return new Discovery(List.copyOf(selected), List.copyOf(oversized));
+            if (assignments == null) {
+                // 列表耗尽时复用规划器的明确下限错误，不把来源不足误报为配置错误。
+                assignments = planSourceIndexes(selected.stream().map(OSSObjectSummary::getSize).toList(),
+                        slotCount, maxPackageBytes, minPackageBytes);
+            }
+            return new Discovery(List.copyOf(selected), List.copyOf(oversized), assignments);
         } finally {
             client.shutdown();
+        }
+    }
+
+    private static List<List<Integer>> planOrNull(List<Long> sizes, int slotCount, long maxPackageBytes, long minPackageBytes) {
+        try {
+            return planSourceIndexes(sizes, slotCount, maxPackageBytes, minPackageBytes);
+        } catch (IllegalArgumentException insufficientSources) {
+            return null;
         }
     }
 
@@ -381,5 +396,6 @@ public class DeliveryPreparationService {
         TargetSlot(long deliveryEntityId, int targetSeq) { this(deliveryEntityId, targetSeq, targetSeq); }
     }
     record PlannedTask(TargetSlot slot, List<SourceData> sources) {}
-    private record Discovery(List<OSSObjectSummary> objects, List<OSSObjectSummary> oversized) {}
+    private record Discovery(List<OSSObjectSummary> objects, List<OSSObjectSummary> oversized,
+                             List<List<Integer>> assignments) {}
 }

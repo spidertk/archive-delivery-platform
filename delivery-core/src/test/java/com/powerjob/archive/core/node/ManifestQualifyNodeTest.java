@@ -42,7 +42,7 @@ class ManifestQualifyNodeTest {
         ArrayNode metadata = mapper.createArrayNode().add(11).add(12);
         DeliveryTask task = task(artifacts, metadata, size);
         PipelineDefinition pipeline = new PipelineDefinition("archive-delivery", 1,
-                Map.of("assignment", Map.of("minPackageBytes", 1, "maxPackageBytes", 100)), Map.of(), Map.of(),
+                Map.of("assignment", Map.of("minPackageBytes", 1, "maxPackageBytes", 100)), Map.of(),
                 List.of(new NodeDefinition("repair", "python.repair", "REPAIR", "Repair", "qualify", Map.of()),
                         new NodeDefinition("qualify", "manifest.qualify", "VERIFY", "Qualify", null, Map.of())));
         ObjectNode repairOutput = mapper.createObjectNode().put("localPath", packagePath.toString())
@@ -72,7 +72,7 @@ class ManifestQualifyNodeTest {
                 .put("newFileName", name).put("sizeBytes", 1).put("sha256", "0".repeat(64)).put("token", 1);
         artifact.putObject("file_mapping");
         return new SourceData(dataId, 8, name, "", mapper.createObjectNode(), null,
-                "PENDING", null, null, 0, null, 1, 1, "0".repeat(64), artifact);
+                "PENDING", null, null, 0, 1, 1, "0".repeat(64), artifact);
     }
 
     private static void addPair(ObjectNode pair, SourceData source) {

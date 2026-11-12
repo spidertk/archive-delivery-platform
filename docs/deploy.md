@@ -12,9 +12,9 @@ PowerJob 只有提交准备、任务推进和截止扫描三个通用触发器�
 
 提交只传 ossUri、pipelineCode、deliveryDate、deliveryBatch 和 vendorCode+entityCode targets。cutoffAt 由不可变 Pipeline 的 businessTimezone/deliveryCutoffTime 推导，同一 vendorCode 下多个 entityCode 按厂商整体分配，repair 接收 entityCode。deliveryBatch 全局唯一并作为请求编号命名空间；相同请求幂等返回，暂停主单以相同请求再提交继续。
 
-PipelineVersion 集中保存 nodeDefinitions、ruleSets、DAG、selection、assignment、retry/concurrency/rollover 和节点 Secret。实体按 vendorCode+entityCode 联合唯一，保存协议、业务账户、workerGroup 及非 Secret 定位。source_data 保存 original_file_name、单原始 artifact、created_at/updated_at 和同机 cachePath；任务 sourceArtifact 必须与其完全一致，有效包名在同一 delivery_id 下全局唯一。
+PipelineVersion 集中保存 nodeDefinitions、DAG、assignment、retry/concurrency/rollover 和节点 Secret，不再维护独立 ruleSets、selection 或 repair.ruleSet。merge/repair/FTP 三个 Python 节点的 scriptPath 只写 `nodes/python` 内规范化相对 .py 路径；本地和生产 Compose 均把该目录只读挂载到 Worker 固定路径 `/app/nodes/python`，新增脚本无需修改挂载配置。实体按 vendorCode+entityCode 联合唯一，保存协议、业务账户、workerGroup 及非 Secret 定位。source_data 保存 original_file_name、单原始 artifact、created_at/updated_at 和同机 cachePath；任务 sourceArtifact 必须与其完全一致，有效包名在同一 delivery_id 下全局唯一，清洗版本统一通过主单 pipeline_version_id 追溯。
 
-## 3. V14–V20 升级
+## 3. V14–V23 升级
 
 V14 在显式授权环境中删除全部旧业务表并重建，不回填、不对账、不保留旧 ID。执行前停止 server/Worker 和外部调用，确认这是已明确放弃旧数据的本地环境，再运行：
 
@@ -26,9 +26,9 @@ ARCHIVE_UPGRADE_AUTHORIZED=2026-11-06 ./scripts/mvp-up.sh
 ARCHIVE_UPGRADE_AUTHORIZED=2026-11-07 ./scripts/mvp-up.sh
 ```
 
-未授权连接会拒绝执行 V13/V14 对应的清库步骤。生产或未授权环境禁止通过设置变量绕过确认。V15 增加 PARTIALLY_DELIVERED；V16 创建 delivery_mapping 和任务产物对；V17 形成复合业务键提交、entityCode repair、source_data 单 artifact、original_file_name、来源时间戳、任务 entity_code 和 delivery 内有效包名唯一约束；V18/V19 调整任务产物结构；V20 删除 deliveryArtifact，artifacts 只保留 dataId/sourceArtifact，metadata_ids 改为同顺序 data_id 数组。
+未授权连接会拒绝执行 V13/V14 对应的清库步骤。生产或未授权环境禁止通过设置变量绕过确认。V15 增加 PARTIALLY_DELIVERED；V16 创建 delivery_mapping 和任务产物对；V17 形成复合业务键提交、entityCode repair、source_data 单 artifact、original_file_name、来源时间戳、任务 entity_code 和 delivery 内有效包名唯一约束；V18/V19 调整任务产物结构；V20 删除 deliveryArtifact，artifacts 只保留 dataId/sourceArtifact，metadata_ids 改为同顺序 data_id 数组；V21 删除 selection/ruleSets 和重复 rule_version；V22 将三个 Python 节点的 scriptPath 纳入 PipelineVersion；V23 将 scriptPath 统一为固定挂载目录内相对路径。
 
-升级后检查：Flyway 到 V20；delivery_task_source 和旧配置表不存在；source_data 不含 original_request_id/new_request_id/artifacts；delivery_task 不含 data_id/target_seq/artifact_seq/original_file_name/sha256/superseded_by_task_id/invalidated_at/invalidation_reason/artifact；全表全列注释覆盖 100%。新增模型表必须默认同时包含 created_at/updated_at。
+升级后检查：Flyway 到 V23；delivery_task_source 和旧配置表不存在；Pipeline definition 不含 ruleSets/selection/ruleSet，三个 Python 节点均含目录内相对 scriptPath；source_data 不含 original_request_id/new_request_id/artifacts/rule_version；delivery_task 不含 data_id/target_seq/artifact_seq/original_file_name/sha256/superseded_by_task_id/invalidated_at/invalidation_reason/artifact；全表全列注释覆盖 100%。新增模型表必须默认同时包含 created_at/updated_at。
 
 ## 4. 本地运行事实重置
 
@@ -54,14 +54,14 @@ ARCHIVE_CONFIRM_LOCAL_TEST_RESET=archive_delivery \
 
 ## 6. 生产 Pipeline 初始化与合并交付
 
-1. 复制 `deploy/pipeline.production.example.json` 为未跟踪的 `deploy/pipeline.production.json`，填写源 OSS bucket/prefix、目标 OSS 和 endpoint。模板默认 selection.limit=10、minPackageBytes=8388608、maxPackageBytes=10485760；targetCount 指任务数，不是来源包数。
-2. 在受控 `deploy/.env` 配置 SOURCE_OSS/TARGET_OSS AK/SK，以及 PROD_FTP_ENTITY_1..3_ACCOUNT/PASSWORD。实体 vendorCode 为 june、june-1、june-2，entityCode 为 PROD-JUNE、PROD-JUNE-1、PROD-JUNE-2；repair 接收 entityCode 并写入协议 metadata.providerCode。
-3. 执行 `./scripts/configure-production-pipeline.sh`。脚本发布不可变版本，初始化来源和三个按 vendorCode+entityCode 联合唯一的实体，不打印 definition 或 Secret，不调用 ossutil/SSH。
-4. 生产 OSS 相对目录仍按厂商 `{providerCode}/{deliveryDate}-{deliveryBatch}-{providerCode}`；FTP 相对目录为 `{deliveryDate}`。
+1. 复制 `deploy/pipeline.production.example.json` 为未跟踪的 `deploy/pipeline.production.json`，核对源 OSS bucket/prefix、目标 OSS 和 endpoint。模板默认 minPackageBytes=8388608、maxPackageBytes=10485760，不设置 selection.limit；targetCount 指任务槽位数，不是来源包数。
+2. 复制 `deploy/env.production.example` 为权限 600 的 `deploy/.env`，配置 SOURCE_OSS/TARGET_OSS AK/SK、独立数据库/PowerJob/FTP Secret 和 `PROD_ENTITY_<N>_*`。当前生产为 alibaba/jun、accountName=june、workerGroup=group1；repair 接收 entityCode 并写入协议 metadata.providerCode。
+3. 单机交付机执行 `./scripts/production-pipeline.sh`，自动完成生产 Compose、迁移、通用调度、不可变 Pipeline、来源/实体、预检、提交和证据。空库两阶段迁移，已有 pre-V14 生产库阻断，不运行 reset；只需发布配置时执行 `./scripts/configure-production-pipeline.sh`。
+4. 生产 OSS 相对目录按 `{accountName}/{deliveryDate}-{deliveryBatch}-{accountName}` 分隔 june/june-2 等业务账户；FTP 相对目录为 `{deliveryDate}/{deliveryBatch}`，包名在 delivery_id 内全局连续。
 5. 执行顺序为下载入选来源并保留 → merge 对各源只解包一次并输出请求目录 → repair 在 staging 副本修复并只最终封包一次 → qualify → OSS SDK PUT/HEAD/GET 回验 → FTP 上传下载核验。不得恢复 merge 中间压缩包。
 6. 源包按 URI+版本缓存到 work/source-cache；跨交付、跨厂商分配命中后只做本地校验复制并记录 cacheHit=true，不重复 OSS GET。其他执行组没有该本机缓存时才回退 OSS。
 7. 单包超过 maxPackageBytes 时下载前过滤并继续扫描；同 vendorCode 目标整体按来源顺序累计，当前包无法容纳下一完整源包时封包，最后目标满足后忽略后续来源，禁止切分原始文件。来源合计或最终包低于 minPackageBytes 时必须失败。
-8. 排查时按 deliveryId/taskId/processId 检索 Worker 日志。merge 日志含 workspace/requestCount，repair/OSS/FTP 日志含最终 size/SHA；不得记录 Secret。
+8. 排查时按 deliveryId/taskId/processId 检索 Worker 日志。merge 日志含 workspace/requestCount，repair/OSS/FTP 日志含最终 size/SHA；不得记录 Secret。日常操作见 `production-operations.md`。
 
 生产提交示例：
 
@@ -69,10 +69,10 @@ ARCHIVE_CONFIRM_LOCAL_TEST_RESET=archive_delivery \
 {
   "ossUri": "oss://source-bucket/archive/input/",
   "pipelineCode": "archive-delivery",
-  "deliveryDate": "2026-11-09",
-  "deliveryBatch": "BATCH-20261109-001",
-  "targets": [{"targetCount": 1, "vendorCode": "june", "entityCode": "PROD-JUNE"}]
+  "deliveryDate": "2026-11-12",
+  "deliveryBatch": "BATCH-20261112-001",
+  "targets": [{"targetCount": 1, "vendorCode": "alibaba", "entityCode": "jun"}]
 }
 ```
 
-如果需要两个 PROD-JUNE 任务，则 targetCount=2；包名批次序号在整个 delivery_id 内连续。暂停调用 `/api/v1/deliveries/{deliveryId}/pause`，恢复时原样再次 POST 上述请求。
+如果需要两个 jun 任务，则 targetCount=2；包名批次序号在整个 delivery_id 内连续。暂停调用 `/api/v1/deliveries/{deliveryId}/pause`，恢复时原样再次 POST 上述请求。

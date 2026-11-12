@@ -10,20 +10,31 @@ class PipelineRepositoryTest {
 
     @Test void explicitNextDefinesTheOnlyExecutionOrder() throws Exception {
         var definition = repository.read(mapper.readTree("{\"pipelineCode\":\"archive-delivery\",\"version\":1," +
-                "\"nodeDefinitions\":{},\"ruleSets\":{},\"config\":{\"selection\":{\"limit\":3}},\"nodes\":[" +
+                "\"nodeDefinitions\":{},\"config\":{},\"nodes\":[" +
                 "{\"id\":\"b\",\"type\":\"manifest.qualify\",\"next\":null,\"config\":{}}," +
                 "{\"id\":\"a\",\"type\":\"python.repair\",\"next\":\"b\",\"config\":{}}]}"));
         assertEquals("a", definition.firstNode());
         assertEquals("b", definition.successor("a"));
         assertNull(definition.successor("b"));
-        assertEquals(3, definition.selectionLimit());
     }
 
     @Test void jumpHostNodesAreRejectedAtPublicationBoundary() throws Exception {
         var definition = repository.read(mapper.readTree("{\"pipelineCode\":\"archive-delivery\",\"version\":1," +
-                "\"nodeDefinitions\":{\"ssh.publish\":{\"enabled\":true}},\"ruleSets\":{}," +
-                "\"config\":{\"selection\":{\"limit\":1},\"assignment\":{\"strategySource\":\"SUBMIT_TARGETS\"}}," +
+                "\"nodeDefinitions\":{\"ssh.publish\":{\"enabled\":true}}," +
+                "\"config\":{\"assignment\":{\"strategySource\":\"SUBMIT_TARGETS\"}}," +
                 "\"nodes\":[{\"id\":\"bad\",\"type\":\"ssh.publish\",\"next\":null,\"config\":{}}]}"));
         assertThrows(IllegalArgumentException.class, definition::validateProduction);
+    }
+
+    @Test void redundantRuleAndSelectionConfigurationIsRejected() throws Exception {
+        String prefix = "{\"pipelineCode\":\"archive-delivery\",\"version\":1,\"nodeDefinitions\":{},";
+        String suffix = "\"nodes\":[]}";
+        assertThrows(IllegalArgumentException.class, () -> repository.read(mapper.readTree(prefix +
+                "\"ruleSets\":{},\"config\":{}," + suffix)));
+        assertThrows(IllegalArgumentException.class, () -> repository.read(mapper.readTree(prefix +
+                "\"config\":{\"selection\":{\"limit\":3}}," + suffix)));
+        assertThrows(IllegalArgumentException.class, () -> repository.read(mapper.readTree(prefix +
+                "\"config\":{},\"nodes\":[{\"id\":\"repair\",\"type\":\"python.repair\"," +
+                "\"config\":{\"ruleSet\":\"production-archive-v2\"}}]}")));
     }
 }

@@ -77,7 +77,13 @@ class ArchiveModelIntegrationTest {
         assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='archive_delivery' " +
                 "AND table_name='delivery_task' AND column_name='entity_code'", Integer.class));
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='archive_delivery' " +
-                "AND table_name='source_data' AND column_name IN('original_request_id','new_request_id','artifacts')", Integer.class));
+                "AND table_name='source_data' AND column_name IN('original_request_id','new_request_id','artifacts','rule_version')", Integer.class));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM pipeline_version WHERE definition ? 'ruleSets' " +
+                "OR definition->'config' ? 'selection'", Integer.class));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM jsonb_array_elements(" +
+                "(SELECT definition->'nodes' FROM pipeline_version WHERE pipeline_version_id=1)) node " +
+                "WHERE node.value->>'type' IN('package.merge','python.repair','ftp.download-verify') " +
+                "AND (node.value->'config'->>'scriptPath' IS NULL OR node.value->'config'->>'scriptPath' LIKE '/%')", Integer.class));
         assertEquals(4, jdbc.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='archive_delivery' " +
                 "AND table_name='source_data' AND column_name IN('original_file_name','artifact','created_at','updated_at')", Integer.class));
         assertEquals(2, jdbc.queryForObject("SELECT count(*) FROM information_schema.columns WHERE table_schema='archive_delivery' " +

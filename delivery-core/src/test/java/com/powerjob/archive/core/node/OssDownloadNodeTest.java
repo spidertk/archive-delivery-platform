@@ -53,7 +53,7 @@ class OssDownloadNodeTest {
         var locator = mapper.createObjectNode().put("sourceUri", "oss://bucket/prefix/source.tar.gz")
                 .put("sourceVersion", "v1").put("cachePath", cached.toString());
         SourceData source = new SourceData(11, 8, "source.tar.gz", "", locator, null,
-                "PENDING", null, null, 0, null, size, size, sha, null);
+                "PENDING", null, null, 0, size, size, sha, null);
         DeliveryTask task = new DeliveryTask(7, 8, 10, "jun", "group1",
                 LocalDate.parse("2026-11-09"), OffsetDateTime.parse("2026-11-09T18:00:00+08:00"),
                 "batch_00001.tar.gz", size, size, null, null, "sourceDownload", "READY",
@@ -61,7 +61,7 @@ class OssDownloadNodeTest {
         DeliveryEntity entity = new DeliveryEntity(10, "alibaba", "jun", "Local", "FTP", "entity1", "group1", null, true);
         NodeDefinition definition = new NodeDefinition("sourceDownload", "oss.download", "ACQUIRE", "Download", "mergePackages", Map.of());
         NodeDefinition next = new NodeDefinition("mergePackages", "package.merge", "MERGE", "Merge", null, Map.of());
-        PipelineDefinition pipeline = new PipelineDefinition("archive-delivery", 1, Map.of(), Map.of(), Map.of(), List.of(definition, next));
+        PipelineDefinition pipeline = new PipelineDefinition("archive-delivery", 1, Map.of(), Map.of(), List.of(definition, next));
         NodeContext context = new NodeContext(task, source, List.of(source), entity, definition, pipeline, 100, 1, "worker", Map.of());
 
         NodeResult result = handler.execute(context);

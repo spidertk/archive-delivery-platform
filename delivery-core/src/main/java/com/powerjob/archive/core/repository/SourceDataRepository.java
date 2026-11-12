@@ -25,8 +25,8 @@ public class SourceDataRepository {
                 rs.getString("request_namespace"),
                 JdbcJson.read(mapper, rs.getString("original_locator")), JdbcJson.read(mapper, rs.getString("output_locator")),
                 rs.getString("qualification"), rs.getString("filter_rule_code"), rs.getString("filter_reason"),
-                rs.getLong("affected_count"), rs.getString("rule_version"), rs.getLong("size_bytes"),
-                rs.getLong("token_count"), rs.getString("sha256"), JdbcJson.read(mapper, rs.getString("artifact")));
+                rs.getLong("affected_count"), rs.getLong("size_bytes"), rs.getLong("token_count"),
+                rs.getString("sha256"), JdbcJson.read(mapper, rs.getString("artifact")));
     }
 
     /** 首次发现保存真实下载 SHA 和单个原始产物；准备重试复用同一来源事实，不重复分配。 */
@@ -66,9 +66,9 @@ public class SourceDataRepository {
     }
 
     /** 修复只更新质量与批次编号命名空间，来源原始 size/SHA/artifact 永不被合并产物覆盖。 */
-    public void markSourcesQualified(long taskId, String ruleVersion, String requestNamespace) {
-        jdbc.update("UPDATE source_data SET qualification='QUALIFIED',rule_version=?,request_namespace=? WHERE data_id IN " +
-                "(SELECT data_id FROM delivery_mapping WHERE task_id=?)", ruleVersion, requestNamespace, taskId);
+    public void markSourcesQualified(long taskId, String requestNamespace) {
+        jdbc.update("UPDATE source_data SET qualification='QUALIFIED',request_namespace=? WHERE data_id IN " +
+                "(SELECT data_id FROM delivery_mapping WHERE task_id=?)", requestNamespace, taskId);
     }
 
     private static String fileName(String key) {

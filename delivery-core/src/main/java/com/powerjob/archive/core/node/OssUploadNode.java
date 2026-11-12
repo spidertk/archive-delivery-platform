@@ -59,7 +59,8 @@ public class OssUploadNode implements NodeHandler {
         // 提交批次同时用于路径隔离和幂等定位。
         String deliveryBatch = deliveries.find(context.task().deliveryId()).orElseThrow().deliveryBatch();
         // 对象键由厂商、实体和任务级唯一包名模板生成。
-        String key = paths.objectKey(config.prefix(), context.task(), context.entity().vendorCode(), deliveryBatch);
+        String key = paths.objectKey(config.prefix(), context.task(), context.entity().vendorCode(),
+                context.entity().accountName(), deliveryBatch);
         // GET 回验文件写入任务自己的受控目录，不覆盖 repair 包。
         Path verified = NodeSupport.ossVerifiedPath(context, properties.getWorkRoot());
         // 开始日志记录业务血缘和外部位置，不记录 AK/SK。

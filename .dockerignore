@@ -6,5 +6,9 @@ web/node_modules
 web/dist
 deploy/.env
 deploy/*.local.json
+deploy/pipeline.production.json
+deploy/backups
+docs/evidence
+docs/服务器信息
 docs/*.tar.gz
 **/__pycache__

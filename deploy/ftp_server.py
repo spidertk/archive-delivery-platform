@@ -9,12 +9,12 @@ from pyftpdlib.servers import FTPServer
 
 
 def main():
-    """本地验证只开放单账户 FTP；允许目录/上传/下载，禁止删除、重命名和匿名访问。"""
+    """本地和生产验证只开放白名单单账户 FTP；允许上传下载，禁止删除、重命名和匿名访问。"""
     account = os.environ["FTP_USER_NAME"]
     password = os.environ["FTP_USER_PASS"]
     home = os.environ["FTP_USER_HOME"]
-    if not re.fullmatch(r"entity[123]", account):
-        raise SystemExit("Only entity1/entity2/entity3 test accounts are allowed")
+    if not re.fullmatch(r"entity[123]|june|june-1|june-2", account):
+        raise SystemExit("Only approved local or production verification accounts are allowed")
     Path(home).mkdir(parents=True, exist_ok=True)
     authorizer = DummyAuthorizer()
     authorizer.add_user(account, password, home, perm="elrmw")

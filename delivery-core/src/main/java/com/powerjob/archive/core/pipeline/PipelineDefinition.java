@@ -5,10 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Pipeline 快照统一承载节点定义、规则和 DAG；执行内核不读取独立节点或规则配置表。 */
+/** Pipeline 快照统一承载节点定义、执行配置和 DAG；执行内核不读取独立节点或规则配置表。 */
 public record PipelineDefinition(String pipelineCode, int version, Map<String, Object> config,
-                                 Map<String, Object> nodeDefinitions, Map<String, Object> ruleSets,
-                                 List<NodeDefinition> nodes) {
+                                 Map<String, Object> nodeDefinitions, List<NodeDefinition> nodes) {
     public NodeDefinition node(String id) {
         return nodes.stream().filter(node -> node.id().equals(id)).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown Pipeline node: " + id));
@@ -35,7 +34,7 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
         return value == null ? firstNode() : node(value.toString()).id();
     }
 
-    /** 发布时同时校验 DAG、集中节点元数据、规则引用与外部连接安全边界。 */
+    /** 发布时同时校验 DAG、集中节点元数据、脚本路径与外部连接安全边界。 */
     public void validateProduction() {
         if (nodes.isEmpty() || nodes.stream().map(NodeDefinition::id).distinct().count() != nodes.size()) {
             throw new IllegalArgumentException("Pipeline nodes must be non-empty and have unique ids");
@@ -47,12 +46,6 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
             }
             if (node.type().startsWith("ssh.") || node.type().contains("crr") || node.type().equals("delivery.group")) {
                 throw new IllegalArgumentException("Unsupported legacy Pipeline node: " + node.type());
-            }
-            if (node.type().equals("python.repair")) {
-                Object ruleSet = node.config().get("ruleSet");
-                if (ruleSet == null || !ruleSets.containsKey(ruleSet.toString())) {
-                    throw new IllegalArgumentException("Repair ruleSet must be defined in this PipelineVersion");
-                }
             }
             if (node.type().equals("package.merge")) maxPackageBytes();
         }
@@ -73,15 +66,9 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
             if (node.type().equals("oss.download")) configs.oss(node, true);
             if (node.type().equals("oss.upload")) configs.oss(node, false);
             if (node.type().equals("ftp.download-verify")) configs.ftp(node);
+            if (node.type().equals("package.merge") || node.type().equals("python.repair")
+                    || node.type().equals("ftp.download-verify")) configs.script(node);
         }
-    }
-
-    public int selectionLimit() {
-        Object selection = config.get("selection");
-        if (!(selection instanceof Map<?, ?> map) || !(map.get("limit") instanceof Number limit) || limit.intValue() <= 0) {
-            throw new IllegalArgumentException("Pipeline config.selection.limit must be positive");
-        }
-        return limit.intValue();
     }
 
     public long maxPackageBytes() {

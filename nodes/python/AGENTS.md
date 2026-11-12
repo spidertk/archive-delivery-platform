@@ -19,6 +19,7 @@ archive_repair.py:
   --entity-code       当前任务 entity_code，写入协议 metadata.providerCode
   --start-number      Java/PG 已分配号段，源 requestId 缺失或为旧格式时使用
   --max-bytes         最终修复包上限
+  --gzip-level        最终 gzip 压缩级别 1–9，默认 9；由不可变 Pipeline 固定
   --output-name       当前任务在 delivery 内唯一的 batch_NNNNN.tar.gz
   --original-name     首来源原始安全文件名
   --merge-manifest    merge 成员键、originalPath 和来源血缘清单
@@ -27,6 +28,8 @@ archive_repair.py:
 ```
 
 业务账户不是 FTP 密码，Secret 不得通过 CLI、标准输出或结果文件传递。
+
+Worker 镜像将本目录复制到 `/app/nodes/python/`，本地和生产 Compose 均把本目录整目录只读挂载到同一路径。package.merge、python.repair、ftp.download-verify 的 Pipeline `config.scriptPath` 只写 archive_merge.py、archive_repair.py、ftp_download_verify.py 等目录内相对路径，不支持容器或宿主机绝对路径。发布时检查脚本存在并拒绝目录穿越和非 .py 文件，Worker 执行前再次核对并以固定 argv 启动，不接受 Shell。新增脚本放入本目录即可被所有同机 Worker 使用，无需修改挂载或重启；生产建议使用版本化文件名并发布新 PipelineVersion，避免覆盖同名文件影响旧任务重试。
 
 ## 业务约束
 

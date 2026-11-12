@@ -10,12 +10,14 @@
 |---|---|---|
 | `mvn.sh` / `mvp-test.sh` | 容器化 Maven 和标准回归 | fake/skipped 不代表真实通过 |
 | `mvp-up.sh` | 启动数据库、server、Worker 和 FTP | V14 清库需显式授权 |
-| `bootstrap-powerjob.sh` | 创建通用准备、推进和截止 Job | 调度重试为 0 |
+| `bootstrap-powerjob.sh` | 创建通用准备、推进和截止 Job | 调度重试为 0；生产首次登录后立即轮换初始管理员密码 |
 | `configure-pipeline.sh` | 发布集中 Pipeline 并创建复合唯一实体 | 本地 alibaba/jun、alibaba/jun2、local-other/jun3，不打印 Secret |
 | `preflight.sh` | 检查源/目标 OSS、FTP 和数据库 | 失败非零退出 |
 | `submit-delivery.sh` | `ossUri pipelineCode deliveryDate deliveryBatch` 三实体提交 | 传 vendorCode+entityCode，不传 ID、cutoffAt 或 idempotencyKey |
 | `resume-delivery.sh` | 按 deliveryId/fromNode/taskIds/reason 续跑 | 前置不足 409 |
-| `real-e2e-test.sh` | 两阶段 V13/V14–V20 迁移、alibaba/jun+jun2、local-other/jun3 缓存复用 | 每包 8–10 MiB，覆盖暂停再提交、retry、rollover、cacheHit |
+| `real-e2e-test.sh` / `local-pipeline.sh` | 两阶段 V13/V14–V23 迁移、alibaba/jun+jun2、local-other/jun3 缓存复用 | 每包 8–10 MiB，覆盖暂停再提交、retry、rollover、cacheHit；只允许本地 |
+| `production-pipeline.sh` | 生产 Compose、迁移、配置、预检、单实体提交和脱敏证据 | 空库两阶段迁移；旧 pre-V14 库阻断；预检通过才提交；禁止生产 reset |
+| `provision-production-config.py` | 首次生成独立本地服务/FTP 随机密码 | 只替换 replace-*，不覆盖已有值，不输出 Secret；OSS 凭据由管理员配置 |
 | `verify-delivery.sh` | 核验 PG、OSS、FTP、mapping、source artifact、data_id metadataIds 和节点 | 实际 GET 和 SHA；metadataIds=sourceDataIds |
 | `reset-test-data.sh` | 双确认清理本地运行事实 | 保留配置和外部历史文件 |
 

@@ -8,31 +8,32 @@ import java.util.Map;
 
 @Service
 public class RemotePathService {
-    /** 模板路径用于生产 provider/date-batch-provider 目录；普通前缀保留本地验收的隔离层级。 */
-    public String objectKey(String configuredPrefix, DeliveryTask task, String vendorCode, String deliveryBatch) {
+    /** 模板支持厂商、实体业务账户和批次路径；普通前缀保留本地验收的隔离层级。 */
+    public String objectKey(String configuredPrefix, DeliveryTask task, String vendorCode, String accountName, String deliveryBatch) {
         validatePackageName(task.newFileName());
         String prefix = configuredPrefix == null ? "" : configuredPrefix.replaceAll("^/+|/+$", "");
         boolean templated = prefix.contains("{");
         validateSegment(deliveryBatch, "deliveryBatch");
-        String directory = templated ? expand(prefix, task, vendorCode, deliveryBatch)
+        String directory = templated ? expand(prefix, task, vendorCode, accountName, deliveryBatch)
                 : (prefix.isBlank() ? "" : prefix + "/") + deliveryBatch + "/" + task.deliveryId()
                 + "/entity-" + task.deliveryEntityId() + "/" + task.deliveryDate();
         validateRelative(directory);
         return directory.isBlank() ? task.newFileName() : directory + "/" + task.newFileName();
     }
 
-    public String ftpRelativePath(String template, DeliveryTask task, String vendorCode, String deliveryBatch) {
+    public String ftpRelativePath(String template, DeliveryTask task, String vendorCode, String accountName, String deliveryBatch) {
         validatePackageName(task.newFileName());
-        String directory = expand(template, task, vendorCode, deliveryBatch);
+        String directory = expand(template, task, vendorCode, accountName, deliveryBatch);
         validateRelative(directory);
         return directory + "/" + task.newFileName();
     }
 
-    private String expand(String template, DeliveryTask task, String vendorCode, String deliveryBatch) {
+    private String expand(String template, DeliveryTask task, String vendorCode, String accountName, String deliveryBatch) {
         if (template == null || template.isBlank()) throw new IllegalArgumentException("Remote path template is required");
         Map<String, String> values = Map.of("deliveryId", Long.toString(task.deliveryId()),
                 "deliveryEntityId", Long.toString(task.deliveryEntityId()), "deliveryDate", task.deliveryDate().toString(),
-                "providerCode", vendorCode, "deliveryBatch", deliveryBatch);
+                "providerCode", vendorCode, "accountName", accountName, "entityCode", task.entityCode(),
+                "deliveryBatch", deliveryBatch);
         String result = template;
         for (Map.Entry<String, String> value : values.entrySet()) {
             validateSegment(value.getValue(), value.getKey());

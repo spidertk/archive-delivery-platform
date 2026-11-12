@@ -99,13 +99,13 @@ class DeliveryPreparationServiceTest {
 
     private static List<SourceData> sources(int count, long sizeBytes) {
         return LongStream.rangeClosed(1, count).mapToObj(id -> new SourceData(id, 1, "source-" + id + ".tar.gz", "",
-                null, null, "PENDING", null, null, 0, null, sizeBytes, sizeBytes,
+                null, null, "PENDING", null, null, 0, sizeBytes, sizeBytes,
                 String.format("%064x", id), null)).toList();
     }
 
     private static List<SourceData> sources(long... sizes) {
         return java.util.stream.IntStream.range(0, sizes.length).mapToObj(index -> new SourceData(index + 1, 1,
-                "source-" + (index + 1) + ".tar.gz", "", null, null, "PENDING", null, null, 0, null,
+                "source-" + (index + 1) + ".tar.gz", "", null, null, "PENDING", null, null, 0,
                 sizes[index], sizes[index], String.format("%064x", index + 1), null)).toList();
     }
 }

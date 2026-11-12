@@ -19,14 +19,16 @@ if [[ ! -s "$CONFIG_FILE" ]]; then
   exit 1
 fi
 # 节点、合并上限、路径模板和凭据集中在同一版本；只从受控变量补齐掩码，日志不输出定义或 Secret。
-python3 - "$CONFIG_FILE" "$PROFILE" <<'PY'
-import json, os, sys
-path, profile = sys.argv[1:]
+python3 - "$CONFIG_FILE" "$PROFILE" "$ROOT" <<'PY'
+import json, os, pathlib, sys
+path, profile, root = sys.argv[1:]
 with open(path, encoding="utf-8") as stream:
     definition = json.load(stream)
 for node in definition["nodes"]:
+    if profile == "production" and node["type"] == "python.repair":
+        node["config"].setdefault("gzipCompressLevel", 5)
     if node["type"] == "oss.download":
-        prefix = "SOURCE_OSS"
+        prefix = "OSS_SOURCE"
     elif node["type"] == "oss.upload":
         prefix = "TARGET_OSS"
     else:
@@ -34,35 +36,55 @@ for node in definition["nodes"]:
     config = node["config"]
     for field, suffix in (("accessKeyId", "ACCESS_KEY_ID"), ("accessKeySecret", "ACCESS_KEY_SECRET")):
         name = f"{prefix}_{suffix}"
-        if config.get(field) in (None, "", "********", "replace-access-key", "replace-secret") and os.environ.get(name):
+        value = config.get(field)
+        if (profile == "production" or value is None or value == "" or "********" in value or value.startswith("replace-")) and os.environ.get(name):
             config[field] = os.environ[name]
 ftp = next(node for node in definition["nodes"] if node["type"] == "ftp.download-verify")
-for index in range(1, 4):
+entity_count = int(os.environ.get("PROD_ENTITY_COUNT", "1")) if profile == "production" else 3
+for index in range(1, entity_count + 1):
     if profile == "production":
-        account = os.environ.get(f"PROD_FTP_ENTITY_{index}_ACCOUNT", ("june", "june-1", "june-2")[index - 1])
+        account = os.environ.get(f"PROD_ENTITY_{index}_ACCOUNT", "")
         value = os.environ.get(f"PROD_FTP_ENTITY_{index}_PASSWORD", "")
+        ftp["config"].setdefault("ftpCredential", {})[account] = value
     else:
         account = f"entity{index}"
         value = os.environ.get(f"LOCAL_FTP_ENTITY_{index}_PASSWORD", f"local_entity{index}_verify")
-    if ftp["config"].setdefault("ftpCredential", {}).get(account) in (None, "", "********", "replace-ftp-password"):
+    if not account:
+        raise SystemExit(f"Production entity {index} account is required")
+    if profile != "production" and ftp["config"].setdefault("ftpCredential", {}).get(account) in (None, "", "********", "replace-ftp-password"):
         ftp["config"]["ftpCredential"][account] = value
+if profile == "production":
+    accounts = [os.environ[f"PROD_ENTITY_{index}_ACCOUNT"] for index in range(1, entity_count + 1)]
+    ftp["config"]["ftpCredential"] = {account: ftp["config"]["ftpCredential"][account] for account in accounts}
 with open(path, "w", encoding="utf-8") as stream:
     json.dump(definition, stream, ensure_ascii=False, indent=2)
     stream.write("\n")
 assert definition.get("pipelineCode") == "archive-delivery"
-assert definition["config"]["selection"]["limit"] > 0
+assert "ruleSets" not in definition and "selection" not in definition["config"]
 assert definition["config"]["assignment"]["strategySource"] == "SUBMIT_TARGETS"
 assert [node["type"] for node in definition["nodes"]] == ["oss.download", "package.merge", "python.repair", "manifest.qualify", "oss.upload", "ftp.download-verify"]
+assert all("ruleSet" not in node["config"] for node in definition["nodes"])
+python_nodes = {"package.merge", "python.repair", "ftp.download-verify"}
+script_root = pathlib.Path(root, "nodes", "python").resolve()
+for node in definition["nodes"]:
+    if node["type"] not in python_nodes:
+        continue
+    value = node["config"].get("scriptPath", "")
+    relative = pathlib.PurePosixPath(value)
+    if not value or relative.is_absolute() or relative.as_posix() != value or ".." in relative.parts or relative.suffix != ".py":
+        raise SystemExit(f"{node['type']} scriptPath must be a normalized relative .py path")
+    script_file = script_root.joinpath(*relative.parts).resolve()
+    if not script_file.is_relative_to(script_root) or not script_file.is_file():
+        raise SystemExit(f"{node['type']} script does not exist below nodes/python: {value}")
 max_package_bytes = definition["config"]["assignment"].get("maxPackageBytes")
 assert isinstance(max_package_bytes, int) and max_package_bytes > 0
 assert set(definition["nodeDefinitions"]) == {node["type"] for node in definition["nodes"]}
-assert definition["ruleSets"]
 serialized = json.dumps(definition)
 if "replace-" in serialized or "********" in serialized:
     raise SystemExit("Pipeline config contains placeholder/masked values; provide the controlled OSS/FTP credentials")
 if "ssh." in serialized or "jumpHost" in serialized or "ossutil" in serialized:
     raise SystemExit("SSH jump-host and ossutil configuration are forbidden")
-print(f"Validated {profile} Pipeline: selectionLimit={definition['config']['selection']['limit']} maxPackageBytes={max_package_bytes} nodes={len(definition['nodes'])}")
+print(f"Validated {profile} Pipeline: target-driven selection maxPackageBytes={max_package_bytes} nodes={len(definition['nodes'])}")
 PY
 TEMP="$(mktemp -d)"
 trap 'rm -f "$TEMP"/*.json; rmdir "$TEMP"' EXIT
@@ -112,15 +134,24 @@ if [[ -z "$SOURCE_ID" ]]; then
   SOURCE_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["sourceId"])' < "$TEMP/source-created.json")"
 fi
 curl -fsS --connect-timeout 5 --max-time 15 "$API/delivery-entities" -o "$TEMP/entities.json"
-for ENTITY in 1 2 3; do
+ENTITY_COUNT=3
+if [[ "$PROFILE" == "production" ]]; then ENTITY_COUNT="${PROD_ENTITY_COUNT:-1}"; fi
+for ((ENTITY=1; ENTITY<=ENTITY_COUNT; ENTITY++)); do
   python3 - "$PROFILE" "$ENTITY" "$TEMP/entity-$ENTITY.json" <<'PY'
 import json, os, sys
 profile, entity, output = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 if profile == "production":
-    vendor = ("june", "june-1", "june-2")[entity - 1]
-    host = ("8.219.218.145", "47.84.235.96", "8.222.228.188")[entity - 1]
-    account = os.environ.get(f"PROD_FTP_ENTITY_{entity}_ACCOUNT", vendor)
-    payload = {"vendorCode": vendor, "entityCode": f"PROD-{vendor.upper()}", "entityName": f"生产交付实体 {vendor}",
+    def required(name):
+        value = os.environ.get(name, "")
+        if not value:
+            raise SystemExit(f"{name} is required")
+        return value
+    vendor = required(f"PROD_ENTITY_{entity}_VENDOR_CODE")
+    entity_code = required(f"PROD_ENTITY_{entity}_ENTITY_CODE")
+    account = required(f"PROD_ENTITY_{entity}_ACCOUNT")
+    host = required(f"PROD_ENTITY_{entity}_HOST")
+    payload = {"vendorCode": vendor, "entityCode": entity_code,
+               "entityName": os.environ.get(f"PROD_ENTITY_{entity}_NAME", f"生产交付实体 {entity_code}"),
                "protocol": "FTP", "accountName": account, "workerGroup": os.environ.get(f"ENTITY_{entity}_WORKER_GROUP", "group1"),
                "endpointLocator": {"schemaVersion": 1, "host": host, "port": int(os.environ.get(f"PROD_FTP_ENTITY_{entity}_PORT", "21")),
                                    "rootPath": os.environ.get(f"PROD_FTP_ENTITY_{entity}_ROOT_PATH", "/")}}
@@ -134,7 +165,13 @@ PY
 import json, sys
 rows = json.load(open(sys.argv[1]))
 expected = json.load(open(sys.argv[2]))
-raise SystemExit(0 if any(row["vendorCode"] == expected["vendorCode"] and row["entityCode"] == expected["entityCode"] for row in rows) else 1)
+matched = [row for row in rows if row["vendorCode"] == expected["vendorCode"] and row["entityCode"] == expected["entityCode"]]
+if matched:
+    actual = matched[0]
+    for field in ("accountName", "workerGroup", "endpointLocator"):
+        if actual[field] != expected[field]:
+            raise SystemExit(f"Existing entity {expected['vendorCode']}/{expected['entityCode']} has different {field}; refusing implicit reconfiguration")
+raise SystemExit(0 if matched else 1)
 PY
   then
     curl -fsS --connect-timeout 5 --max-time 15 -H 'Content-Type: application/json' \
@@ -147,4 +184,4 @@ endpoint = row["endpointLocator"]
 print(f"Entity ready vendorCode={row['vendorCode']} entityCode={row['entityCode']} account={row['accountName']} workerGroup={row['workerGroup']} host={endpoint['host']} rootPath={endpoint['rootPath']}")
 PY
 done
-printf 'Pipeline initialization completed profile=%s versionId=%s sourceId=%s entities=3.\n' "$PROFILE" "$VERSION_ID" "$SOURCE_ID"
+printf 'Pipeline initialization completed profile=%s versionId=%s sourceId=%s entities=%s.\n' "$PROFILE" "$VERSION_ID" "$SOURCE_ID" "$ENTITY_COUNT"

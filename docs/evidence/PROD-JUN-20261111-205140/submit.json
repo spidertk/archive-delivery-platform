@@ -1,0 +1,13 @@
+{
+  "ossUri": "oss://sg-oss-external-channel-source/jayden-incoming/maasData/archive/YY：@feiji777888/2026-11-09/",
+  "pipelineCode": "archive-delivery",
+  "deliveryDate": "2026-11-12",
+  "deliveryBatch": "PROD-JUN-20261111-205140",
+  "targets": [
+    {
+      "targetCount": 1,
+      "vendorCode": "alibaba",
+      "entityCode": "jun"
+    }
+  ]
+}

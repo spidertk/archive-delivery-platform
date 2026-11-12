@@ -14,7 +14,7 @@ cp deploy/pipeline.example.json deploy/pipeline.local.json
 chmod 600 deploy/.env deploy/pipeline.local.json
 ```
 
-编辑 deploy/.env 的数据库、PowerJob 和 LOCAL_FTP_ENTITY_1/2/3_PASSWORD。编辑 pipeline.local.json 的 sourceDownload/targetUpload OSS 配置，以及 ftpDownloadVerify.ftpCredential 的 entity1/entity2/entity3 密码。源 prefix 必须包含足够非空 `.tar.gz`，使 alibaba/jun 与 alibaba/jun2 的来源合计和最终包均达到 8–10 MiB；本地 selection.limit=32，所有 `replace-` 占位必须移除。该文件已被 Git 忽略，不得打印或提交。
+编辑 deploy/.env 的数据库、PowerJob 和 LOCAL_FTP_ENTITY_1/2/3_PASSWORD。编辑 pipeline.local.json 的 sourceDownload/targetUpload OSS 配置，以及 ftpDownloadVerify.ftpCredential 的 entity1/entity2/entity3 密码。源 prefix 必须包含足够非空 `.tar.gz`，使 alibaba/jun 与 alibaba/jun2 的来源合计和最终包均达到 8–10 MiB；不配置 selection.limit，所有 `replace-` 占位必须移除。该文件已被 Git 忽略，不得打印或提交。
 
 ## 3. 构建、升级与启动
 
@@ -36,7 +36,7 @@ ARCHIVE_UPGRADE_AUTHORIZED=2026-11-07 ./scripts/mvp-up.sh
 
 V14 删除旧业务表并重建，不回填、不保留旧 ID、不创建兼容视图。未授权连接执行 V14 会失败，防止普通启动隐式清库。迁移完成后无需继续携带该变量。V15 随后增加 PARTIALLY_DELIVERED 状态，不清空 V14 之后的交付事实。
 
-`configure-pipeline.sh` 发布集中 nodeDefinitions/ruleSets/DAG/执行配置的不可变 PipelineVersion，登记 OSS 来源并创建三个 FTP 实体；没有来源 binding 步骤。预检实际读取源 OSS、检查目标 Bucket 并登录三个 FTP 账户，失败不得提交。
+`configure-pipeline.sh` 发布集中 nodeDefinitions/DAG/assignment 等执行配置的不可变 PipelineVersion，登记 OSS 来源并创建三个 FTP 实体；没有来源 binding、独立 ruleSets 或 selection 配置。预检实际读取源 OSS、检查目标 Bucket 并登录三个 FTP 账户，失败不得提交。
 
 ## 4. 服务与测试
 

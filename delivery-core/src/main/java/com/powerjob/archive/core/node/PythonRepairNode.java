@@ -9,6 +9,7 @@ import com.powerjob.archive.core.domain.SourceData;
 import com.powerjob.archive.core.pipeline.NodeContext;
 import com.powerjob.archive.core.pipeline.NodeHandler;
 import com.powerjob.archive.core.pipeline.NodeResult;
+import com.powerjob.archive.core.pipeline.PipelineNodeConfig;
 import com.powerjob.archive.core.pipeline.SourceDataPatch;
 import com.powerjob.archive.core.repository.DeliveryRepository;
 import com.powerjob.archive.core.service.RequestIdAllocationService;
@@ -28,13 +29,15 @@ public class PythonRepairNode implements NodeHandler {
     private final ArchiveProperties properties;
     private final RequestIdAllocationService numbers;
     private final DeliveryRepository deliveries;
+    private final PipelineNodeConfig configs;
     private final ObjectMapper mapper;
 
     public PythonRepairNode(ArchiveProperties properties, RequestIdAllocationService numbers,
-                            DeliveryRepository deliveries, ObjectMapper mapper) {
+                            DeliveryRepository deliveries, PipelineNodeConfig configs, ObjectMapper mapper) {
         this.properties = properties;
         this.numbers = numbers;
         this.deliveries = deliveries;
+        this.configs = configs;
         this.mapper = mapper;
     }
 
@@ -57,21 +60,26 @@ public class PythonRepairNode implements NodeHandler {
                 "task-" + context.task().taskId(), "repair");
         // 结构化 manifest 保留完整 originalPath/newRequestId 供独立验收。
         Path manifestPath = target.resolve("repair-result.json");
-        // 不可变 Pipeline 决定最终包上限。
+        // 不可变 Pipeline 决定最终包上限和 gzip 级别，级别只接受 1–9，默认保持原行为。
         long maxPackageBytes = context.pipeline().maxPackageBytes();
-        // Python 只接收受控参数，不接收 Secret 或任意 Shell。
-        List<String> command = new ArrayList<>(List.of(properties.getPythonCommand(), properties.getPythonScript(),
-                "--source", source.toString(), "--target", target.toString(),
+        Object configuredGzipLevel = context.node().config().getOrDefault("gzipCompressLevel", 9);
+        if (!(configuredGzipLevel instanceof Number number) || number.intValue() < 1 || number.intValue() > 9) {
+            throw new IllegalArgumentException("python.repair gzipCompressLevel must be an integer from 1 to 9");
+        }
+        int gzipLevel = number.intValue();
+        // 当前 PipelineVersion 决定本地或生产脚本，固定 argv 不接收 Secret 或任意 Shell。
+        List<String> command = new ArrayList<>(List.of(properties.getPythonCommand(),
+                NodeSupport.script(configs, context.node()), "--source", source.toString(), "--target", target.toString(),
                 "--delivery-date", context.task().deliveryDate().toString(),
                 "--entity-code", context.entity().entityCode(),
                 "--start-number", Long.toString(range.start()), "--max-bytes", Long.toString(maxPackageBytes),
                 "--output-name", context.task().newFileName(), "--original-name", context.task().originalFileName(),
                 "--merge-manifest", mergedOutput.required("manifestPath").asText(),
-                "--manifest", manifestPath.toString()));
-        // 开始日志包含执行血缘、实体、请求数和包边界，不记录凭据。
-        log.info("Repair started deliveryId={} taskId={} processId={} sourceCount={} requestCount={} entityCode={} vendorCode={} outputName={} maxPackageBytes={}",
+                "--manifest", manifestPath.toString(), "--gzip-level", Integer.toString(gzipLevel)));
+        // 开始日志包含执行血缘、实体、请求数、包边界和压缩级别，不记录凭据。
+        log.info("Repair started deliveryId={} taskId={} processId={} sourceCount={} requestCount={} entityCode={} vendorCode={} outputName={} maxPackageBytes={} gzipLevel={}",
                 context.task().deliveryId(), context.task().taskId(), context.processId(), context.sources().size(), count,
-                context.entity().entityCode(), context.entity().vendorCode(), context.task().newFileName(), maxPackageBytes);
+                context.entity().entityCode(), context.entity().vendorCode(), context.task().newFileName(), maxPackageBytes, gzipLevel);
         // 本地进程非零退出或非法 JSON 会直接阻断当前节点。
         JsonNode manifest = mapper.readTree(ProcessSupport.runJson(command, null, Duration.ofMinutes(10), "REPAIR_RESULT "));
         // 修复必须保留全部请求且只生成一个最终交付包。
@@ -95,13 +103,13 @@ public class PythonRepairNode implements NodeHandler {
                     context.task().deliveryId(), context.task().taskId(), context.processId(), taskSource.dataId(),
                     metadataIds.size() - 1);
         }
-        // 规则版本只取当前节点声明，不回退其他 Pipeline。
-        String ruleVersion = String.valueOf(context.node().config().getOrDefault("ruleSet", "production-archive-v2"));
+        // 清洗版本由主单绑定的 PipelineVersion 统一追溯，不在来源上重复维护规则版本。
         // 最终 size/token 通过补丁独立提交，SHA 只保存在 repair 节点 locator。
-        SourceDataPatch patch = new SourceDataPatch(ruleVersion, namespace, artifactPairs, metadataIds,
+        SourceDataPatch patch = new SourceDataPatch(namespace, artifactPairs, metadataIds,
                 artifact.required("sizeBytes").asLong(), artifact.required("token").asLong());
         // 输入 locator 只记录脱敏执行事实和实体业务编码。
         ObjectNode input = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
+                .put("scriptPath", configs.script(context.node()))
                 .put("workspacePath", source.toAbsolutePath().toString()).put("sourceCount", context.sources().size())
                 .put("requestCount", count).put("entityCode", context.entity().entityCode())
                 .put("vendorCode", context.entity().vendorCode());

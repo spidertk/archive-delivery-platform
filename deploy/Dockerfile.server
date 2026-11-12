@@ -5,13 +5,21 @@ RUN npm ci
 COPY web .
 RUN npm run build
 
-FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17 AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /workspace
+COPY pom.xml ./
+COPY delivery-core/pom.xml delivery-core/pom.xml
+COPY delivery-worker/pom.xml delivery-worker/pom.xml
+COPY delivery-server/pom.xml delivery-server/pom.xml
+COPY deploy/maven-settings.xml deploy/maven-settings.xml
+RUN --mount=type=cache,target=/root/.m2,sharing=locked \
+    mvn -q -s deploy/maven-settings.xml -DskipTests dependency:go-offline
 COPY . .
 COPY --from=web /workspace/dist ./web/dist
-RUN mvn -q -s deploy/maven-settings.xml -DskipTests package
+RUN --mount=type=cache,target=/root/.m2,sharing=locked \
+    mvn -q -s deploy/maven-settings.xml -DskipTests package
 
-FROM docker.1ms.run/library/maven:3.9-eclipse-temurin-17
+FROM maven:3.9-eclipse-temurin-17
 RUN useradd -r -u 10001 -m delivery
 WORKDIR /app
 COPY --from=build /workspace/delivery-server/target/delivery-server.jar app.jar

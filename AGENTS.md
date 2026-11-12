@@ -2,7 +2,7 @@
 
 Archive Delivery Platform 是基于 PowerJob + Pipeline 的可定义归档数据交付平台。PostgreSQL 是业务事实源，PowerJob 只触发通用执行入口，Worker 按提交绑定的不可变 PipelineVersion 推进节点。
 
-**两份 2026-11-06 设计的 2026-11-08 修订是当前唯一实施基线。** 不兼容老 API、老表或老数据；V14 在显式授权环境清空旧业务表并重建，V15/V16/V17/V18/V19/V20 形成当前模型，不做双写、适配视图或平行实现。
+**两份 2026-11-06 设计的 2026-11-08 修订及 V21/V22/V23 配置精简是当前唯一实施基线。** 不兼容老 API、老表或老数据；V14 在显式授权环境清空旧业务表并重建，V15/V16/V17/V18/V19/V20/V21/V22/V23 形成当前模型，不做双写、适配视图或平行实现。
 
 ## 核心决策
 
@@ -45,7 +45,7 @@ Archive Delivery Platform 是基于 PowerJob + Pipeline 的可定义归档数据
 
 旧 merge 生成中间 tar.gz、repair 再解压的方式已废弃。package.merge 对每个源包只安全解包一次并输出 merge/requests；repair 在私有 staging 副本修复并只执行一次最终 tar/gzip 封存。保留必要的 staging 文件复制，但不得恢复重复压缩/解压。来源合计和最终包均受 `config.assignment.minPackageBytes/maxPackageBytes` 约束。
 
-selection.limit 是扫描入选来源包数上限，targetCount 是合并后的任务数。单包超过上限时下载前过滤；同 vendorCode 目标优先按连续来源分组，无法满足下限时再按字节和回溯其他组合，组内保持来源顺序，使全部目标满足 minPackageBytes/maxPackageBytes，来源合计或最终包低于下限时阻断，禁止切分文件。repair 使用 entity_code 并写入协议 metadata.providerCode，保留合法 39 位非空 requestId，缺失或旧格式时按 deliveryBatch 号段确定性补号并保留 originalRequestId；目录名等于 requestId，requestTime 为交付日期 ISO 8601 UTC 纳秒格式。不同来源的同名目录以来源序号隔离成员键并保留 originalPath。
+targetCount 展开为合并任务槽位数，不另设 selection.limit；OSS 按 key 顺序分页扫描，每页尝试满足全部槽位，成功后停止。单包超过上限时下载前过滤；同 vendorCode 目标优先按连续来源分组，无法满足下限时再按字节和回溯其他组合，组内保持来源顺序，使全部目标满足 minPackageBytes/maxPackageBytes，来源合计或最终包低于下限时阻断，禁止切分文件。repair 使用 entity_code 并写入协议 metadata.providerCode，保留合法 39 位非空 requestId，缺失或旧格式时按 deliveryBatch 号段确定性补号并保留 originalRequestId；目录名等于 requestId，requestTime 为交付日期 ISO 8601 UTC 纳秒格式。不同来源的同名目录以来源序号隔离成员键并保留 originalPath。独立 ruleSets/rule_version 已删除，清洗执行版本统一由主单绑定的 PipelineVersion 追溯。package.merge、python.repair、ftp.download-verify 的 config.scriptPath 只保存固定脚本目录内规范化相对 .py 路径；Compose 将 nodes/python 整目录只读挂载到 `/app/nodes/python`，Worker 从该根目录解析并核对文件，新增脚本无需修改挂载配置且不使用 Shell。
 
 下载、合并、repair、qualify、OSS、FTP 日志必须带 deliveryId/taskId/processId 及必要的 dataId、来源数、请求数、路径和 size/SHA，不得记录 Secret。`.tmp`、异常 staging 和 `.partial` 必须清理，源包、merge 工作目录和有效产物保留。
 
@@ -67,7 +67,7 @@ cd web && npm ci && npm run test && npm run build
 
 真实 OSS 写测试必须显式授权；预检失败不得继续。skipped、Local Node、fake 和 PowerJob 空调用成功不得写成真实交付通过。
 
-## 开发约束（不要随意更改已有约束）
+## 开发约束（不要随意更改已有约束，如必要可追加）
 
 * 新增代码写有效业务注释，方法内代码超过五行，必须要有明确注释，注释表达用途和必要约束，不要只复述接口或函数名称，说明输入输出事实及安全/状态边界。
 * 新增复杂业务逻辑时应优先保证业务的可扩展性，拆分职责，控制函数复杂度，并对稳定流程和可变策略建立清晰边界，可根据实际场景适当使用策略，工厂、模版方法，责任链等设计模式，但不得为了套用设计模式引入没有必要的抽象层级。
@@ -79,7 +79,7 @@ cd web && npm ci && npm run test && npm run build
 
 ## 核心真实验收
 
-本地真实核心 case 必须同时证明：真实 Compose 和 V1–V20 迁移；从 `oss://sg-storage-20261013-6vmlk/internal/gpt-delta-seven-20261105-accepted-20261106-v1/products/` 新地址真实 GET 且本地保留，相同 URI+版本不重复下载；提交不传 cutoffAt，由 Pipeline 推导；同 vendorCode=alibaba 的 jun/jun2 各 targetCount=1，持续下载到每包来源合计和最终产物均为 8–10 MiB，repair 输入为 entityCode；入选来源各分配一次，artifacts 仅含 dataId/sourceArtifact 且 sourceArtifact 完全等于 source_data.artifact，metadata_ids 与 sourceDataIds 完全相等且不存 requestId，repair manifest 保留逐来源 originalPath/newRequestId，最终 size/SHA 来自成功 repair/OSS 节点 locator，包名在 delivery_id 下唯一，request_namespace 等于 deliveryBatch；task.size_bytes 与实际 OSS/FTP 文件完全一致；两个产物均在另一 OSS Bucket GET 回验 size/SHA 一致；两个本地 FTP 账户分别上传并重新下载一件产物且 size/SHA 一致、无 .partial；同 case 实际覆盖暂停后原批次续交、单任务 retry、跨日新 taskId；再以 local-other/jun3 复用同来源形成新交付并证明 sourceDownload.cacheHit=true、无重复源 OSS GET；最终有效任务全部 SUCCEEDED、最终节点成功、主单 DELIVERED。
+本地真实核心 case 必须同时证明：真实 Compose 和 V1–V23 迁移；从 `oss://sg-storage-20261013-6vmlk/internal/gpt-delta-seven-20261105-accepted-20261106-v1/products/` 新地址真实 GET 且本地保留，相同 URI+版本不重复下载；提交不传 cutoffAt，由 Pipeline 推导；同 vendorCode=alibaba 的 jun/jun2 各 targetCount=1，持续下载到每包来源合计和最终产物均为 8–10 MiB，repair 输入为 entityCode；入选来源各分配一次，artifacts 仅含 dataId/sourceArtifact 且 sourceArtifact 完全等于 source_data.artifact，metadata_ids 与 sourceDataIds 完全相等且不存 requestId，repair manifest 保留逐来源 originalPath/newRequestId，最终 size/SHA 来自成功 repair/OSS 节点 locator，包名在 delivery_id 下唯一，request_namespace 等于 deliveryBatch；task.size_bytes 与实际 OSS/FTP 文件完全一致；两个产物均在另一 OSS Bucket GET 回验 size/SHA 一致；两个本地 FTP 账户分别上传并重新下载一件产物且 size/SHA 一致、无 .partial；同 case 实际覆盖暂停后原批次续交、单任务 retry、跨日新 taskId；再以 local-other/jun3 复用同来源形成新交付并证明 sourceDownload.cacheHit=true、无重复源 OSS GET；最终有效任务全部 SUCCEEDED、最终节点成功、主单 DELIVERED。
 
 状态集成验收使用小样本，覆盖三个实体各 2 个：截止前全部成功为 DELIVERED；截止未完跨日后为 PARTIALLY_DELIVERED；指定次日继续并占次日配额，全部成功后 DELIVERED。生产真实验收必须走生产 targets、来源和交付目标，不能用本地结果冒充。
 

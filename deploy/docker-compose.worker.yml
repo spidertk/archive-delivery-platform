@@ -15,6 +15,7 @@ x-worker-common: &worker-common
     POWERJOB_SERVER_ADDRESS: ${POWERJOB_SERVER_ADDRESS:?POWERJOB_SERVER_ADDRESS is required}
   volumes:
     - archive_data:/data
+    - ../nodes/python:/app/nodes/python:ro
 
 services:
   worker-4:

@@ -20,7 +20,7 @@
 
 ## 当前数据面
 
-Worker 按 `oss.download → package.merge → python.repair → manifest.qualify → oss.upload → ftp.download-verify` 推进。超限源包下载前过滤，同 vendorCode 的 entityCode 目标整体顺序累计到 10 MiB 内且不切分。URI+版本源包在同机 source-cache 复用，sourceDownload 命中后本地校验复制并记录 cacheHit=true，其他执行组缓存缺失时回退 OSS。merge 输出请求目录；repair 接收 entityCode 并只最终封包一次。任务来源只读 delivery_mapping，artifacts 只含 dataId/sourceArtifact，metadataIds 为同顺序 data_id；最终 size/SHA 从 repair/OSS 成功 locator 读取。
+Worker 按 `oss.download → package.merge → python.repair → manifest.qualify → oss.upload → ftp.download-verify` 推进。超限源包下载前过滤，同 vendorCode 的 entityCode 目标整体顺序累计到 10 MiB 内且不切分。URI+版本源包在同机 source-cache 复用，sourceDownload 命中后本地校验复制并记录 cacheHit=true，其他执行组缓存缺失时回退 OSS。merge 输出请求目录；repair 接收 entityCode 并只最终封包一次。merge/repair/FTP 的 Pipeline scriptPath 只保存相对 .py 路径，Worker 统一从 `/app/nodes/python` 解析并校验文件后固定 argv 执行；Compose 整目录只读挂载使新增脚本无需修改挂载或环境变量。任务来源只读 delivery_mapping，artifacts 只含 dataId/sourceArtifact，metadataIds 为同顺序 data_id；最终 size/SHA 从 repair/OSS 成功 locator 读取。
 
 ## 核心验证
 
@@ -31,4 +31,4 @@ Worker 按 `oss.download → package.merge → python.repair → manifest.qualif
 
 本地真实核心 case 从指定 sg-storage products 下载足够来源，按每包 8–10 MiB 形成两个实体任务、每组上传一件，完成 repair/qualify、两件 OSS GET 回验和两个 FTP 账户各一件产物上传下载核验；同时实际覆盖暂停后原批次续交、单任务 retry 和跨日新 taskId。最终核对入选来源各分配一次、artifacts 仅含 dataId/sourceArtifact、sourceArtifact=source_data.artifact、metadataIds 与 sourceDataIds 完全相等、repair manifest 保留 originalPath/newRequestId、最终 size/SHA 来自成功节点 locator、包名在 delivery 内唯一、deliveryBatch 编号命名空间、外部文件 size/SHA、文件保留和无 .partial。
 
-`LocalMergedCaseVerificationTest` 仅用于显式本机 Compose V20 迁移/三来源映射辅助核验，不能替代真实节点验收。`ARCHIVE_REAL_E2E=true` 只用于明确授权环境；skipped、fake、PowerJob 绿色实例和数据库直写均不算端到端通过。模型或流程调整后必须实际跑通本地或生产完整链路。
+`LocalMergedCaseVerificationTest` 仅用于显式本机 Compose V23 迁移/三来源映射辅助核验，不能替代真实节点验收。`ARCHIVE_REAL_E2E=true` 只用于明确授权环境；本地验证保持三实体预检、两任务和暂停/retry/跨日口径，`ARCHIVE_VERIFICATION_PROFILE=production` 按实际 targetCount 核验单实体生产 case，不强制本地状态故障注入。skipped、fake、PowerJob 绿色实例和数据库直写均不算端到端通过。模型或流程调整后必须实际跑通本地或生产完整链路。

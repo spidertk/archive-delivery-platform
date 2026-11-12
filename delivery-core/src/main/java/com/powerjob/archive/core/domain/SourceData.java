@@ -7,7 +7,7 @@ public record SourceData(
         long dataId, long deliveryId, String originalFileName,
         String requestNamespace, JsonNode originalLocator, JsonNode outputLocator,
         String qualification, String filterRuleCode, String filterReason, long affectedCount,
-        String ruleVersion, long sizeBytes, long tokenCount, String sha256, JsonNode artifact) {
+        long sizeBytes, long tokenCount, String sha256, JsonNode artifact) {
     public String sourceUri() {
         return originalLocator.required("sourceUri").asText();
     }

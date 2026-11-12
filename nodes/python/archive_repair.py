@@ -58,7 +58,7 @@ def stable_member(member):
 
 
 def repair(source, target, delivery_date, entity_code, start_number, max_bytes, output_name, original_name, manifest_path,
-           merge_manifest_path=None):
+           merge_manifest_path=None, gzip_level=9):
     """在合并目录的 staging 副本上修复，只有一次最终 tar/gzip 封存；失败不会污染 merge 工作目录。"""
     source = Path(source).resolve(strict=True)
     target = Path(target).resolve()
@@ -76,7 +76,9 @@ def repair(source, target, delivery_date, entity_code, start_number, max_bytes, 
         raise ValueError("Merged workspace and member lineage differ")
     if start_number < 1:
         raise ValueError("Request number must be positive")
-    print(f"REPAIR_STARTED workspace={source} requests={len(names)} entityCode={entity_code} deliveryDate={delivery_date} maxBytes={max_bytes}", flush=True)
+    if not isinstance(gzip_level, int) or isinstance(gzip_level, bool) or not 1 <= gzip_level <= 9:
+        raise ValueError("gzip_level must be an integer from 1 to 9")
+    print(f"REPAIR_STARTED workspace={source} requests={len(names)} entityCode={entity_code} deliveryDate={delivery_date} maxBytes={max_bytes} gzipLevel={gzip_level}", flush=True)
     for stale in target.glob(".archive_repair_*"):
         if stale.is_dir():
             shutil.rmtree(stale)
@@ -103,7 +105,7 @@ def repair(source, target, delivery_date, entity_code, start_number, max_bytes, 
                              "qualification": "QUALIFIED"})
             print(f"REPAIR_REQUEST sourceMember={old_name} originalRequestId={original_request_id or ''} newRequestId={new_request_id}", flush=True)
         with temporary_artifact.open("wb") as raw:
-            with gzip.GzipFile(filename="", mode="wb", fileobj=raw, mtime=0) as compressed:
+            with gzip.GzipFile(filename="", mode="wb", fileobj=raw, compresslevel=gzip_level, mtime=0) as compressed:
                 with tarfile.open(fileobj=compressed, mode="w") as archive:
                     for mapping in mappings:
                         archive.add(temp_dir / mapping["newRequestId"],
@@ -147,6 +149,7 @@ def main():
     parser.add_argument("--original-name")
     parser.add_argument("--merge-manifest")
     parser.add_argument("--manifest")
+    parser.add_argument("--gzip-level", type=int, choices=range(1, 10), default=9)
     parser.add_argument("--inspect", action="store_true")
     args = parser.parse_args()
     if args.inspect:
@@ -159,7 +162,7 @@ def main():
             parser.error("Missing repair arguments: " + ", ".join(missing))
         result = repair(args.source, args.target, args.delivery_date, args.entity_code,
                         args.start_number, args.max_bytes, args.output_name, args.original_name, args.manifest,
-                        args.merge_manifest)
+                        args.merge_manifest, args.gzip_level)
         print("REPAIR_RESULT " + json.dumps(result, ensure_ascii=False), flush=True)
 
 
