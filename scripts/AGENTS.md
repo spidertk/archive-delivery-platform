@@ -1,41 +1,29 @@
 # scripts 模块指南
 
-## 模块职责
+## 有效入口
 
-`scripts` 是构建、启动、预检、entityCode 提交、暂停续跑和真实外部验收入口。脚本调用 Delivery API 和 core 领域服务，不绕过 Pipeline、状态机或安全校验。默认 `set -euo pipefail`，外部网络操作必须有超时。
+| 脚本 | 职责与边界 |
+| --- | --- |
+| `local-pipeline.sh` | 默认本地逻辑门禁；不访问真实 OSS/FTP，不清理数据 |
+| `production-registry.sh` | 按 caseId/all 执行生产黄金用例；任一失败即整体失败 |
+| `production-pipeline.sh` | 单 case 的生产 Compose、V24、配置、预检、提交和证据 |
+| `pipeline_registry.py` | 读取、校验和生成 Markdown Pipeline/黄金用例；MD 为唯一 review 来源 |
+| `configure-pipeline.sh` / `configure-production-pipeline.sh` | 发布不可变 PipelineVersion 并登记来源/实体；不打印 Secret |
+| `bootstrap-powerjob.sh` | 初始化三个通用调度；生产首次登录后轮换管理员密码 |
+| `provision-production-config.py` | 补齐非 Secret 定位及缺失的随机服务密码；OSS 凭据由管理员配置 |
+| `maven-test.sh` | 容器化 Maven 标准测试 |
+| `resume-delivery.sh` | 按 deliveryId/fromNode/taskIds/reason 续跑；前置不足 409 |
 
-## 脚本地图
+## 约束
 
-| 脚本 | 职责 | 边界 |
-|---|---|---|
-| `mvn.sh` / `mvp-test.sh` | 容器化 Maven 和标准回归 | fake/skipped 不代表真实通过 |
-| `mvp-up.sh` | 启动数据库、server、Worker 和 FTP | V14 清库需显式授权 |
-| `bootstrap-powerjob.sh` | 创建通用准备、推进和截止 Job | 调度重试为 0；生产首次登录后立即轮换初始管理员密码 |
-| `configure-pipeline.sh` | 发布集中 Pipeline 并创建复合唯一实体 | 本地 alibaba/jun、alibaba/jun2、local-other/jun3，不打印 Secret |
-| `preflight.sh` | 检查源/目标 OSS、FTP 和数据库 | 失败非零退出 |
-| `submit-delivery.sh` | `ossUri pipelineCode deliveryDate deliveryBatch` 三实体提交 | 传 vendorCode+entityCode，不传 ID、cutoffAt 或 idempotencyKey |
-| `resume-delivery.sh` | 按 deliveryId/fromNode/taskIds/reason 续跑 | 前置不足 409 |
-| `real-e2e-test.sh` / `local-pipeline.sh` | 两阶段 V13/V14–V23 迁移、alibaba/jun+jun2、local-other/jun3 缓存复用 | 每包 8–10 MiB，覆盖暂停再提交、retry、rollover、cacheHit；只允许本地 |
-| `production-pipeline.sh` | 生产 Compose、迁移、配置、预检、单实体提交和脱敏证据 | 空库两阶段迁移；旧 pre-V14 库阻断；预检通过才提交；禁止生产 reset |
-| `provision-production-config.py` | 首次生成独立本地服务/FTP 随机密码 | 只替换 replace-*，不覆盖已有值，不输出 Secret；OSS 凭据由管理员配置 |
-| `verify-delivery.sh` | 核验 PG、OSS、FTP、mapping、source artifact、data_id metadataIds 和节点 | 实际 GET 和 SHA；metadataIds=sourceDataIds |
-| `reset-test-data.sh` | 双确认清理本地运行事实 | 保留配置和外部历史文件 |
-
-## 开发约束
-
-1. 请求有连接/总超时，轮询有上限；403、对象不足、目标不一致或 BLOCKED 不得无限重试。
+1. 请求必须有连接/总超时，轮询有上限；403、对象不足、目标不一致或 BLOCKED 不得无限重试。
 2. 不直接 UPDATE 状态、删除租约、伪造 SUCCEEDED/DELIVERED 或修改 artifacts/source_data.artifact。
-3. 不输出 .env、Secret、密码、JWT、私钥、完整 definition 或敏感响应。
-4. 真实外部写操作只走独立显式入口和预检；禁止 OSS/FTP 清目录。
-5. 跨日通过 TASK_EXPIRED/TASK_REGENERATED 的 oldTaskId/newTaskId 核验，不再查询 superseded_by_task_id。
-6. 修改参数/API/变量同步调用方、文档、测试和 AGENTS；不新增跳过验证的环境开关。
-
-## 验证
+3. 不输出 `.env`、Secret、密码、JWT、私钥、完整 definition 或敏感响应。
+4. 真实外部写只走生产入口和预检；禁止清目录、清库、跳过验证或新增 fake 成功分支。
+5. 生产只同步已 review 的提交，证据保留实际 ID、迁移版本、外部文件和复核命令。
 
 ```bash
 bash -n scripts/*.sh
-./scripts/mvp-test.sh
-cd web && npm ci && npm run test && npm run build
+python3 scripts/pipeline_registry.py validate
+./scripts/local-pipeline.sh
 ```
-
-真实顺序：启动 → bootstrap → 发布 Pipeline → preflight → real-e2e → verify-delivery。最终报告实际 deliveryId/taskId、三来源清单、合并包 size/SHA、sourceData.artifact 一致性、包名唯一性、OSS/FTP 结果、暂停续交、retry/rollover 和自助复核命令。模型/流程调整后必须执行本地或生产真实入口，skipped 或未执行阻断完成结论。

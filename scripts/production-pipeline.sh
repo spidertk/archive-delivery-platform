@@ -2,13 +2,17 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-if [[ ! -f deploy/.env || ! -f deploy/pipeline.production.json ]]; then
-  echo "Missing deploy/.env or deploy/pipeline.production.json; use the production examples and remove every replace-* placeholder." >&2
+if [[ ! -f deploy/.env ]]; then
+  echo "Missing deploy/.env; use deploy/env.production.example and configure controlled credentials." >&2
   exit 1
 fi
 set -a
 source deploy/.env
 set +a
+PIPELINE_CASE="${PIPELINE_CASE:-archive-delivery-jun}"
+eval "$(python3 scripts/pipeline_registry.py env "$PIPELINE_CASE")"
+python3 scripts/pipeline_registry.py materialize "$PIPELINE_CASE"
+export PROD_DELIVERY_BATCH="${PROD_DELIVERY_BATCH:-$REGISTRY_DELIVERY_BATCH}"
 COMPOSE=(docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env)
 NETWORK="${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME is required}_default"
 DATA_VOLUME="${COMPOSE_PROJECT_NAME}_archive_data"
@@ -39,8 +43,7 @@ wait_flyway() {
 }
 
 start_stack() {
-  local authorization="${1:-}"
-  ARCHIVE_UPGRADE_AUTHORIZED="$authorization" "${COMPOSE[@]}" up -d --build --remove-orphans
+  "${COMPOSE[@]}" up -d --build --remove-orphans
 }
 
 run_external_test() {
@@ -49,6 +52,7 @@ run_external_test() {
   docker run --rm --network "$NETWORK" \
     -e ARCHIVE_VERIFICATION_PROFILE=production \
     -e ARCHIVE_VERIFY_EXPECTED_TASKS="${PROD_TARGET_COUNT:-1}" \
+    -e ARCHIVE_VERIFY_EXPECTED_ENTITIES="${PROD_ENTITY_COUNT:-1}" \
     -e "$mode=true" \
     -e ARCHIVE_VERIFY_DELIVERY_ID="$delivery_id" \
     -e ARCHIVE_DB_URL='jdbc:postgresql://postgres:5432/archive_delivery?currentSchema=archive_delivery' \
@@ -65,20 +69,14 @@ for attempt in $(seq 1 45); do
   sleep 2
 done
 VERSION="$(flyway_version)"
-if ((10#$VERSION == 0)); then
-  # 只有空库自动走两阶段建模；任何已有旧版本生产库都必须先单独备份和授权。
-  start_stack 2026-11-06
-  wait_flyway 13
-  start_stack 2026-11-07
-  wait_flyway 23
-elif ((10#$VERSION < 14)); then
+if ((10#$VERSION > 0 && 10#$VERSION < 14)); then
   echo "Existing pre-V14 production database requires an independent backup and explicit upgrade authorization; no tables were changed." >&2
   exit 1
-else
-  start_stack
-  wait_flyway 23
 fi
-# 清除迁移授权对应的容器环境，再初始化通用调度和不可变 Pipeline。
+# 空库只执行 V24 基线；已有 V23 数据库幂等升级，不重复建表或修改业务事实。
+start_stack
+wait_flyway 24
+# 初始化通用调度和不可变 Pipeline。
 "${COMPOSE[@]}" up -d --no-build
 wait_api
 ./scripts/bootstrap-powerjob.sh
@@ -97,14 +95,15 @@ python3 - "$SUBMIT_JSON" "$DELIVERY_DATE" "$DELIVERY_BATCH" "$TARGET_COUNT" <<'P
 import json, os, sys
 path, date, batch, count = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
 definition = json.load(open('deploy/pipeline.production.json'))
+golden = json.load(open('deploy/golden-case.json'))
 source = next(node['config'] for node in definition['nodes'] if node['type'] == 'oss.download')
 request = {
     'ossUri': 'oss://' + source['bucket'] + '/' + source['prefix'],
-    'pipelineCode': 'archive-delivery',
+    'pipelineCode': golden['pipelineCode'],
     'deliveryDate': date,
     'deliveryBatch': batch,
-    'targets': [{'targetCount': count, 'vendorCode': os.environ['PROD_ENTITY_1_VENDOR_CODE'],
-                 'entityCode': os.environ['PROD_ENTITY_1_ENTITY_CODE']}]
+    'targets': [{'targetCount': target['targetCount'], 'vendorCode': target['vendorCode'],
+                 'entityCode': target['entityCode']} for target in golden['targets']]
 }
 json.dump(request, open(path, 'w'), ensure_ascii=False, indent=2)
 PY
@@ -135,13 +134,25 @@ curl -fsS --connect-timeout 5 --max-time 15 "$API/deliveries/$DELIVERY_ID" -o "$
 curl -fsS --connect-timeout 5 --max-time 15 "$API/deliveries/$DELIVERY_ID/tasks" -o "$EVIDENCE_DIR/tasks-api.json"
 "${COMPOSE[@]}" ps > "$EVIDENCE_DIR/compose-services.txt"
 "${COMPOSE[@]}" logs --no-color --since 2h archive-server worker-1 > "$EVIDENCE_DIR/application.log"
-find "$PROD_JUNE_HOST_ROOT/$DELIVERY_DATE/$DELIVERY_BATCH" -maxdepth 1 -type f -name 'batch_*.tar.gz' -print0 \
-  | sort -z | xargs -0 -r sha256sum > "$EVIDENCE_DIR/ftp-sha256.txt"
-[[ "$(wc -l < "$EVIDENCE_DIR/ftp-sha256.txt")" -eq "$TARGET_COUNT" ]] \
-  || { echo "FTP artifact count differs from targetCount" >&2; exit 1; }
-find "$PROD_JUNE_HOST_ROOT/$DELIVERY_DATE/$DELIVERY_BATCH" -maxdepth 1 -type f -name '*.partial' -print \
-  > "$EVIDENCE_DIR/ftp-partial.txt"
-[[ ! -s "$EVIDENCE_DIR/ftp-partial.txt" ]] || { echo "FTP .partial files remain" >&2; exit 1; }
+python3 - "$DELIVERY_DATE" "$DELIVERY_BATCH" "$EVIDENCE_DIR" <<'PY'
+import json, sys
+from hashlib import sha256
+from pathlib import Path
+root = Path(sys.argv[3])
+golden = json.load(open('deploy/golden-case.json'))
+sha_lines, partial_lines = [], []
+for target in golden['targets']:
+    directory = Path(target['hostRoot']) / sys.argv[1] / sys.argv[2]
+    files = sorted(directory.glob('batch_*.tar.gz'))
+    assert len(files) == target['targetCount'], f"FTP artifact count differs for {target['entityCode']}: {len(files)}"
+    for path in files:
+        digest = sha256(path.read_bytes()).hexdigest()
+        sha_lines.append(f"{digest}  {path}")
+    partial_lines.extend(str(path) for path in directory.glob('*.partial'))
+(root / 'ftp-sha256.txt').write_text('\n'.join(sha_lines) + ('\n' if sha_lines else ''))
+(root / 'ftp-partial.txt').write_text('\n'.join(partial_lines) + ('\n' if partial_lines else ''))
+assert not partial_lines, f"FTP .partial files remain: {partial_lines}"
+PY
 "${COMPOSE[@]}" exec -T postgres psql -U "$ARCHIVE_DB_USER" -d archive_delivery -P pager=off \
   -c "SELECT version,success,installed_on FROM archive_delivery.flyway_schema_history ORDER BY installed_rank DESC LIMIT 5;" \
   -c "SELECT delivery_id,delivery_batch,delivery_date,cutoff_at,status,pipeline_version_id FROM archive_delivery.delivery_submit WHERE delivery_id=$DELIVERY_ID;" \

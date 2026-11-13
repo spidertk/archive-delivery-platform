@@ -21,7 +21,7 @@
 
 ```bash
 bash -n nodes/shell/*.sh
-./scripts/mvn.sh -pl delivery-core -am test
+./scripts/maven-test.sh -pl delivery-core -am test
 ./scripts/preflight.sh
 ```
 

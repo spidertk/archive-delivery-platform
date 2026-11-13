@@ -45,7 +45,7 @@ Worker 镜像将本目录复制到 `/app/nodes/python/`，本地和生产 Compos
 
 ```bash
 python3 -m unittest nodes/python/test_archive_repair.py -v
-./scripts/mvn.sh -pl delivery-worker -am test
+./scripts/maven-test.sh -pl delivery-worker -am test
 ```
 
 单元测试覆盖三来源目录合并、无中间 tar、entityCode、requestId 保留、缺失补号、确定性、重复目录、协议失败、路径安全、10 MiB 小样本边界和临时文件清理；真实本地验收每包来源合计和最终产物均为 8–10 MiB。测试后清理 __pycache__ 和临时产物。

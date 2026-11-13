@@ -145,7 +145,7 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env \
 ```
 
 - 升级前备份 PostgreSQL 和 PowerJob MySQL，并记录当前镜像和 PipelineVersion。
-- V14 清库授权不得作为固定环境变量。已有 V14 以下生产库不会被 `production-pipeline.sh` 自动升级。
+- 当前只维护 V24 幂等基线。全新库创建完整模型，已有 V23 模型不重复建表；pre-V14 旧生产库不会被 `production-pipeline.sh` 自动升级。
 - 升级先停止新提交并等待 RUNNING 节点结束，再构建启动；不得删除租约或修改历史任务 worker_group。
 - 回退应用版本时保留数据库和外部文件。已发布 PipelineVersion 不可原地修改，新配置必须发布新版本。
 

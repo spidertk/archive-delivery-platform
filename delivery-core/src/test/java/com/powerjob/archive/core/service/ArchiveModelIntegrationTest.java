@@ -43,15 +43,6 @@ class ArchiveModelIntegrationTest {
 
     @BeforeAll static void migrate() {
         postgres.start();
-        var legacy = new com.zaxxer.hikari.HikariDataSource();
-        legacy.setJdbcUrl(jdbcUrl());
-        legacy.setUsername(postgres.getUsername());
-        legacy.setPassword(postgres.getPassword());
-        legacy.setConnectionInitSql("SET archive_delivery.upgrade_authorized='2026-11-06'");
-        legacy.setSchema("archive_delivery");
-        Flyway.configure().dataSource(legacy).schemas("archive_delivery").defaultSchema("archive_delivery")
-                .target("13").load().migrate();
-        legacy.close();
         dataSource = new com.zaxxer.hikari.HikariDataSource();
         dataSource.setJdbcUrl(jdbcUrl());
         dataSource.setUsername(postgres.getUsername());
@@ -64,6 +55,15 @@ class ArchiveModelIntegrationTest {
     }
 
     @AfterAll static void stop() { postgres.stop(); }
+
+    @Test void goldenBaselineIsIdempotentForExistingV23Model() {
+        int tablesBefore = jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery'", Integer.class);
+        jdbc.update("DELETE FROM archive_delivery.flyway_schema_history WHERE version='24'");
+        Flyway.configure().dataSource(dataSource).schemas("archive_delivery").defaultSchema("archive_delivery").load().migrate();
+        assertEquals("24", jdbc.queryForObject("SELECT max(version) FROM archive_delivery.flyway_schema_history WHERE success", String.class));
+        int tablesAfter = jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery'", Integer.class);
+        assertEquals(tablesBefore, tablesAfter);
+    }
 
     @Test void upgradedSchemaHasNoLegacyObjectsAndHasCompleteComments() {
         List<String> legacy = jdbc.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema='archive_delivery' " +

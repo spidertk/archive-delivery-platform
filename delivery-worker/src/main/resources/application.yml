@@ -12,6 +12,7 @@ spring:
     enabled: true
     schemas: archive_delivery
     default-schema: archive_delivery
+    ignore-missing-migrations: true
 powerjob:
   worker:
     enabled: ${POWERJOB_ENABLED:false}

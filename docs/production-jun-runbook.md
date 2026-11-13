@@ -30,13 +30,13 @@ cd /path/to/archive-delivery-platform
 ./scripts/local-pipeline.sh
 ```
 
-该入口调用 `real-e2e-test.sh`，会使用真实本地 Compose、真实 OSS/FTP，并双确认清理本地运行事实。禁止在生产服务器执行。它会验证 V1–V23、两个核心实体、暂停续交、retry、跨日、缓存复用和外部 size/SHA。
+该入口执行 Markdown 注册、Python、Maven、前端和 Compose 逻辑验证，不访问真实 OSS/FTP，也不清理运行数据。真实 NodeHandler 注册和 DAG 由 `GoldenPipelineDefinitionTest` 使用本地替身验证，结果不作为生产交付证据。
 
 只做标准回归时执行：
 
 ```bash
 python3 -m unittest nodes/python/test_archive_repair.py -v
-./scripts/mvn.sh test
+./scripts/maven-test.sh test
 cd web && npm ci && npm run test && npm run build
 bash -n scripts/*.sh
 ```
@@ -58,7 +58,7 @@ docker compose version
 ```bash
 cd /opt/archive-delivery-platform
 cp deploy/env.production.example deploy/.env
-cp deploy/pipeline.production.example.json deploy/pipeline.production.json
+python3 scripts/pipeline_registry.py materialize archive-delivery-jun
 python3 scripts/provision-production-config.py
 chmod 600 deploy/.env deploy/pipeline.production.json
 ```
@@ -78,13 +78,13 @@ chmod 600 deploy/.env deploy/pipeline.production.json
 
 ```bash
 cd /opt/archive-delivery-platform
-./scripts/production-pipeline.sh
+./scripts/production-registry.sh archive-delivery-jun
 ```
 
 脚本顺序：
 
 1. 启动 PostgreSQL，识别 Flyway 状态。
-2. 空库按 V1–V13、V14–V23 两阶段迁移；已有 V14+ 数据库只执行增量。已有 V14 以下生产库直接停止，不自动清库。
+2. 空库只执行 V24 基线；已有 V23 模型幂等升级，不重复建表或修改业务事实。已有 pre-V14 旧生产库直接停止，不自动清库。
 3. 启动 MySQL、PowerJob、archive-server、worker-1 和 ftp-june，清除迁移授权对应的容器环境。
 4. 初始化三个 PowerJob 通用调度，发布不可变 PipelineVersion，登记来源和 alibaba/jun。
 5. 使用 OSS SDK 检查源候选、目标 Bucket，并真实登录 FTP。预检失败不会提交。

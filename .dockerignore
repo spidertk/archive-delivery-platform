@@ -7,6 +7,7 @@ web/dist
 deploy/.env
 deploy/*.local.json
 deploy/pipeline.production.json
+deploy/golden-case.json
 deploy/backups
 docs/evidence
 docs/服务器信息

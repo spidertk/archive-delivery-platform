@@ -71,7 +71,7 @@ class RealExternalVerificationTest {
         var ftp = configs.ftp(pipeline.nodes().stream().filter(node -> node.type().equals("ftp.download-verify")).findFirst().orElseThrow());
         List<Map<String, Object>> entities = jdbc.queryForList("SELECT * FROM delivery_entity WHERE enabled=true ORDER BY delivery_entity_id")
                 .stream().filter(entity -> ftp.ftpCredential().containsKey(entity.get("account_name").toString())).toList();
-        int requiredEntities = production() ? 1 : 3;
+        int requiredEntities = production() ? expectedEntities() : 3;
         assertEquals(requiredEntities, entities.size(), "Pipeline-configured FTP entity count differs from the active verification profile");
         for (Map<String, Object> entity : entities) ftpPreflight(entity, ftp);
         System.out.println("REAL PREFLIGHT PASSED: source OSS archives meet configured package bounds, target OSS bucket, entities="
@@ -235,6 +235,10 @@ class RealExternalVerificationTest {
 
     private static int expectedTasks() {
         return Integer.parseInt(System.getenv().getOrDefault("ARCHIVE_VERIFY_EXPECTED_TASKS", "2"));
+    }
+
+    private static int expectedEntities() {
+        return Integer.parseInt(System.getenv().getOrDefault("ARCHIVE_VERIFY_EXPECTED_ENTITIES", "1"));
     }
 
     private JdbcTemplate jdbc() {

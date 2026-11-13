@@ -1,14 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PROFILE="${ARCHIVE_PIPELINE_PROFILE:-local}"
-if [[ "$PROFILE" == "production" ]]; then
-  DEFAULT_CONFIG="$ROOT/deploy/pipeline.production.json"
-  EXAMPLE_CONFIG="deploy/pipeline.production.example.json"
-else
-  DEFAULT_CONFIG="$ROOT/deploy/pipeline.local.json"
-  EXAMPLE_CONFIG="deploy/pipeline.example.json"
-fi
+PROFILE="production"
+DEFAULT_CONFIG="$ROOT/deploy/pipeline.production.json"
+EXAMPLE_CONFIG="deploy/pipelines/archive-delivery-jun.md"
 CONFIG_FILE="${1:-${ARCHIVE_PIPELINE_CONFIG:-$DEFAULT_CONFIG}}"
 API="${ARCHIVE_API_URL:-http://127.0.0.1:8080}/api/v1"
 set -a
@@ -40,29 +35,23 @@ for node in definition["nodes"]:
         if (profile == "production" or value is None or value == "" or "********" in value or value.startswith("replace-")) and os.environ.get(name):
             config[field] = os.environ[name]
 ftp = next(node for node in definition["nodes"] if node["type"] == "ftp.download-verify")
-entity_count = int(os.environ.get("PROD_ENTITY_COUNT", "1")) if profile == "production" else 3
+entity_count = int(os.environ.get("PROD_ENTITY_COUNT", "1"))
 for index in range(1, entity_count + 1):
-    if profile == "production":
-        account = os.environ.get(f"PROD_ENTITY_{index}_ACCOUNT", "")
-        value = os.environ.get(f"PROD_FTP_ENTITY_{index}_PASSWORD", "")
-        ftp["config"].setdefault("ftpCredential", {})[account] = value
-    else:
-        account = f"entity{index}"
-        value = os.environ.get(f"LOCAL_FTP_ENTITY_{index}_PASSWORD", f"local_entity{index}_verify")
-    if not account:
-        raise SystemExit(f"Production entity {index} account is required")
-    if profile != "production" and ftp["config"].setdefault("ftpCredential", {}).get(account) in (None, "", "********", "replace-ftp-password"):
-        ftp["config"]["ftpCredential"][account] = value
+    account = os.environ.get(f"PROD_ENTITY_{index}_ACCOUNT", "")
+    value = os.environ.get(f"PROD_FTP_ENTITY_{index}_PASSWORD", "")
+    if not account or not value:
+        raise SystemExit(f"Production entity {index} account/password is required")
+    ftp["config"].setdefault("ftpCredential", {})[account] = value
 if profile == "production":
     accounts = [os.environ[f"PROD_ENTITY_{index}_ACCOUNT"] for index in range(1, entity_count + 1)]
     ftp["config"]["ftpCredential"] = {account: ftp["config"]["ftpCredential"][account] for account in accounts}
 with open(path, "w", encoding="utf-8") as stream:
     json.dump(definition, stream, ensure_ascii=False, indent=2)
     stream.write("\n")
-assert definition.get("pipelineCode") == "archive-delivery"
+assert definition.get("pipelineCode") and definition["pipelineCode"][0].isalnum()
 assert "ruleSets" not in definition and "selection" not in definition["config"]
 assert definition["config"]["assignment"]["strategySource"] == "SUBMIT_TARGETS"
-assert [node["type"] for node in definition["nodes"]] == ["oss.download", "package.merge", "python.repair", "manifest.qualify", "oss.upload", "ftp.download-verify"]
+assert all(node.get("type") for node in definition["nodes"])
 assert all("ruleSet" not in node["config"] for node in definition["nodes"])
 python_nodes = {"package.merge", "python.repair", "ftp.download-verify"}
 script_root = pathlib.Path(root, "nodes", "python").resolve()
@@ -86,9 +75,10 @@ if "ssh." in serialized or "jumpHost" in serialized or "ossutil" in serialized:
     raise SystemExit("SSH jump-host and ossutil configuration are forbidden")
 print(f"Validated {profile} Pipeline: target-driven selection maxPackageBytes={max_package_bytes} nodes={len(definition['nodes'])}")
 PY
+PIPELINE_CODE="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["pipelineCode"])' "$CONFIG_FILE")"
 TEMP="$(mktemp -d)"
 trap 'rm -f "$TEMP"/*.json; rmdir "$TEMP"' EXIT
-curl -fsS --connect-timeout 5 --max-time 15 "$API/pipelines/archive-delivery/versions" -o "$TEMP/versions.json"
+curl -fsS --connect-timeout 5 --max-time 15 "$API/pipelines/$PIPELINE_CODE/versions" -o "$TEMP/versions.json"
 python3 - "$TEMP" <<'PY'
 import json, pathlib, sys
 rows = json.loads((pathlib.Path(sys.argv[1]) / "versions.json").read_text())
@@ -100,7 +90,7 @@ BASE_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])' < "$T
 STATUS="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["status"])' < "$TEMP/current.json")"
 if [[ "$STATUS" == "PUBLISHED" ]]; then
   curl -fsS --connect-timeout 5 --max-time 15 -H 'Content-Type: application/json' \
-    -d "{\"baseVersionId\":$BASE_ID}" "$API/pipelines/archive-delivery/versions" -o "$TEMP/draft.json"
+    -d "{\"baseVersionId\":$BASE_ID}" "$API/pipelines/$PIPELINE_CODE/versions" -o "$TEMP/draft.json"
 elif [[ "$STATUS" == "DRAFT" ]]; then
   cp "$TEMP/current.json" "$TEMP/draft.json"
 else
@@ -140,25 +130,20 @@ for ((ENTITY=1; ENTITY<=ENTITY_COUNT; ENTITY++)); do
   python3 - "$PROFILE" "$ENTITY" "$TEMP/entity-$ENTITY.json" <<'PY'
 import json, os, sys
 profile, entity, output = sys.argv[1], int(sys.argv[2]), sys.argv[3]
-if profile == "production":
-    def required(name):
-        value = os.environ.get(name, "")
-        if not value:
-            raise SystemExit(f"{name} is required")
-        return value
-    vendor = required(f"PROD_ENTITY_{entity}_VENDOR_CODE")
-    entity_code = required(f"PROD_ENTITY_{entity}_ENTITY_CODE")
-    account = required(f"PROD_ENTITY_{entity}_ACCOUNT")
-    host = required(f"PROD_ENTITY_{entity}_HOST")
-    payload = {"vendorCode": vendor, "entityCode": entity_code,
-               "entityName": os.environ.get(f"PROD_ENTITY_{entity}_NAME", f"生产交付实体 {entity_code}"),
-               "protocol": "FTP", "accountName": account, "workerGroup": os.environ.get(f"ENTITY_{entity}_WORKER_GROUP", "group1"),
-               "endpointLocator": {"schemaVersion": 1, "host": host, "port": int(os.environ.get(f"PROD_FTP_ENTITY_{entity}_PORT", "21")),
-                                   "rootPath": os.environ.get(f"PROD_FTP_ENTITY_{entity}_ROOT_PATH", "/")}}
-else:
-    payload = {"vendorCode": "local-other" if entity == 3 else "alibaba", "entityCode": ("jun", "jun2", "jun3")[entity - 1], "entityName": f"本地 FTP 验证实体 {entity}",
-               "protocol": "FTP", "accountName": f"entity{entity}", "workerGroup": os.environ.get(f"ENTITY_{entity}_WORKER_GROUP", "group1"),
-               "endpointLocator": {"schemaVersion": 1, "host": f"ftp-entity-{entity}", "port": 21, "rootPath": "/"}}
+def required(name):
+    value = os.environ.get(name, "")
+    if not value:
+        raise SystemExit(f"{name} is required")
+    return value
+vendor = required(f"PROD_ENTITY_{entity}_VENDOR_CODE")
+entity_code = required(f"PROD_ENTITY_{entity}_ENTITY_CODE")
+account = required(f"PROD_ENTITY_{entity}_ACCOUNT")
+host = required(f"PROD_ENTITY_{entity}_HOST")
+payload = {"vendorCode": vendor, "entityCode": entity_code,
+           "entityName": os.environ.get(f"PROD_ENTITY_{entity}_NAME", f"生产交付实体 {entity_code}"),
+           "protocol": "FTP", "accountName": account, "workerGroup": os.environ.get(f"ENTITY_{entity}_WORKER_GROUP", "group1"),
+           "endpointLocator": {"schemaVersion": 1, "host": host, "port": int(os.environ.get(f"PROD_FTP_ENTITY_{entity}_PORT", "21")),
+                               "rootPath": os.environ.get(f"PROD_FTP_ENTITY_{entity}_ROOT_PATH", "/")}}
 json.dump(payload, open(output, "w"), ensure_ascii=False)
 PY
   if ! python3 - "$TEMP/entities.json" "$TEMP/entity-$ENTITY.json" <<'PY'

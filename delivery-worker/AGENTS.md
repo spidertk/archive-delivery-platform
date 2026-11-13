@@ -1,34 +1,26 @@
 # delivery-worker 模块指南
 
-## 模块职责
+## 职责
 
-`delivery-worker` 接收 PowerJob 通用触发，把提交准备、任务推进和截止扫描交给 delivery-core。Processor 只负责触发、有界槽位和摘要，不写死节点链；顺序完全由 delivery_submit 绑定的 PipelineVersion 决定。
-
-| 通用调度 | 类型 | 业务作用 |
-|---|---|---|
-| 提交准备 | STANDALONE | 按 selection/entityCode targets 发现 source_data，依 vendorCode 整体分配并形成 delivery_mapping |
-| 任务推进 | BROADCAST 或有界池 | claim 最新非 PAUSED 任务，每次执行一个 currentNodeId |
-| 截止扫描 | STANDALONE | EXPIRED 并生成下一日 taskId，事件保存新旧血缘 |
+接收 PowerJob 通用准备、推进和跨日触发，由 delivery-core 按不可变 PipelineVersion 有界执行。Processor 不写死节点链，每次 executeNext 只推进一个节点。
 
 ## 执行边界
 
-1. 有界 executor；防重、lease/fence 和状态提交由 core + PG 保证。
-2. 每次 executeNext 只推进一个节点；PAUSED 不认领，WAITING 释放槽位。
-3. 跨日 RUNNING 通过 EXPIRED/fence 拒绝晚到提交，不强杀外部 IO。
-4. Secret 只从当前 Pipeline 节点获取；生产不能回退 Local Node/debug runner。
-5. `ARCHIVE_WORKER_GROUP` 是单服务器执行域，同机 Worker 共享 /data，跨机不共享。
+- 有界 executor；claim、lease/fence 和状态提交由 core + PG 保证。
+- PAUSED 不认领，WAITING 释放槽位；RUNNING 过期通过 fence 拒绝晚到提交。
+- `ARCHIVE_WORKER_GROUP` 对应一台服务器的本地 `/data`，同机 Worker 共享，跨机不共享。
+- Secret 只从当前节点配置获取；生产禁止 Local Node/debug runner 和任意 Shell。
+- merge/repair/FTP 的 scriptPath 只保存固定挂载目录内相对 `.py` 路径。
 
-## 当前数据面
+## 黄金验证
 
-Worker 按 `oss.download → package.merge → python.repair → manifest.qualify → oss.upload → ftp.download-verify` 推进。超限源包下载前过滤，同 vendorCode 的 entityCode 目标整体顺序累计到 10 MiB 内且不切分。URI+版本源包在同机 source-cache 复用，sourceDownload 命中后本地校验复制并记录 cacheHit=true，其他执行组缓存缺失时回退 OSS。merge 输出请求目录；repair 接收 entityCode 并只最终封包一次。merge/repair/FTP 的 Pipeline scriptPath 只保存相对 .py 路径，Worker 统一从 `/app/nodes/python` 解析并校验文件后固定 argv 执行；Compose 整目录只读挂载使新增脚本无需修改挂载或环境变量。任务来源只读 delivery_mapping，artifacts 只含 dataId/sourceArtifact，metadataIds 为同顺序 data_id；最终 size/SHA 从 repair/OSS 成功 locator 读取。
+`GoldenPipelineDefinitionTest` 逐个读取 `deploy/pipelines/*.md`，从 Spring 容器检查真实 NodeHandler 注册，再以无外部 IO 替身执行同一 PipelineEngine/DAG。它只证明逻辑，不是生产证据。
 
-## 核心验证
+`RealExternalVerificationTest` 在生产 profile 下按 targetCount/entityCount 执行真实预检和交付复核；本地默认历史专项配置不得替代生产 case。每个生产 case 必须实际覆盖 SOURCE_GET、TARGET_GET、FTP_GET、SIZE_SHA、NO_PARTIAL。
 
 ```bash
-./scripts/mvn.sh -pl delivery-worker -am test
-./scripts/verify-delivery.sh <deliveryId>
+./scripts/maven-test.sh -pl delivery-worker -am test
+./scripts/production-registry.sh <caseId|all>
 ```
 
-本地真实核心 case 从指定 sg-storage products 下载足够来源，按每包 8–10 MiB 形成两个实体任务、每组上传一件，完成 repair/qualify、两件 OSS GET 回验和两个 FTP 账户各一件产物上传下载核验；同时实际覆盖暂停后原批次续交、单任务 retry 和跨日新 taskId。最终核对入选来源各分配一次、artifacts 仅含 dataId/sourceArtifact、sourceArtifact=source_data.artifact、metadataIds 与 sourceDataIds 完全相等、repair manifest 保留 originalPath/newRequestId、最终 size/SHA 来自成功节点 locator、包名在 delivery 内唯一、deliveryBatch 编号命名空间、外部文件 size/SHA、文件保留和无 .partial。
-
-`LocalMergedCaseVerificationTest` 仅用于显式本机 Compose V23 迁移/三来源映射辅助核验，不能替代真实节点验收。`ARCHIVE_REAL_E2E=true` 只用于明确授权环境；本地验证保持三实体预检、两任务和暂停/retry/跨日口径，`ARCHIVE_VERIFICATION_PROFILE=production` 按实际 targetCount 核验单实体生产 case，不强制本地状态故障注入。skipped、fake、PowerJob 绿色实例和数据库直写均不算端到端通过。模型或流程调整后必须实际跑通本地或生产完整链路。
+skipped、fake、PowerJob 绿色实例和数据库直写均不算交付通过。

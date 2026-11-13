@@ -34,7 +34,7 @@ deliveryBatch 全局幂等；同参数返回原单，不同参数 409。pause �
 ## 测试
 
 ```bash
-./scripts/mvn.sh -pl delivery-server -am test
+./scripts/maven-test.sh -pl delivery-server -am test
 cd web && npm ci && npm run test && npm run build
 ```
 
