@@ -39,6 +39,10 @@ public class DeliveryRepository {
         return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_batch=?", submitMapper, deliveryBatch).stream().findFirst();
     }
 
+    public Optional<DeliverySubmit> findByDeliveryBatchForUpdate(String deliveryBatch) {
+        return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_batch=? FOR UPDATE", submitMapper, deliveryBatch).stream().findFirst();
+    }
+
     public DeliveryEntity entity(long entityId) {
         return jdbc.query("SELECT * FROM delivery_entity WHERE delivery_entity_id=?", entityMapper, entityId).stream().findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Unknown delivery entity " + entityId));

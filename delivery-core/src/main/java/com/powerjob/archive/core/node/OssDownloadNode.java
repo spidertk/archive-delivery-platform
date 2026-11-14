@@ -59,10 +59,11 @@ public class OssDownloadNode implements NodeHandler {
                 context.sources().size());
         // mapping 顺序决定源包下载和后续 merge 的来源序号。
         for (SourceData source : context.sources()) {
-            // 原始 locator 必须是当前 OSS 节点桶内的普通 oss URI。
+            // 桶和对象键只来自提交时固化的来源 locator，Pipeline 下载节点不保存业务前缀。
             URI location = URI.create(source.sourceUri());
-            if (!"oss".equals(location.getScheme()) || !config.bucket().equals(location.getHost()) || location.getQuery() != null) {
-                throw new IllegalArgumentException("Source locator differs from current OSS node: dataId=" + source.dataId());
+            if (!"oss".equals(location.getScheme()) || location.getHost() == null || location.getUserInfo() != null
+                    || location.getQuery() != null || location.getFragment() != null) {
+                throw new IllegalArgumentException("Invalid source OSS locator: dataId=" + source.dataId());
             }
             // 对象键只取 URI 路径，不接收签名参数或任意命令。
             String key = location.getPath().replaceFirst("^/", "");

@@ -7,7 +7,7 @@
 ## 基线
 
 - `pipelines/*.md` 是 Pipeline 和黄金用例唯一 review 来源；`pipeline.production.json`、`golden-case.json` 由 `pipeline_registry.py materialize` 生成，权限 600，不提交、不进入镜像。
-- `docker-compose.production.yml` 启动 PG、MySQL、PowerJob、archive-server、worker-1 和隔离 ftp-june；FTP 只开放 Compose 内网并挂载 jun 授权目录。
+- `docker-compose.production.yml` 启动 PG、MySQL、PowerJob、archive-server、worker-1/2/3/4 和隔离 ftp-june；FTP 只开放 Compose 内网并挂载 jun 授权目录。
 - `env.production.example` 只含非 Secret 定位和占位值，实际 `.env` 权限 600，由管理员离线维护。
 - `V24__golden_delivery_baseline.sql` 是唯一迁移；全新库创建完整模型，已有 V23 模型幂等升级。
 - server/worker 使用官方 Maven/Node 基础镜像、pom 优先复制和 `/root/.m2` BuildKit 缓存；新加坡生产使用 Maven Central 官方仓库。

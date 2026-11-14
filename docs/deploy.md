@@ -2,7 +2,7 @@
 
 ## 1. 拓扑
 
-`deploy/docker-compose.production.yml` 在交付机启动 PostgreSQL 16、MySQL 8.0.36、PowerJob Server 5.1.7、archive-server、worker-1 和隔离 ftp-june。PG、PowerJob、API 默认只绑定回环；FTP 只在 Compose 内网开放。远程 Worker 接入时通过环境变量绑定 `0.0.0.0`，安全组只允许对方公网 IP `/32`。
+`deploy/docker-compose.production.yml` 在交付机启动 PostgreSQL 16、MySQL 8.0.36、PowerJob Server 5.1.7、archive-server、worker-1/2/3/4 和隔离 ftp-june。PG、PowerJob、API 默认只绑定回环；FTP 只在 Compose 内网开放。远程 Worker 接入时通过环境变量绑定 `0.0.0.0`，安全组只允许对方公网 IP `/32`。
 
 同机 Worker 共享本机 archive_data，不同服务器不共享目录。禁止 `down -v`、清库、清空 Bucket/FTP 或同名不同 SHA 覆盖。
 

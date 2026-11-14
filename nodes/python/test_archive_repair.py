@@ -38,11 +38,12 @@ class ArchiveRepairTest(unittest.TestCase):
         source_dir = self.root / (name + "-input")
         source_dir.mkdir()
         source = self.root / name
-        for directory, metadata, response in requests:
+        for directory, metadata, response, *stream_option in requests:
             request = source_dir / directory
             request.mkdir()
             (request / "metadata.json").write_text(json.dumps(metadata), encoding="utf-8")
-            (request / "biz_request.json").write_text("{}", encoding="utf-8")
+            stream = stream_option[0] if stream_option else None
+            (request / "biz_request.json").write_text(json.dumps({} if stream is None else {"stream": stream}), encoding="utf-8")
             (request / response).write_text("{}\n", encoding="utf-8")
         with tarfile.open(source, "w:gz") as archive:
             for request in sorted(source_dir.iterdir()):
@@ -102,6 +103,18 @@ class ArchiveRepairTest(unittest.TestCase):
                 self.assertIsNotNone(archive.extractfile(new_id + "/biz_response.json"))
             outputs.append(payload["artifacts"][0]["sha256"])
         self.assertEqual(outputs[0], outputs[1])
+
+    def test_null_request_mode_uses_request_stream_flag_or_response_file(self):
+        source = self.make_source("batch_00005.tar.gz", [
+            ("stream_flag", {"requestId": self.request_id(11), "requestMode": None}, "biz_stream_response.jsonl", True),
+            ("sync_flag", {"requestId": self.request_id(12), "requestMode": None}, "biz_response.json", False),
+            ("sync_file", {"requestId": self.request_id(13), "requestMode": None}, "biz_response.json")])
+        merged = self.merge_sources([source])
+        result = self.run_script("--source", merged["workspacePath"], *self.repair_args(self.root / "out"))
+        with tarfile.open(result.json["artifactPath"], "r:gz") as archive:
+            for index, mode in ((11, "STREAM"), (12, "SYNC"), (13, "SYNC")):
+                metadata = json.load(archive.extractfile(self.request_id(index) + "/metadata.json"))
+                self.assertEqual(metadata["requestMode"], mode)
 
     def test_missing_protocol_files_do_not_publish_output_or_temp_files(self):
         for missing in ("metadata", "biz_request", "response"):

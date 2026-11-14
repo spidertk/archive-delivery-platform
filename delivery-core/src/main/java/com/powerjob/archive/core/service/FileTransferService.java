@@ -34,7 +34,11 @@ public class FileTransferService {
         }
         Files.createDirectories(target.getParent());
         Path partial = target.resolveSibling(target.getFileName() + ".partial");
-        Files.copy(source, partial, StandardCopyOption.REPLACE_EXISTING);
+        try {
+            Files.createLink(partial, source);
+        } catch (IOException | UnsupportedOperationException | SecurityException linkUnavailable) {
+            Files.copy(source, partial, StandardCopyOption.REPLACE_EXISTING);
+        }
         if (!sha256(partial).equals(expectedSha)) {
             Files.deleteIfExists(partial);
             throw new IOException("Artifact SHA-256 mismatch");
@@ -58,6 +62,25 @@ public class FileTransferService {
         } catch (IOException | RuntimeException error) {
             Files.deleteIfExists(partial);
             throw error;
+        }
+    }
+
+    public void cleanupAfterVerification(Path taskRoot, Path ossCopy, String packageName) throws IOException {
+        Path normalized = taskRoot.toAbsolutePath().normalize();
+        Path verifiedCopy = ossCopy.toAbsolutePath().normalize();
+        if (!verifiedCopy.startsWith(normalized) || !packageName.matches("batch_\\d{5}\\.tar\\.gz")) {
+            throw new IllegalArgumentException("Cleanup paths must stay inside the current task");
+        }
+        deleteTree(normalized.resolve("sources"));
+        deleteTree(normalized.resolve("merge").resolve("requests"));
+        Files.deleteIfExists(normalized.resolve("repair").resolve(packageName));
+        Files.deleteIfExists(verifiedCopy);
+    }
+
+    private void deleteTree(Path root) throws IOException {
+        if (!Files.exists(root)) return;
+        try (var paths = Files.walk(root)) {
+            for (Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
         }
     }
 

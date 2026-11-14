@@ -76,7 +76,7 @@ docker run --rm -v archive_delivery_production_archive_data:/data:ro alpine:3.22
 
 1. 暂停新提交；运行中任务先等节点结束，再在节点边界暂停。不要直接删除正在使用的目录。
 2. 检查是否有异常 `.tmp`、`.partial` 和失败 staging。只有确认对应 task/process 已失败且没有 RUNNING，才清理该次明确路径的半成品。
-3. 已交付批次只有在 OSS/FTP size/SHA 证据完整并超过保留期后，才可按交付单审批清理旧工作副本。最终 FTP 文件默认保留。
+3. 生产默认在 FTP size/SHA 复核成功后清理当前任务的大体积中间副本，保留 merge/repair manifest、source-cache、FTP 回验文件和最终 OSS/FTP。只有需要延长工作副本保留期时才调整 `ARCHIVE_CLEANUP_WORK_AFTER_VERIFY`；其他旧工作副本仍需按交付单审批清理。
 4. Docker 镜像清理只针对确认不用的镜像；不得自动清理数据库、archive_data 或 FTP 卷。
 5. PostgreSQL 磁盘写满时优先扩容。不要删除 WAL、数据库卷或手工编辑 Flyway 状态。
 
@@ -87,13 +87,13 @@ docker run --rm -v archive_delivery_production_archive_data:/data:ro alpine:3.22
 ### 源 OSS 403
 
 - 检查源 AK/SK 是否有指定前缀 List/Get 权限，确认没有使用匿名 URL 代替 SDK 凭据。
-- 检查 endpoint 为新加坡区域，bucket 为 `sg-oss-external-channel-source`。
-- 检查 prefix 中 `YY：` 是全角冒号；URL 的 `%EF%BC%9A` 必须解码后写入 Pipeline。
+- 检查 endpoint 为 `https://oss-ap-southeast-1-internal.aliyuncs.com`，bucket/prefix 来自提交时固化的 `ossUri`。
+- 下载节点配置不得重新加入 bucket/prefix；403 时核对提交 URI 与源 AK/SK 的 List/Get 权限。
 - 修改受控配置后重新发布 PipelineVersion 和预检，不直接改数据库 definition。
 
 ### 来源不足、全部超限或包低于 8 MiB
 
-检查主单是否 BLOCKED、`SOURCE_FILTERED` 事件和准备日志。单包超过 10 MiB 会在下载前过滤；剩余来源无法组成全部 targetCount 时会阻断，不切分文件。补充来源或经审批发布新的大小边界，不能 SQL 创建任务绕过。
+检查主单是否 BLOCKED、`SOURCE_FILTERED` 事件和准备日志。单包超过 100 MiB 会在下载前过滤；剩余来源无法组成全部 targetCount 时会阻断，不切分文件。补充来源或经审批发布新的大小边界，不能 SQL 创建任务绕过。
 
 ### 目标 OSS 403 或 SHA 冲突
 
@@ -112,7 +112,7 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env lo
 
 ### 任务一直 READY
 
-检查 worker-1 是否在线、实体和任务是否都是 group1、组内 RUNNING 是否达到 3、任务是否 PAUSED/WAITING/RETRY_WAIT。不要用 SQL 改 lease_owner 或 execution_status。
+检查 worker-1/2/3/4 是否在线、实体和任务是否都是 group1、组内 RUNNING 是否达到 4、任务是否 PAUSED/WAITING/RETRY_WAIT。不要用 SQL 改 lease_owner 或 execution_status。
 
 ### BLOCKED 后重试
 

@@ -17,7 +17,7 @@
   "nodeDefinitions": {
     "oss.download": {
       "enabled": true,
-      "configSchema": {"type": "object", "required": ["endpoint", "bucket", "accessKeyId", "accessKeySecret"]},
+      "configSchema": {"type": "object", "required": ["endpoint", "accessKeyId", "accessKeySecret"]},
       "inputContract": {"type": "object"},
       "outputContract": {"type": "object"}
     },
@@ -54,14 +54,14 @@
   },
   "config": {
     "businessTimezone": "Asia/Shanghai",
-    "deliveryCutoffTime": "18:00:00",
+    "deliveryCutoffTime": "02:00:00",
     "rolloverStartNode": "targetUpload",
     "assignment": {
       "strategySource": "SUBMIT_TARGETS",
       "minPackageBytes": 8388608,
-      "maxPackageBytes": 10485760
+      "maxPackageBytes": 104857600
     },
-    "concurrency": {"maxRunningTasks": 3},
+    "concurrency": {"maxRunningTasks": 4},
     "retry": {"maxAttempts": 5}
   },
   "nodes": [
@@ -72,9 +72,7 @@
       "displayName": "下载源 OSS 并保留",
       "next": "mergePackages",
       "config": {
-        "endpoint": "https://oss-ap-southeast-1.aliyuncs.com",
-        "bucket": "sg-oss-external-channel-source",
-        "prefix": "jayden-incoming/maasData/archive/YY：@feiji777888/2026-11-09/",
+        "endpoint": "https://oss-ap-southeast-1-internal.aliyuncs.com",
         "accessKeyId": "replace-access-key",
         "accessKeySecret": "replace-secret"
       }
@@ -83,7 +81,7 @@
       "id": "mergePackages",
       "type": "package.merge",
       "stageCode": "MERGE",
-      "displayName": "按 8–10 MiB 合并来源包",
+      "displayName": "按 8–100 MiB 合并来源包",
       "next": "repair",
       "config": {"scriptPath": "archive_merge.py"}
     },
@@ -144,7 +142,8 @@
 {
   "caseId": "archive-delivery-jun",
   "pipelineCode": "archive-delivery",
-  "description": "从指定真实源前缀交付一个 alibaba/jun 合并包，独立核对源、目标 OSS 和 FTP 文件事实。",
+  "ossUri": "oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-raw-20261113-v1/daily-accepted-20261113-v2/products/",
+  "description": "从提交 ossUri 指定的真实源前缀交付 alibaba/jun 合并包，独立核对源、目标 OSS 和 FTP 文件事实。",
   "targets": [
     {
       "targetCount": 1,

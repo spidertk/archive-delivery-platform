@@ -9,6 +9,7 @@ import com.powerjob.archive.core.domain.SourceData;
 import com.powerjob.archive.core.domain.WorkerGroups;
 import com.powerjob.archive.core.pipeline.SourceDataPatch;
 import com.powerjob.archive.core.service.RetryPolicy;
+import com.powerjob.archive.core.service.ResumeConflictException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -73,8 +74,9 @@ public class DeliveryTaskRepository {
     }
 
     /** 每台服务器只认领本组任务；PAUSED 不在可认领状态内，组内并发独立计数。 */
-    public Optional<DeliveryTask> claimNext(String workerId, String workerGroup, int maxRunning) {
+    public Optional<DeliveryTask> claimNext(String workerId, String workerGroup, int maxRunning, int leaseSeconds) {
         WorkerGroups.requireValid(workerGroup);
+        if (leaseSeconds < 120) throw new IllegalArgumentException("Task lease must be at least 120 seconds");
         return transactions.execute(status -> {
             Integer running = jdbc.queryForObject("SELECT count(*) FROM delivery_task WHERE worker_group=? " +
                     "AND execution_status='RUNNING' AND lease_until>=now()", Integer.class, workerGroup);
@@ -82,10 +84,46 @@ public class DeliveryTaskRepository {
             return jdbc.query("WITH candidate AS (SELECT task_id FROM delivery_task WHERE worker_group=? AND (" +
                             "execution_status='READY' OR (execution_status IN('RETRY_WAIT','WAITING') AND next_retry_at<=now()) " +
                             "OR (execution_status='RUNNING' AND lease_until<now())) ORDER BY delivery_date,task_id FOR UPDATE SKIP LOCKED LIMIT 1)," +
-                            " claimed AS (UPDATE delivery_task t SET execution_status='RUNNING',lease_owner=?,lease_until=now()+interval '120 seconds'," +
+                            " claimed AS (UPDATE delivery_task t SET execution_status='RUNNING',lease_owner=?,lease_until=now()+?*interval '1 second'," +
                             "fence=t.fence+1,updated_at=now() FROM candidate c WHERE t.task_id=c.task_id RETURNING t.*) SELECT * FROM claimed",
-                    mapper, workerGroup, workerId).stream().findFirst();
+                    mapper, workerGroup, workerId, leaseSeconds).stream().findFirst();
         });
+    }
+
+    public List<Long> appendSourcesForReplan(long taskId, long expectedFence, List<SourceData> additions, String firstNode) {
+        if (additions == null || additions.isEmpty()) throw new IllegalArgumentException("Replan additions are required");
+        return transactions.execute(status -> {
+            DeliveryTask task = findById(taskId).orElseThrow();
+            if (!"BLOCKED".equals(task.executionStatus()) || !"qualify".equals(task.currentNodeId()) || task.fence() != expectedFence) {
+                throw new IllegalArgumentException("Only the expected underfilled qualify task can be replanned");
+            }
+            ArrayNode artifacts = task.artifacts() == null ? JSON.createArrayNode() : task.artifacts().deepCopy();
+            List<Long> ids = new java.util.ArrayList<>();
+            int sourceSeq = sourcesCount(taskId);
+            for (SourceData source : additions) {
+                if (source.deliveryId() != task.deliveryId()) throw new IllegalArgumentException("Replan source delivery differs");
+                sourceSeq++;
+                jdbc.update("INSERT INTO delivery_mapping(task_id,delivery_id,data_id,source_seq) VALUES(?,?,?,?)",
+                        taskId, task.deliveryId(), source.dataId(), sourceSeq);
+                var pair = artifacts.addObject();
+                pair.put("dataId", source.dataId());
+                pair.set("sourceArtifact", source.artifact().deepCopy());
+                ids.add(source.dataId());
+            }
+            int changed = jdbc.update("UPDATE delivery_task SET artifacts=?::jsonb,metadata_ids='[]'::jsonb," +
+                            "size_bytes=(SELECT sum(sd.size_bytes) FROM delivery_mapping m JOIN source_data sd ON sd.data_id=m.data_id WHERE m.task_id=?)," +
+                            "token_count=(SELECT sum(sd.token_count) FROM delivery_mapping m JOIN source_data sd ON sd.data_id=m.data_id WHERE m.task_id=?)," +
+                            "current_node_id=?,execution_status='READY',lease_owner=NULL,lease_until=NULL,retry_count=0,next_retry_at=NULL," +
+                            "last_error_code=NULL,completed_at=NULL,updated_at=now() WHERE task_id=? AND fence=? AND execution_status='BLOCKED'",
+                    artifacts.toString(), taskId, taskId, firstNode, taskId, expectedFence);
+            if (changed != 1) throw new IllegalArgumentException("Task changed during replan");
+            return List.copyOf(ids);
+        });
+    }
+
+    private int sourcesCount(long taskId) {
+        Integer count = jdbc.queryForObject("SELECT count(*) FROM delivery_mapping WHERE task_id=?", Integer.class, taskId);
+        return count == null ? 0 : count;
     }
 
     public Optional<DeliveryTask> findById(long taskId) {

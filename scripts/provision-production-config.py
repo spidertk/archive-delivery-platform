@@ -34,7 +34,10 @@ def main():
     defaults = {
         "COMPOSE_PROJECT_NAME": "archive_delivery_production",
         "ARCHIVE_WORKER_GROUP": "group1",
-        "ARCHIVE_MAX_RUNNING_TASKS": "3",
+        "ARCHIVE_MAX_RUNNING_TASKS": "4",
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "8",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
         "ARCHIVE_PG_BIND_ADDRESS": "127.0.0.1",
         "POWERJOB_BIND_ADDRESS": "127.0.0.1",
         "POWERJOB_ADMIN_INITIAL_PASSWORD": "powerjob_admin",
@@ -49,7 +52,8 @@ def main():
         "PROD_FTP_ENTITY_1_ROOT_PATH": "/",
         "PROD_JUNE_HOST_ROOT": "/srv/maas-sftp/maasData/archive/june",
         "PROD_TARGET_COUNT": "1",
-        "PROD_PIPELINE_OBSERVATION_SECONDS": "1800",
+        "PROD_OSS_URI": "oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-raw-20261113-v1/daily-accepted-20261113-v2/products/",
+        "PROD_PIPELINE_OBSERVATION_SECONDS": "21600",
     }
     for key, value in defaults.items():
         values.setdefault(key, value)

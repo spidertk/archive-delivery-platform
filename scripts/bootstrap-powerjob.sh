@@ -57,8 +57,8 @@ save_job() {
     "$BASE_URL/job/save" >/dev/null
   echo "Saved $name ($execute_type, ${interval_ms}ms)"
 }
-save_job archive-delivery-preparation STANDALONE 15000 com.powerjob.archive.worker.DeliveryPreparationProcessor
-save_job archive-task-tick BROADCAST 5000 com.powerjob.archive.worker.TaskTickProcessor
+save_job archive-delivery-preparation STANDALONE 5000 com.powerjob.archive.worker.DeliveryPreparationProcessor
+save_job archive-task-tick BROADCAST 1000 com.powerjob.archive.worker.TaskTickProcessor
 save_job archive-delivery-rollover STANDALONE 30000 com.powerjob.archive.worker.DeliveryRolloverProcessor
 
 # 删除会调用已移除 Processor 的旧调度，保留 PowerJob 本身及三个新通用触发器。

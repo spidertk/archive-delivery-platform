@@ -7,10 +7,11 @@
 ## 当前模型
 
 - 血缘为 delivery_submit → source_data → delivery_mapping → delivery_task → delivery_node。
-- 提交只接收 ossUri/pipelineCode/deliveryDate/deliveryBatch/targets；cutoffAt 由不可变 Pipeline 推导。
+- 提交只接收 ossUri/pipelineCode/deliveryDate/deliveryBatch/targets；cutoffAt 由 deliveryDate 的次日与不可变 Pipeline 时区/时间推导。下载节点不保存 bucket/prefix，准备与执行均使用提交固化的 ossUri。
+- DELIVERED 主单可按原实体追加 targetCount，requests 保存历史请求幂等；规划排除本单已用 sourceUri，批次号从已有最大值续排。准备源下载由 `ARCHIVE_PREPARATION_DOWNLOAD_THREADS` 有界并行，每组来源就绪后立即创建任务，与后续节点执行形成流水。
 - delivery_task.artifacts 只含 dataId/sourceArtifact；metadata_ids 为同顺序 data_id。包名在 delivery_id 内连续唯一。
 - TaskExecutionService 是唯一任务状态推进入口，NodeHandler 不直接修改主单或任务状态。
-- 同 vendorCode 目标整体分配，targetCount 展开槽位，不切分来源；merge 只解包一次，repair 只最终封包一次。
+- 同 vendorCode 目标整体分配，targetCount 展开槽位，不切分来源；来源装箱下限为最终下限的 125%，压缩后不足时只能通过 `replan-underfilled` 追加未映射来源并重跑；merge 只解包一次，repair 只最终封包一次。
 - repair 使用 entityCode 和 Pipeline 固定的 gzipCompressLevel（默认 9，生产 5），request_namespace=deliveryBatch。
 - worker_group 是单服务器执行域，任务创建时固化，retry/resume/rollover 不跨组。
 

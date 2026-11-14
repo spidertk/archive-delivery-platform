@@ -1,0 +1,13 @@
+{
+  "ossUri": "oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-raw-20261113-v1/daily-accepted-20261113-v2/products/",
+  "pipelineCode": "archive-delivery",
+  "deliveryDate": "2026-11-15",
+  "deliveryBatch": "001",
+  "targets": [
+    {
+      "targetCount": 200,
+      "vendorCode": "alibaba",
+      "entityCode": "jun"
+    }
+  ]
+}

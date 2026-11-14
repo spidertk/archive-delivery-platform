@@ -43,6 +43,16 @@ def fix_request(request_dir, fallback_number, archive_date, provider_code):
     stream_response = request_dir / "biz_stream_response.jsonl"
     sync_response = request_dir / "biz_response.json"
     mode = metadata.get("requestMode", "")
+    if mode is None or mode == "":
+        with (request_dir / "biz_request.json").open(encoding="utf-8") as stream:
+            requested_stream = json.load(stream).get("stream")
+        if isinstance(requested_stream, bool):
+            mode = "STREAM" if requested_stream else "SYNC"
+        elif stream_response.is_file() and not sync_response.is_file():
+            mode = "STREAM"
+        elif sync_response.is_file() and not stream_response.is_file():
+            mode = "SYNC"
+        metadata["requestMode"] = mode
     if mode == "STREAM" and sync_response.exists() and not stream_response.exists():
         sync_response.rename(stream_response)
     elif mode == "SYNC" and stream_response.exists() and not sync_response.exists():
@@ -52,7 +62,7 @@ def fix_request(request_dir, fallback_number, archive_date, provider_code):
     if mode == "SYNC" and not sync_response.is_file():
         raise FileNotFoundError("Missing SYNC response in " + request_dir.name)
     if mode not in ("STREAM", "SYNC"):
-        raise ValueError("Unsupported requestMode in " + request_dir.name)
+        raise ValueError("Unsupported requestMode=" + repr(mode) + " in " + request_dir.name)
     with metadata_path.open("w", encoding="utf-8") as stream:
         json.dump(metadata, stream, ensure_ascii=False)
     return original_request_id, new_request_id

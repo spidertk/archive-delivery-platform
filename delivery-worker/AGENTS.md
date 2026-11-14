@@ -7,10 +7,11 @@
 ## 执行边界
 
 - 有界 executor；claim、lease/fence 和状态提交由 core + PG 保证。
-- PAUSED 不认领，WAITING 释放槽位；RUNNING 过期通过 fence 拒绝晚到提交。
+- PAUSED 不认领，WAITING 释放槽位；RUNNING 过期通过 fence 拒绝晚到提交。大文件节点默认租约 900 秒，可由 `ARCHIVE_TASK_LEASE_SECONDS` 调整且最低 120 秒。
 - `ARCHIVE_WORKER_GROUP` 对应一台服务器的本地 `/data`，同机 Worker 共享，跨机不共享。
 - Secret 只从当前节点配置获取；生产禁止 Local Node/debug runner 和任意 Shell。
 - merge/repair/FTP 的 scriptPath 只保存固定挂载目录内相对 `.py` 路径。
+- 生产 `ARCHIVE_CLEANUP_WORK_AFTER_VERIFY=true` 时，FTP 复核成功后只清理任务内 sources、merge/requests、repair 包和 OSS 回验副本，保留 manifest、source-cache 与 FTP 回验文件。
 
 ## 黄金验证
 

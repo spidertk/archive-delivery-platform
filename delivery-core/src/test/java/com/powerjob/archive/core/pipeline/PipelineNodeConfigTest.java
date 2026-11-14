@@ -9,11 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class PipelineNodeConfigTest {
     private final PipelineNodeConfig configs = new PipelineNodeConfig(new ObjectMapper());
 
-    @Test void maskedOssCredentialsCannotBePublished() {
-        NodeDefinition node = new NodeDefinition("source", "oss.download", "ACQUIRE", "source", null,
+    @Test void sourceLocationCannotBePinnedByPipeline() {
+        NodeDefinition source = new NodeDefinition("source", "oss.download", "ACQUIRE", "source", null,
                 Map.of("endpoint", "https://oss.example", "bucket", "bucket", "prefix", "prefix/",
-                        "accessKeyId", "********", "accessKeySecret", "secret"));
-        assertThrows(IllegalArgumentException.class, () -> configs.oss(node, true));
+                        "accessKeyId", "access", "accessKeySecret", "secret"));
+        assertThrows(IllegalArgumentException.class, () -> configs.oss(source, true));
+        NodeDefinition masked = new NodeDefinition("source", "oss.download", "ACQUIRE", "source", null,
+                Map.of("endpoint", "https://oss.example", "accessKeyId", "********", "accessKeySecret", "secret"));
+        assertThrows(IllegalArgumentException.class, () -> configs.oss(masked, true));
     }
 
     @Test void placeholderFtpCredentialsCannotBePublished() {

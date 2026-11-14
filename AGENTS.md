@@ -13,8 +13,8 @@ Archive Delivery Platform 基于 PowerJob + 不可变 PipelineVersion。PostgreS
 
 ## 核心约束
 
-1. 提交只包含 `ossUri + pipelineCode + deliveryDate + deliveryBatch + targets[vendorCode,entityCode,targetCount]`。cutoffAt 由 Pipeline 的 businessTimezone/deliveryCutoffTime 推导，不传数据库 ID、cutoffAt、idempotencyKey、Secret、节点列表或 Shell。
-2. deliveryBatch 全局唯一，是幂等键和请求编号命名空间。相同规范请求返回原 deliveryId，不同请求 409；PAUSED 主单以完全相同参数续交，不重复建单。
+1. 提交只包含 `ossUri + pipelineCode + deliveryDate + deliveryBatch + targets[vendorCode,entityCode,targetCount]`。cutoffAt 由 deliveryDate 的次日与 Pipeline 的 businessTimezone/deliveryCutoffTime 推导，不传数据库 ID、cutoffAt、idempotencyKey、Secret、节点列表或 Shell。
+2. deliveryBatch 全局唯一，是幂等键和请求编号命名空间。历史规范请求返回原 deliveryId；DELIVERED 主单可对已有实体追加正数 targetCount，累计规划并排除本单已用来源，其他不同请求或未完成主单追加返回 409；PAUSED 主单以历史相同参数续交，不重复建单。
 3. `delivery_task.artifacts[]` 只含 dataId/sourceArtifact，sourceArtifact 必须等于 source_data.artifact；metadata_ids 为同顺序 data_id 数组。有效包名在整个 delivery_id 内连续且唯一。
 4. targetCount 是合并任务槽位数。单包来源合计和最终产物均须在 minPackageBytes/maxPackageBytes 内，不切分原始文件；超限包下载前过滤。
 5. merge 对每个源包只安全解包一次并输出请求目录；repair 在私有 staging 修复且只最终封包一次。生产 gzipCompressLevel 由不可变 Pipeline 固定，当前为 5。

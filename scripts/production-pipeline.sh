@@ -6,9 +6,28 @@ if [[ ! -f deploy/.env ]]; then
   echo "Missing deploy/.env; use deploy/env.production.example and configure controlled credentials." >&2
   exit 1
 fi
+CLI_OVERRIDES=(
+  "ARCHIVE_MAX_RUNNING_TASKS=${ARCHIVE_MAX_RUNNING_TASKS:-}"
+  "ARCHIVE_PREPARATION_DOWNLOAD_THREADS=${ARCHIVE_PREPARATION_DOWNLOAD_THREADS:-}"
+  "ARCHIVE_TASK_LEASE_SECONDS=${ARCHIVE_TASK_LEASE_SECONDS:-}"
+  "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY=${ARCHIVE_CLEANUP_WORK_AFTER_VERIFY:-}"
+  "PROD_TARGET_COUNT=${PROD_TARGET_COUNT:-}"
+  "PROD_OSS_URI=${PROD_OSS_URI:-}"
+  "PROD_DELIVERY_BATCH=${PROD_DELIVERY_BATCH:-}"
+  "PROD_DELIVERY_DATE=${PROD_DELIVERY_DATE:-}"
+  "PROD_DELIVERY_EXPECTED_TASKS=${PROD_DELIVERY_EXPECTED_TASKS:-}"
+  "PROD_VERIFY_EXPECTED_TASKS=${PROD_VERIFY_EXPECTED_TASKS:-}"
+  "PROD_VERIFY_ALLOW_CLEANED_WORK=${PROD_VERIFY_ALLOW_CLEANED_WORK:-}"
+  "PROD_PIPELINE_OBSERVATION_SECONDS=${PROD_PIPELINE_OBSERVATION_SECONDS:-}"
+)
 set -a
 source deploy/.env
 set +a
+for override in "${CLI_OVERRIDES[@]}"; do
+  name="${override%%=*}"
+  value="${override#*=}"
+  if [[ -n "$value" ]]; then export "$name=$value"; fi
+done
 PIPELINE_CASE="${PIPELINE_CASE:-archive-delivery-jun}"
 eval "$(python3 scripts/pipeline_registry.py env "$PIPELINE_CASE")"
 python3 scripts/pipeline_registry.py materialize "$PIPELINE_CASE"
@@ -51,8 +70,10 @@ run_external_test() {
   docker build -t archive-delivery-maven:test -f deploy/Dockerfile.test deploy >/dev/null
   docker run --rm --network "$NETWORK" \
     -e ARCHIVE_VERIFICATION_PROFILE=production \
-    -e ARCHIVE_VERIFY_EXPECTED_TASKS="${PROD_TARGET_COUNT:-1}" \
+    -e ARCHIVE_VERIFY_EXPECTED_TASKS="${PROD_VERIFY_EXPECTED_TASKS:-${PROD_TARGET_COUNT:-1}}" \
     -e ARCHIVE_VERIFY_EXPECTED_ENTITIES="${PROD_ENTITY_COUNT:-1}" \
+    -e ARCHIVE_VERIFY_SOURCE_URI="$PROD_OSS_URI" \
+    -e ARCHIVE_VERIFY_ALLOW_CLEANED_WORK="${PROD_VERIFY_ALLOW_CLEANED_WORK:-false}" \
     -e "$mode=true" \
     -e ARCHIVE_VERIFY_DELIVERY_ID="$delivery_id" \
     -e ARCHIVE_DB_URL='jdbc:postgresql://postgres:5432/archive_delivery?currentSchema=archive_delivery' \
@@ -88,28 +109,29 @@ run_external_test ARCHIVE_PREFLIGHT "" preflight
 DELIVERY_DATE="${PROD_DELIVERY_DATE:-$(python3 -c 'from datetime import datetime,timedelta; print((datetime.now().astimezone()+timedelta(days=1)).date().isoformat())')}"
 DELIVERY_BATCH="${PROD_DELIVERY_BATCH:-PROD-JUN-$(date +%Y%m%d-%H%M%S)}"
 TARGET_COUNT="${PROD_TARGET_COUNT:-1}"
+EXPECTED_DELIVERED_TASKS="${PROD_DELIVERY_EXPECTED_TASKS:-$TARGET_COUNT}"
 EVIDENCE_DIR="${PROD_EVIDENCE_ROOT:-$ROOT/docs/evidence}/$DELIVERY_BATCH"
 mkdir -p "$EVIDENCE_DIR"
-SUBMIT_JSON="$EVIDENCE_DIR/submit.json"
+SUBMIT_JSON="$EVIDENCE_DIR/submit-${TARGET_COUNT}.json"
 python3 - "$SUBMIT_JSON" "$DELIVERY_DATE" "$DELIVERY_BATCH" "$TARGET_COUNT" <<'PY'
 import json, os, sys
 path, date, batch, count = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
-definition = json.load(open('deploy/pipeline.production.json'))
 golden = json.load(open('deploy/golden-case.json'))
-source = next(node['config'] for node in definition['nodes'] if node['type'] == 'oss.download')
+if len(golden['targets']) != 1:
+    raise SystemExit('PROD_TARGET_COUNT override requires exactly one golden target')
+target = golden['targets'][0]
 request = {
-    'ossUri': 'oss://' + source['bucket'] + '/' + source['prefix'],
+    'ossUri': os.environ['PROD_OSS_URI'],
     'pipelineCode': golden['pipelineCode'],
     'deliveryDate': date,
     'deliveryBatch': batch,
-    'targets': [{'targetCount': target['targetCount'], 'vendorCode': target['vendorCode'],
-                 'entityCode': target['entityCode']} for target in golden['targets']]
+    'targets': [{'targetCount': count, 'vendorCode': target['vendorCode'], 'entityCode': target['entityCode']}]
 }
 json.dump(request, open(path, 'w'), ensure_ascii=False, indent=2)
 PY
 curl -fsS --connect-timeout 5 --max-time 20 -H 'Content-Type: application/json' \
-  --data-binary "@$SUBMIT_JSON" "$API/deliveries" -o "$EVIDENCE_DIR/submit-response.json"
-DELIVERY_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["deliveryId"])' < "$EVIDENCE_DIR/submit-response.json")"
+  --data-binary "@$SUBMIT_JSON" "$API/deliveries" -o "$EVIDENCE_DIR/submit-response-${TARGET_COUNT}.json"
+DELIVERY_ID="$(python3 -c 'import json,sys; print(json.load(sys.stdin)["deliveryId"])' < "$EVIDENCE_DIR/submit-response-${TARGET_COUNT}.json")"
 echo "Submitted production deliveryId=$DELIVERY_ID batch=$DELIVERY_BATCH target=${PROD_ENTITY_1_VENDOR_CODE}/${PROD_ENTITY_1_ENTITY_CODE} count=$TARGET_COUNT"
 
 SUMMARY_URL="$API/dashboard/summary?deliveryId=$DELIVERY_ID"
@@ -117,13 +139,13 @@ DEADLINE=$((SECONDS + ${PROD_PIPELINE_OBSERVATION_SECONDS:-1800}))
 while ((SECONDS < DEADLINE)); do
   SUMMARY="$(curl -fsS --connect-timeout 5 --max-time 15 "$SUMMARY_URL")"
   read -r STATUS SUCCEEDED BLOCKED <<<"$(python3 -c 'import json,sys; s=json.load(sys.stdin); print(s["deliveryStatus"],s["succeeded"],s["blocked"])' <<<"$SUMMARY")"
-  if [[ "$STATUS" == "DELIVERED" && "$SUCCEEDED" -eq "$TARGET_COUNT" ]]; then break; fi
+  if [[ "$STATUS" == "DELIVERED" && "$SUCCEEDED" -eq "$EXPECTED_DELIVERED_TASKS" ]]; then break; fi
   [[ "$BLOCKED" -eq 0 ]] || { printf '%s\n' "$SUMMARY" > "$EVIDENCE_DIR/failure-summary.json"; echo "Production delivery is BLOCKED; evidence=$EVIDENCE_DIR" >&2; exit 1; }
   sleep 5
 done
 SUMMARY="$(curl -fsS --connect-timeout 5 --max-time 15 "$SUMMARY_URL")"
 printf '%s\n' "$SUMMARY" > "$EVIDENCE_DIR/delivery-summary.json"
-python3 - "$SUMMARY" "$TARGET_COUNT" <<'PY'
+python3 - "$SUMMARY" "$EXPECTED_DELIVERED_TASKS" <<'PY'
 import json, sys
 summary = json.loads(sys.argv[1])
 assert summary['deliveryStatus'] == 'DELIVERED' and summary['succeeded'] == int(sys.argv[2]), summary
@@ -133,18 +155,21 @@ run_external_test ARCHIVE_REAL_E2E "$DELIVERY_ID" verifyRealDelivery | tee "$EVI
 curl -fsS --connect-timeout 5 --max-time 15 "$API/deliveries/$DELIVERY_ID" -o "$EVIDENCE_DIR/delivery-api.json"
 curl -fsS --connect-timeout 5 --max-time 15 "$API/deliveries/$DELIVERY_ID/tasks" -o "$EVIDENCE_DIR/tasks-api.json"
 "${COMPOSE[@]}" ps > "$EVIDENCE_DIR/compose-services.txt"
-"${COMPOSE[@]}" logs --no-color --since 2h archive-server worker-1 > "$EVIDENCE_DIR/application.log"
-python3 - "$DELIVERY_DATE" "$DELIVERY_BATCH" "$EVIDENCE_DIR" <<'PY'
+"${COMPOSE[@]}" logs --no-color --since 24h archive-server worker-1 worker-2 worker-3 worker-4 > "$EVIDENCE_DIR/application.log"
+python3 - "$DELIVERY_DATE" "$DELIVERY_BATCH" "$EVIDENCE_DIR" "$EXPECTED_DELIVERED_TASKS" <<'PY'
 import json, sys
 from hashlib import sha256
 from pathlib import Path
 root = Path(sys.argv[3])
+expected_tasks = int(sys.argv[4])
 golden = json.load(open('deploy/golden-case.json'))
+if len(golden['targets']) != 1:
+    raise SystemExit('Delivery total override requires exactly one golden target')
 sha_lines, partial_lines = [], []
 for target in golden['targets']:
     directory = Path(target['hostRoot']) / sys.argv[1] / sys.argv[2]
     files = sorted(directory.glob('batch_*.tar.gz'))
-    assert len(files) == target['targetCount'], f"FTP artifact count differs for {target['entityCode']}: {len(files)}"
+    assert len(files) == expected_tasks, f"FTP artifact count differs for {target['entityCode']}: {len(files)}"
     for path in files:
         digest = sha256(path.read_bytes()).hexdigest()
         sha_lines.append(f"{digest}  {path}")
@@ -159,6 +184,6 @@ PY
   -c "SELECT task_id,entity_code,worker_group,execution_status,new_file_name,size_bytes FROM archive_delivery.delivery_task WHERE delivery_id=$DELIVERY_ID ORDER BY task_id;" \
   -c "SELECT data_id,original_file_name,size_bytes,sha256,artifact,created_at,updated_at FROM archive_delivery.source_data WHERE delivery_id=$DELIVERY_ID ORDER BY data_id;" \
   -c "SELECT task_id,data_id,source_seq FROM archive_delivery.delivery_mapping WHERE delivery_id=$DELIVERY_ID ORDER BY task_id,source_seq;" \
-  -c "SELECT process_id,task_id,node_id,status,worker_instance_id,output_locator FROM archive_delivery.delivery_node WHERE delivery_id=$DELIVERY_ID ORDER BY process_id;" \
+  -c "SELECT process_id,task_id,node_id,status,worker_instance_id,started_at,finished_at,output_locator FROM archive_delivery.delivery_node WHERE delivery_id=$DELIVERY_ID ORDER BY process_id;" \
   > "$EVIDENCE_DIR/database-facts.txt"
 printf 'Production verification passed deliveryId=%s batch=%s evidence=%s\n' "$DELIVERY_ID" "$DELIVERY_BATCH" "$EVIDENCE_DIR"

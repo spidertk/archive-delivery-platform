@@ -11,6 +11,7 @@ import com.powerjob.archive.core.pipeline.NodeResult;
 import com.powerjob.archive.core.pipeline.PipelineNodeConfig;
 import com.powerjob.archive.core.repository.DeliveryRepository;
 import com.powerjob.archive.core.service.RemotePathService;
+import com.powerjob.archive.core.service.FileTransferService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -27,14 +28,16 @@ public class FtpDownloadVerifyNode implements NodeHandler {
     private final RemotePathService paths;
     private final ArchiveProperties properties;
     private final DeliveryRepository deliveries;
+    private final FileTransferService files;
     private final ObjectMapper mapper;
 
     public FtpDownloadVerifyNode(PipelineNodeConfig configs, RemotePathService paths, ArchiveProperties properties,
-                                 DeliveryRepository deliveries, ObjectMapper mapper) {
+                                 DeliveryRepository deliveries, FileTransferService files, ObjectMapper mapper) {
         this.configs = configs;
         this.paths = paths;
         this.properties = properties;
         this.deliveries = deliveries;
+        this.files = files;
         this.mapper = mapper;
     }
 
@@ -94,6 +97,13 @@ public class FtpDownloadVerifyNode implements NodeHandler {
                 .put("uri", result.required("uri").asText()).put("downloadPath", result.required("downloadPath").asText())
                 .put("sizeBytes", result.required("sizeBytes").asLong()).put("sha256", result.required("sha256").asText())
                 .put("verifiedAt", Instant.now().toString());
+        boolean workCopyCleaned = properties.isCleanupWorkAfterVerify();
+        if (workCopyCleaned) {
+            Path taskRoot = Path.of(properties.getWorkRoot(), "delivery-" + context.task().deliveryId(),
+                    "task-" + context.task().taskId());
+            files.cleanupAfterVerification(taskRoot, ossCopy, context.task().newFileName());
+        }
+        output.put("workCopyCleaned", workCopyCleaned);
         // 成功日志证明最终下载文件已核对 size/SHA。
         log.info("FTP verification succeeded deliveryId={} taskId={} processId={} uri={} downloadPath={} sizeBytes={} sha256={}",
                 context.task().deliveryId(), context.task().taskId(), context.processId(), result.required("uri").asText(),

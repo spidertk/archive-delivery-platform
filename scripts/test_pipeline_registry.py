@@ -48,6 +48,7 @@ class PipelineRegistryTest(unittest.TestCase):
         text = output.getvalue()
         self.assertIn("PROD_ENTITY_COUNT=1", text)
         self.assertIn("PROD_TARGET_COUNT=1", text)
+        self.assertIn("PROD_OSS_URI=oss://sg-storage-20261013-6vmlk/", text)
         self.assertIn("alibaba", text)
         self.assertIn("REGISTRY_DELIVERY_BATCH=PROD-ARCHIVE-DELIVERY-JUN-", text)
 

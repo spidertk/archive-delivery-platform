@@ -40,7 +40,7 @@ class OssDownloadNodeTest {
         FileTransferService files = new FileTransferService();
         OssTransferService transfers = mock(OssTransferService.class);
         PipelineNodeConfig configs = mock(PipelineNodeConfig.class);
-        when(configs.oss(any(), anyBoolean())).thenReturn(new OssNodeConfig("https://oss.example", "bucket", "prefix/", "ak", "sk"));
+        when(configs.oss(any(), anyBoolean())).thenReturn(new OssNodeConfig("https://oss.example", null, null, "ak", "sk"));
         ArchiveProperties properties = new ArchiveProperties();
         properties.setWorkRoot(temp.toString());
         OssDownloadNode handler = new OssDownloadNode(transfers, files, configs, properties, mapper);
@@ -69,6 +69,7 @@ class OssDownloadNodeTest {
         assertTrue(result.outputLocator().required("sources").required(0).required("cacheHit").asBoolean());
         assertEquals(sha, files.sha256(taskCopy));
         assertEquals(size, Files.size(taskCopy));
+        assertTrue(Files.isSameFile(cached, taskCopy));
         verify(transfers, never()).download(any(), any(), any(), any(), any(), any());
     }
 }

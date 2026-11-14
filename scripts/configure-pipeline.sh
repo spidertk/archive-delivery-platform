@@ -102,12 +102,12 @@ curl -fsS --connect-timeout 5 --max-time 30 -X PUT -H 'Content-Type: application
   --data-binary "@$CONFIG_FILE" "$API/pipeline-versions/$VERSION_ID/definition" -o /dev/null
 curl -fsS --connect-timeout 5 --max-time 30 -X POST "$API/pipeline-versions/$VERSION_ID/publish" -o /dev/null
 printf 'Published PipelineVersion profile=%s versionId=%s.\n' "$PROFILE" "$VERSION_ID"
-python3 - "$CONFIG_FILE" "$TEMP/source.json" <<'PY'
-import json, sys
-definition = json.load(open(sys.argv[1]))
-config = next(node["config"] for node in definition["nodes"] if node["type"] == "oss.download")
-uri = "oss://" + config["bucket"] + "/" + config["prefix"]
-json.dump({"ossUri": uri, "channelCode": "ARCHIVE_SOURCE", "ossType": "ALIBABA_CLOUD"}, open(sys.argv[2], "w"))
+python3 - "$TEMP/source.json" <<'PY'
+import json, os, sys
+uri = os.environ.get("PROD_OSS_URI", "")
+if not uri.startswith("oss://"):
+    raise SystemExit("PROD_OSS_URI is required because source location belongs to the submission")
+json.dump({"ossUri": uri, "channelCode": "ARCHIVE_SOURCE", "ossType": "ALIBABA_CLOUD"}, open(sys.argv[1], "w"))
 PY
 curl -fsS --connect-timeout 5 --max-time 15 "$API/ingest-sources" -o "$TEMP/sources.json"
 SOURCE_ID="$(python3 - "$TEMP" <<'PY'

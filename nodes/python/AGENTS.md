@@ -35,10 +35,10 @@ Worker 镜像将本目录复制到 `/app/nodes/python/`，本地和生产 Compos
 
 1. 防止 tar 路径穿越、链接和非法成员；merge 对每个源包只解包一次，不生成 merged-source.tar.gz，不切分原始包。
 2. repair 在私有 staging 副本修复，只有一次最终 tar/gzip 封存；缺协议文件或验证失败必须非零退出，不产空包。
-3. 合法 39 位非空 requestId 保留，缺失或旧格式使用号段确定性补号并保留 originalRequestId；不同来源的同名目录以来源序号隔离成员键并保留 originalPath；目录名=requestId，requestTime 为 UTC 纳秒格式。
+3. 合法 39 位非空 requestId 保留，缺失或旧格式使用号段确定性补号并保留 originalRequestId；requestMode=null 时按 biz_request.stream 布尔值或唯一实际响应文件确定性推导 STREAM/SYNC 并写回；不同来源的同名目录以来源序号隔离成员键并保留 originalPath；目录名=requestId，requestTime 为 UTC 纳秒格式。
 4. 相同输入、规则和 startNumber 必须产生一致 file_mapping 和 SHA；重试复用 Java 原 allocation。
 5. repair manifest 的 artifacts 和 mappings 保留完整七字段与 originalPath/newRequestId 供复核；Java 在 delivery_task.artifacts 中只保存 dataId/sourceArtifact，不写 deliveryArtifact，metadataIds 只保存与 mapping 同顺序的 source_data.data_id。
-6. merge/repair 清理本次临时目录和 .tmp，源包、merge 工作目录和有效最终包保留。
+6. merge/repair 清理本次临时目录和 .tmp。本地默认保留源包、merge 工作目录和有效最终包；生产可在 FTP size/SHA 复核后清理任务大体积中间副本，但必须保留 merge/repair manifest、source-cache 和 FTP 回验文件。
 7. 新规则放在独立可测试函数中，注释说明协议输入输出和失败边界。
 
 ## 测试

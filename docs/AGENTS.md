@@ -6,7 +6,8 @@
 - `production-jun-runbook.md`：生产 Compose、alibaba/jun 自动流水线和证据清单。
 - `production-operations.md`：日常状态、磁盘、故障、升级和外部复核。
 - `deploy.md`：当前生产部署和 V24 基线说明。
-- `evidence/PROD-JUN-20261111-205140/`：当前成功黄金生产 case 的真实证据。
+- `evidence/PROD-JUN-20261111-205140/`：历史单包黄金生产证据。
+- `evidence/001/`：deliveryId=3 首批 200、同单追加 500 的最终 700 包真实证据与容量报告。
 
 不维护旧 MVP、过渡设计、失败历史或历史迁移说明。
 

@@ -1,0 +1,1 @@
+884cd9d1552ab6538288d598d73bbc75a3eeec221eef5a419007c0fd02fb84af  /srv/maas-sftp/maasData/archive/june/2026-11-14/NEXT-DAY-20261114/batch_00001.tar.gz

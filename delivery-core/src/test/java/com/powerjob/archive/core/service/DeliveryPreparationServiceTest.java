@@ -8,6 +8,7 @@ import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DeliveryPreparationServiceTest {
     private static final long MIB = 1024 * 1024;
@@ -95,6 +96,25 @@ class DeliveryPreparationServiceTest {
                         new DeliveryPreparationService.TargetSlot(2, 1)), 10 * MIB));
         assertThrows(IllegalArgumentException.class, () -> DeliveryPreparationService.planTasks(sources(1, 11 * MIB),
                 List.of(new DeliveryPreparationService.TargetSlot(1, 1)), 10 * MIB));
+    }
+
+    @Test void thousandSourcesAndTwoHundredTargetsUseBoundedContiguousPlanning() {
+        List<DeliveryPreparationService.TargetSlot> slots = java.util.stream.IntStream.rangeClosed(1, 200)
+                .mapToObj(sequence -> new DeliveryPreparationService.TargetSlot(1, sequence, sequence)).toList();
+        var planned = DeliveryPreparationService.planTasks(sources(1000, 6 * MIB), slots, 100 * MIB, 8 * MIB);
+        assertEquals(200, planned.size());
+        assertEquals(1000, planned.stream().mapToInt(task -> task.sources().size()).sum());
+        assertTrue(planned.stream().allMatch(task -> {
+            long bytes = task.sources().stream().mapToLong(SourceData::sizeBytes).sum();
+            return bytes >= 8 * MIB && bytes <= 100 * MIB;
+        }));
+    }
+
+    @Test void sourceMinimumIncludesCompressionHeadroom() {
+        var pipeline = new com.powerjob.archive.core.pipeline.PipelineDefinition("archive-delivery", 1,
+                java.util.Map.of("assignment", java.util.Map.of("minPackageBytes", 8 * MIB, "maxPackageBytes", 100 * MIB)),
+                java.util.Map.of(), java.util.List.of());
+        assertEquals(10 * MIB, DeliveryPreparationService.sourceMinPackageBytes(pipeline));
     }
 
     private static List<SourceData> sources(int count, long sizeBytes) {

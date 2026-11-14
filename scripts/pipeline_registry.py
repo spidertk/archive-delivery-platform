@@ -92,7 +92,8 @@ def emit_shell(case):
     targets = golden["targets"]
     values = {
         "PROD_ENTITY_COUNT": len(targets),
-        "PROD_TARGET_COUNT": sum(target["targetCount"] for target in targets),
+        "PROD_TARGET_COUNT": int(os.environ.get("PROD_TARGET_COUNT", sum(target["targetCount"] for target in targets))),
+        "PROD_OSS_URI": os.environ.get("PROD_OSS_URI", golden.get("ossUri", "")),
         "REGISTRY_DELIVERY_BATCH": "PROD-" + case["caseId"].upper() + "-" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"),
     }
     for index, target in enumerate(targets, 1):

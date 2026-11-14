@@ -15,9 +15,9 @@ public class PipelineNodeConfig {
         this.mapper = mapper;
     }
 
-    public OssNodeConfig oss(NodeDefinition node, boolean prefixRequired) {
+    public OssNodeConfig oss(NodeDefinition node, boolean source) {
         OssNodeConfig config = mapper.convertValue(node.config(), OssNodeConfig.class);
-        config.validate(prefixRequired);
+        config.validate(source);
         return config;
     }
 

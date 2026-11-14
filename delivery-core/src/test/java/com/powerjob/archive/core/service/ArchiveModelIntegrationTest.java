@@ -147,6 +147,75 @@ class ArchiveModelIntegrationTest {
         assertEquals("PROCESSING", status(deliveryId));
     }
 
+    @Test void deliveredBatchAppendsTargetsAndKeepsEveryRequestIdempotent() {
+        jdbc.update("UPDATE pipeline_version SET status='PUBLISHED',published_at=now() WHERE pipeline_version_id=1");
+        jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                "VALUES(151,'VENDOR-151','ENTITY-151','Append submit','FTP','entity151','group1','{\"host\":\"localhost\",\"rootPath\":\"/\"}')");
+        DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions);
+        DeliveryEventRepository events = new DeliveryEventRepository(jdbc, mapper);
+        DeliveryProjectionService projections = new DeliveryProjectionService(jdbc);
+        DeliverySubmissionService submission = new DeliverySubmissionService(jdbc, transactions, mapper, deliveries, tasks, events,
+                projections, new PipelineRepository(mapper), new IngestSourceService(jdbc));
+        var initial = new DeliverySubmissionService.SubmissionCommand("oss://bucket/append-submit/", "archive-delivery",
+                LocalDate.now().plusDays(2), "BUSINESS-APPEND-151",
+                List.of(new DeliverySubmissionService.TargetCommand(2, "VENDOR-151", "ENTITY-151")));
+        long deliveryId = submission.submit(initial).deliveryId();
+        SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
+        for (int sequence = 1; sequence <= 2; sequence++) {
+            SourceData source = sources.findById(insertSource(deliveryId, "append-" + sequence, sequence)).orElseThrow();
+            long taskId = tasks.createPlanned(deliveries.find(deliveryId).orElseThrow(), List.of(source), deliveries.entity(151), sequence, "sourceDownload");
+            jdbc.update("UPDATE delivery_task SET execution_status='SUCCEEDED',completed_at=now() WHERE task_id=?", taskId);
+        }
+        jdbc.update("UPDATE delivery_submit SET discovery_completed_at=now() WHERE delivery_id=?", deliveryId);
+        projections.refresh(deliveryId);
+        assertEquals("DELIVERED", status(deliveryId));
+        var append = new DeliverySubmissionService.SubmissionCommand(initial.ossUri(), initial.pipelineCode(), initial.deliveryDate(),
+                initial.deliveryBatch(), List.of(new DeliverySubmissionService.TargetCommand(3, "VENDOR-151", "ENTITY-151")));
+        assertEquals(deliveryId, submission.submit(append).deliveryId());
+        assertEquals("SUBMITTED", status(deliveryId));
+        assertEquals(5, jdbc.queryForObject("SELECT (target_strategy->'targets'->0->>'targetCount')::int FROM delivery_submit WHERE delivery_id=?",
+                Integer.class, deliveryId));
+        assertNull(jdbc.queryForObject("SELECT discovery_completed_at FROM delivery_submit WHERE delivery_id=?", OffsetDateTime.class, deliveryId));
+        assertEquals(deliveryId, submission.submit(initial).deliveryId());
+        assertEquals(deliveryId, submission.submit(append).deliveryId());
+        assertEquals(2, jdbc.queryForObject("SELECT jsonb_array_length(target_strategy->'requests') FROM delivery_submit WHERE delivery_id=?",
+                Integer.class, deliveryId));
+    }
+
+    @Test void submissionUsesNextDayCutoffInPipelineTimezone() {
+        jdbc.update("UPDATE pipeline_version SET definition=jsonb_set(definition,'{config,deliveryCutoffTime}','\"02:00:00\"')," +
+                "status='PUBLISHED',published_at=now() WHERE pipeline_version_id=1");
+        jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                "VALUES(153,'VENDOR-153','ENTITY-153','Next day cutoff','FTP','entity153','group1','{\"host\":\"localhost\",\"rootPath\":\"/\"}')");
+        DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
+        DeliverySubmissionService submission = new DeliverySubmissionService(jdbc, transactions, mapper, deliveries,
+                new DeliveryTaskRepository(jdbc, transactions), new DeliveryEventRepository(jdbc, mapper), new DeliveryProjectionService(jdbc),
+                new PipelineRepository(mapper), new IngestSourceService(jdbc));
+        var command = new DeliverySubmissionService.SubmissionCommand("oss://bucket/next-day-cutoff/", "archive-delivery",
+                LocalDate.parse("2026-11-14"), "NEXT-DAY-CUTOFF-153",
+                List.of(new DeliverySubmissionService.TargetCommand(1, "VENDOR-153", "ENTITY-153")));
+        assertEquals(OffsetDateTime.parse("2026-11-14T18:00:00Z").toInstant(), submission.submit(command).cutoffAt().toInstant());
+    }
+
+    @Test void preparationFailureWithoutBlockedTasksCanRetrySameRequest() {
+        jdbc.update("UPDATE pipeline_version SET status='PUBLISHED',published_at=now() WHERE pipeline_version_id=1");
+        jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                "VALUES(152,'VENDOR-152','ENTITY-152','Preparation retry','FTP','entity152','group1','{\"host\":\"localhost\",\"rootPath\":\"/\"}')");
+        DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
+        DeliverySubmissionService submission = new DeliverySubmissionService(jdbc, transactions, mapper, deliveries,
+                new DeliveryTaskRepository(jdbc, transactions), new DeliveryEventRepository(jdbc, mapper), new DeliveryProjectionService(jdbc),
+                new PipelineRepository(mapper), new IngestSourceService(jdbc));
+        var command = new DeliverySubmissionService.SubmissionCommand("oss://bucket/preparation-retry/", "archive-delivery",
+                LocalDate.now().plusDays(2), "BUSINESS-PREP-RETRY-152",
+                List.of(new DeliverySubmissionService.TargetCommand(1, "VENDOR-152", "ENTITY-152")));
+        long deliveryId = submission.submit(command).deliveryId();
+        jdbc.update("UPDATE delivery_submit SET status='BLOCKED' WHERE delivery_id=?", deliveryId);
+        assertEquals("SUBMITTED", submission.submit(command).status());
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM delivery_event WHERE delivery_id=? AND event_type='DELIVERY_PREPARATION_RETRIED'",
+                Integer.class, deliveryId));
+    }
+
     @Test void rolloverCopiesThreeMappingsAndRecordsEventLineage() {
         long deliveryId = 250;
         insertSubmit(deliveryId);
@@ -179,6 +248,29 @@ class ArchiveModelIntegrationTest {
         assertEquals("MERGED", jdbc.queryForObject("SELECT entity_code FROM delivery_task WHERE task_id=?", String.class, newTask));
     }
 
+    @Test void underfilledTaskReplanAppendsSourceLineageAndResetsPipeline() {
+        insertSubmit(550);
+        jdbc.update("INSERT INTO delivery_entity(delivery_entity_id,vendor_code,entity_code,entity_name,protocol,account_name,worker_group,endpoint_locator) " +
+                "VALUES(550,'VENDOR-550','ENTITY-550','Replan case','FTP','entity550','group1','{\"host\":\"localhost\",\"rootPath\":\"/\"}')");
+        SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
+        DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions);
+        SourceData first = sources.findById(insertSource(550, "replan-first", 4)).orElseThrow();
+        SourceData second = sources.findById(insertSource(550, "replan-second", 6)).orElseThrow();
+        long taskId = tasks.createPlanned(deliveries.find(550).orElseThrow(), List.of(first), deliveries.entity(550), 1, "sourceDownload");
+        long fence = jdbc.queryForObject("SELECT fence FROM delivery_task WHERE task_id=?", Long.class, taskId);
+        jdbc.update("UPDATE delivery_task SET execution_status='BLOCKED',current_node_id='qualify' WHERE task_id=?", taskId);
+        List<Long> added = tasks.appendSourcesForReplan(taskId, fence, List.of(second), "sourceDownload");
+        assertEquals(List.of(second.dataId()), added);
+        DeliveryTask task = tasks.findById(taskId).orElseThrow();
+        assertEquals("READY", task.executionStatus());
+        assertEquals("sourceDownload", task.currentNodeId());
+        assertEquals(2, task.artifacts().size());
+        assertEquals(0, task.metadataIds().size());
+        assertEquals(first.sizeBytes() + second.sizeBytes(), task.sizeBytes());
+        assertEquals(2, jdbc.queryForObject("SELECT count(*) FROM delivery_mapping WHERE task_id=?", Integer.class, taskId));
+    }
+
     @Test void requestAllocationUsesDeliveryBatchAndReusesRange() {
         insertSubmit(300);
         long dataId = insertSource(300, "numbering", 10);
@@ -186,6 +278,10 @@ class ArchiveModelIntegrationTest {
         var first = allocations.reserve(dataId, 3, "BATCH-300");
         var second = allocations.reserve(dataId, 3, "BATCH-300");
         assertEquals(first, second);
+        var expanded = allocations.reserve(dataId, 5, "BATCH-300");
+        assertEquals(first.allocationId(), expanded.allocationId());
+        assertEquals(5, expanded.count());
+        assertTrue(expanded.start() >= first.start() + first.count());
         assertEquals("BATCH-300", jdbc.queryForObject("SELECT request_namespace FROM request_id_allocation WHERE allocation_id=?",
                 String.class, first.allocationId()));
         assertThrows(RuntimeException.class, () -> allocations.reserve(dataId, 1, "MISSING-BATCH"));

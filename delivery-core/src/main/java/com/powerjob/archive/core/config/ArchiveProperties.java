@@ -11,6 +11,9 @@ public class ArchiveProperties {
     private String workerId = "local-worker";
     private String workerGroup = "group1";
     private int maxRunningTasks = 3;
+    private int preparationDownloadThreads = 4;
+    private int taskLeaseSeconds = 900;
+    private boolean cleanupWorkAfterVerify;
     private String workRoot = "/data/work";
     private String ftpVerificationRoot = "/data/ftp-verify";
     private String pythonCommand = "python3";
@@ -21,6 +24,12 @@ public class ArchiveProperties {
     public void setWorkerGroup(String workerGroup) { this.workerGroup = WorkerGroups.requireValid(workerGroup); }
     public int getMaxRunningTasks() { return maxRunningTasks; }
     public void setMaxRunningTasks(int maxRunningTasks) { this.maxRunningTasks = maxRunningTasks; }
+    public int getPreparationDownloadThreads() { return preparationDownloadThreads; }
+    public void setPreparationDownloadThreads(int preparationDownloadThreads) { this.preparationDownloadThreads = preparationDownloadThreads; }
+    public int getTaskLeaseSeconds() { return taskLeaseSeconds; }
+    public void setTaskLeaseSeconds(int taskLeaseSeconds) { this.taskLeaseSeconds = taskLeaseSeconds; }
+    public boolean isCleanupWorkAfterVerify() { return cleanupWorkAfterVerify; }
+    public void setCleanupWorkAfterVerify(boolean cleanupWorkAfterVerify) { this.cleanupWorkAfterVerify = cleanupWorkAfterVerify; }
     public String getWorkRoot() { return workRoot; }
     public void setWorkRoot(String workRoot) { this.workRoot = workRoot; }
     public String getFtpVerificationRoot() { return ftpVerificationRoot; }

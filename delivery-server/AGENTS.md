@@ -14,13 +14,14 @@ POST /api/v1/deliveries/{deliveryId}/resume
 POST /api/v1/deliveries/{deliveryId}/rollover
 GET  /api/v1/deliveries/{deliveryId}/tasks
 POST /api/v1/tasks/{taskId}/retry
+POST /api/v1/tasks/{taskId}/replan-underfilled
 GET  /api/v1/tasks/{taskId}/timeline
 GET  /api/v1/dashboard/targets?deliveryId={deliveryId}
 ```
 
 SubmitDeliveryRequest 只包含 ossUri、pipelineCode、deliveryDate、deliveryBatch、targets；targets 每项只有 targetCount/vendorCode/entityCode。不得恢复 sourceId、pipelineVersionId、deliveryEntityId、cutoffAt、idempotencyKey、Secret 或节点链入参。
 
-deliveryBatch 全局幂等；同参数返回原单，不同参数 409。pause 只接收 reason，在节点边界暂停；PAUSED 主单通过相同提交继续。resume 使用 fromNode/taskIds/reason，retry 使用 expectedFence，rollover 使用 expectedDeliveryDate/deliveryDate/reason。
+deliveryBatch 全局幂等；历史请求返回原单，DELIVERED 后可对原实体追加 targetCount，其他不同请求 409。pause 只接收 reason，在节点边界暂停；PAUSED 主单通过历史请求继续。resume 使用 fromNode/taskIds/reason，retry 使用 expectedFence，replan-underfilled 只处理预期 fence 的 BLOCKED/qualify 压缩不足任务，rollover 使用 expectedDeliveryDate/deliveryDate/reason。
 
 ## 开发约束
 
