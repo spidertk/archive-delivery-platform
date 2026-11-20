@@ -156,6 +156,7 @@ services:
       POWERJOB_SERVER_ADDRESS: powerjob-server:7700
 
   ftp-june:
+    profiles: ["embedded-ftp"]
     build:
       context: ..
       dockerfile: deploy/Dockerfile.ftp

@@ -33,6 +33,7 @@ def main():
     # 非 Secret 生产定位可以安全补齐；已有值不覆盖，初始管理员密码随后由 bootstrap 轮换。
     defaults = {
         "COMPOSE_PROJECT_NAME": "archive_delivery_production",
+        "COMPOSE_PROFILES": "embedded-ftp",
         "ARCHIVE_WORKER_GROUP": "group1",
         "ARCHIVE_MAX_RUNNING_TASKS": "4",
         "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "8",

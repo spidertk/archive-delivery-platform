@@ -69,6 +69,7 @@ chmod 600 deploy/.env deploy/pipeline.production.json
 - `OSS_SOURCE_ACCESS_KEY_ID/SECRET` 只能读取指定源前缀。
 - `TARGET_OSS_ACCESS_KEY_ID/SECRET` 只能写指定目标 Bucket 的交付前缀。
 - `PROD_FTP_ENTITY_1_PASSWORD` 为隔离 FTP 容器的独立密码，不使用 SSH root 密码。
+- 当前 jun 使用内置 FTP 时设置 `COMPOSE_PROFILES=embedded-ftp`；复用已有外部 FTP 时设置为空并沿用其实际账户。
 - `PROD_ENTITY_1_VENDOR_CODE=alibaba`、`PROD_ENTITY_1_ENTITY_CODE=jun`、`PROD_ENTITY_1_ACCOUNT=june`、`PROD_ENTITY_1_HOST=ftp-june`。
 - `ENTITY_1_WORKER_GROUP=group1`，`PROD_JUNE_HOST_ROOT=/srv/maas-sftp/maasData/archive/june`。
 

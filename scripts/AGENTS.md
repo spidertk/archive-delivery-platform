@@ -6,7 +6,7 @@
 | --- | --- |
 | `local-pipeline.sh` | 默认本地逻辑门禁；不访问真实 OSS/FTP，不清理数据 |
 | `production-registry.sh` | 按 caseId/all 执行生产黄金用例；任一失败即整体失败 |
-| `production-pipeline.sh` | 单 case 的生产 Compose、V24、配置、预检、提交和证据 |
+| `production-pipeline.sh` | 单 case 的生产 Compose、V24、配置、预检、提交和证据；旧配置未声明 COMPOSE_PROFILES 时默认 embedded-ftp，显式空值复用外部 FTP |
 | `pipeline_registry.py` | 读取、校验和生成 Markdown Pipeline/黄金用例；MD 为唯一 review 来源 |
 | `configure-pipeline.sh` / `configure-production-pipeline.sh` | 发布不可变 PipelineVersion 并登记来源/实体；不打印 Secret |
 | `bootstrap-powerjob.sh` | 初始化三个通用调度；生产首次登录后轮换管理员密码 |

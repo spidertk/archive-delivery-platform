@@ -4,6 +4,8 @@
 
 生产 Compose 文件为 `deploy/docker-compose.production.yml`。PostgreSQL 是业务事实源；PowerJob 只触发准备、节点推进和跨日扫描。交付是否完成必须看 `delivery_submit`、`delivery_task`、`delivery_node` 和外部 OSS/FTP 文件，不能只看容器或 PowerJob 状态。
 
+`ftp-june` 仅在 `COMPOSE_PROFILES=embedded-ftp` 时运行；复用已有外部 FTP 时保持 `COMPOSE_PROFILES=`，不要部署重复 FTP。以下 FTP 日志命令只适用于内置模式。
+
 ```bash
 cd /opt/archive-delivery-platform
 export COMPOSE_FILE=deploy/docker-compose.production.yml
@@ -12,7 +14,9 @@ docker compose -f "$COMPOSE_FILE" --env-file deploy/.env ps
 curl -fsS http://127.0.0.1:8080/actuator/health
 curl -fsSI http://127.0.0.1:7700
 docker compose -f "$COMPOSE_FILE" --env-file deploy/.env logs --since 1h archive-server worker-1
-docker compose -f "$COMPOSE_FILE" --env-file deploy/.env logs --since 1h postgres mysql powerjob-server ftp-june
+docker compose -f "$COMPOSE_FILE" --env-file deploy/.env logs --since 1h postgres mysql powerjob-server
+# 仅 embedded-ftp 模式执行：
+docker compose -f "$COMPOSE_FILE" --env-file deploy/.env logs --since 1h ftp-june
 ```
 
 不要执行 `docker compose down -v`、`reset-test-data.sh`、`docker system prune -a` 或清空 OSS/FTP 目录。普通停止使用 `docker compose ... stop`，不删除卷。
@@ -101,14 +105,14 @@ docker run --rm -v archive_delivery_production_archive_data:/data:ro alpine:3.22
 
 ### FTP 登录失败或连接拒绝
 
-生产 FTP 只在 Compose 内网监听，宿主机没有公网 21 端口是预期安全边界。检查：
+内置 FTP 只在 Compose 内网监听，宿主机没有公网 21 端口是预期安全边界。仅 `COMPOSE_PROFILES=embedded-ftp` 时检查：
 
 ```bash
 docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env ps ftp-june
 docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env logs --since 1h ftp-june
 ```
 
-确认实体 host=`ftp-june`、account=`june`，Pipeline ftpCredential 有对应账户。密码只在受控 `.env`/Pipeline 中维护，不复制 SSH root 密码。同名不同 SHA 时不得删除远端文件强行重传。
+内置模式确认实体 host=`ftp-june`、account=`june`；复用老 FTP 时检查老 FTP 服务、网络和实际账户，不要启动 ftp-june 代替排查。两种模式都必须让 Pipeline ftpCredential 与实体账户对应。密码只在受控 `.env`/Pipeline 中维护，不复制 SSH root 密码。同名不同 SHA 时不得删除远端文件强行重传。
 
 ### 任务一直 READY
 

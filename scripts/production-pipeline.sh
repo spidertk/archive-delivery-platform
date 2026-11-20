@@ -28,6 +28,8 @@ for override in "${CLI_OVERRIDES[@]}"; do
   value="${override#*=}"
   if [[ -n "$value" ]]; then export "$name=$value"; fi
 done
+# 旧受控配置未声明 profile 时保持 jun 内置 FTP；显式空值表示复用已有外部 FTP。
+if [[ -z "${COMPOSE_PROFILES+x}" ]]; then export COMPOSE_PROFILES=embedded-ftp; fi
 PIPELINE_CASE="${PIPELINE_CASE:-archive-delivery-jun}"
 eval "$(python3 scripts/pipeline_registry.py env "$PIPELINE_CASE")"
 python3 scripts/pipeline_registry.py materialize "$PIPELINE_CASE"
