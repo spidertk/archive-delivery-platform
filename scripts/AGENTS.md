@@ -4,7 +4,7 @@
 
 | 脚本 | 职责与边界 |
 | --- | --- |
-| `local-pipeline.sh` | 默认本地逻辑门禁；不访问真实 OSS/FTP，不清理数据 |
+| `local-pipeline.sh` | 默认本地逻辑门禁；Maven 使用 clean test 清除已删除迁移与测试的构建残留，不访问真实 OSS/FTP，不清理业务数据 |
 | `production-registry.sh` | 按 caseId/all 执行生产黄金用例；任一失败即整体失败 |
 | `production-pipeline.sh` | V25、发布 archive-batch/archive-delivery、预检、创建一次批次、一次或多次独立提交和证据采集；未声明 COMPOSE_PROFILES 的旧配置默认启用 embedded-ftp，显式空值复用外部 FTP |
 | `pipeline_registry.py` | 读取、校验和生成 Markdown Pipeline/黄金用例 |
