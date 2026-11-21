@@ -95,9 +95,9 @@ docker run --rm -v archive_delivery_production_archive_data:/data:ro alpine:3.22
 - 下载节点配置不得重新加入 bucket/prefix；403 时核对提交 URI 与源 AK/SK 的 List/Get 权限。
 - 修改受控配置后重新发布 PipelineVersion 和预检，不直接改数据库 definition。
 
-### 来源不足、全部超限或包低于 8 MiB
+### 来源不足或全部超限
 
-检查主单是否 BLOCKED、`SOURCE_FILTERED` 事件和准备日志。单包超过 100 MiB 会在下载前过滤；剩余来源无法组成全部 targetCount 时会阻断，不切分文件。补充来源或经审批发布新的大小边界，不能 SQL 创建任务绕过。
+检查主单是否 BLOCKED、`SOURCE_FILTERED` 事件和准备日志。单包超过 100 MiB 会在下载前过滤；剩余来源无法组成全部 targetCount 时会阻断，不切分文件。合并不设置最小包大小，非空小尾包正常交付。补充来源或经审批发布新上限，不能 SQL 创建任务绕过。
 
 ### 目标 OSS 403 或 SHA 冲突
 
@@ -138,7 +138,7 @@ curl -fsS -H 'Content-Type: application/json' \
   http://127.0.0.1:8080/api/v1/deliveries/<deliveryId>/pause
 ```
 
-存在 RUNNING 时等待节点结束后重试。继续必须使用完全相同的提交 JSON 再 POST `/api/v1/deliveries`，确认返回原 deliveryId；不得新建批次。
+存在 RUNNING 时等待节点结束后重试。继续使用 `/api/v1/deliveries/<deliveryId>/resume` 并明确 fromNode、taskIds 和 reason；重复 POST 交付接口会创建新的 BATCH_SUBMIT 并消费后续批次包，不能用于暂停恢复。
 
 ## 5. 迁移、备份和升级
 
@@ -149,14 +149,14 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env \
 ```
 
 - 升级前备份 PostgreSQL 和 PowerJob MySQL，并记录当前镜像和 PipelineVersion。
-- 当前只维护 V24 幂等基线。全新库创建完整模型，已有 V23 模型不重复建表；pre-V14 旧生产库不会被 `production-pipeline.sh` 自动升级。
+- 当前迁移为 V25 批次基线。已有 V24 的任务来源关系迁入 delivery_batch，最终删除 delivery_mapping 和 metadata_ids；升级失败时停止交付并先排查，不清库。
 - 升级先停止新提交并等待 RUNNING 节点结束，再构建启动；不得删除租约或修改历史任务 worker_group。
 - 回退应用版本时保留数据库和外部文件。已发布 PipelineVersion 不可原地修改，新配置必须发布新版本。
 
 ## 6. 外部文件和证据复核
 
 ```bash
-export FTP_DIR='/srv/maas-sftp/maasData/archive/june/<deliveryDate>/<deliveryBatch>'
+export FTP_DIR='/srv/maas-sftp/maasData/archive/june/<deliveryDate>'
 find "$FTP_DIR" -maxdepth 1 -type f -name 'batch_*.tar.gz' -print0 | sort -z | xargs -0 -r sha256sum
 find "$FTP_DIR" -maxdepth 1 -type f -name '*.partial' -print
 ```
@@ -165,7 +165,13 @@ find "$FTP_DIR" -maxdepth 1 -type f -name '*.partial' -print
 
 ## 7. 安全基线
 
-- API 8080、PG 5432、PowerJob 7700 默认只绑定回环；FTP 仅在 Compose 内网。
-- 远程 Worker 接入时再按对方公网 IP `/32` 放通 PG/PowerJob/Worker 回调，不向 `0.0.0.0/0` 开放。需要公网互联时，将 `ARCHIVE_PG_BIND_ADDRESS=0.0.0.0`、`POWERJOB_BIND_ADDRESS=0.0.0.0`，效果分别等同于 Compose 的 `"5432:5432"`、`"7700:7700"`；默认 `"127.0.0.1:5432:5432"` 仅允许本机访问。同步为 PowerJob 配置公网 external address，并在对端放通 Worker 27777–27779 回调端口。
+- API 8080 和 PowerJob 7700 仅绑定回环；PG 5432 为跨机访问绑定 `0.0.0.0`；FTP 仅在 Compose 内网。
+- 云安全组只按实际访问方公网 IP `/32` 放通 PG，不向 `0.0.0.0/0` 开放。`ARCHIVE_PG_BIND_ADDRESS=0.0.0.0`、`POWERJOB_BIND_ADDRESS=127.0.0.1`。同机 Worker 使用 `POWERJOB_SERVER_ADDRESS=powerjob-server:7700` 发现服务，PowerJob external address 配置为 `powerjob-server`、external port 配置为 `10010` 供后续心跳和调度；external port 不能配置为管理端口 7700。
 - 日志不得包含 AK/SK、FTP/数据库密码、JWT 或私钥。发现泄露先轮换 Secret，再清理受控日志。
 - 禁止数据库直写 SUCCEEDED/DELIVERED、伪造节点 locator 或用 skipped 测试代替生产证据。
+
+## jun-2 授权日期保留
+
+jun-2 的不可变 FTP 节点显式启用 `cleanupOtherDeliveryDates=true` 时，在每次上传下载前检查并删除直属根目录下其他合法日期目录；当前日期和非日期目录保留。启用要求专属 FTP 根、无符号链接、MLSD 及删除/改名权限，内置 FTP 设置 `FTP_ALLOW_DATE_CLEANUP=true`。同组 Worker 必须共享 `/data/ftp-verify/.retention`，在途传输持共享锁，日期切换取独占锁；日期一旦前进，旧日期重试拒绝清理，需按正常跨日流程处理。独立验收不清理目录。
+
+2026-11-21 的清空 jun-2 FTP 和旧测试流水属于用户一次性授权；必须先确认无 RUNNING、备份业务流水并保存文件清单，不得推广为日常重置。6000 为 jun-2/group1 每轮分配容量，并发仍由机器资源和 Worker 配置限制。

@@ -2,22 +2,22 @@
 
 ## 职责
 
-领域模型、V24 基线、PipelineEngine、NodeHandler、提交、映射、编号、执行、暂停、重试、跨日及 OSS/FTP 适配。PostgreSQL 是唯一业务事实源。
+领域模型、V25 基线、PipelineEngine、NodeHandler、OSS 批次创建/规划、批次交付消费、执行、暂停、重试、跨日及 OSS/FTP 适配。PostgreSQL 是唯一业务事实源。
 
 ## 当前模型
 
-- 血缘为 delivery_submit → source_data → delivery_mapping → delivery_task → delivery_node。
-- 提交只接收 ossUri/pipelineCode/deliveryDate/deliveryBatch/targets；cutoffAt 由 deliveryDate 的次日与不可变 Pipeline 时区/时间推导。下载节点不保存 bucket/prefix，准备与执行均使用提交固化的 ossUri。
-- DELIVERED 主单可按原实体追加 targetCount，requests 保存历史请求幂等；规划排除本单已用 sourceUri，批次号从已有最大值续排。准备源下载由 `ARCHIVE_PREPARATION_DOWNLOAD_THREADS` 有界并行，每组来源就绪后立即创建任务，与后续节点执行形成流水。
-- delivery_task.artifacts 只含 dataId/sourceArtifact；metadata_ids 为同顺序 data_id。包名在 delivery_id 内连续唯一。
-- TaskExecutionService 是唯一任务状态推进入口，NodeHandler 不直接修改主单或任务状态。
-- 同 vendorCode 目标整体分配，targetCount 展开槽位，不切分来源；来源装箱下限为最终下限的 125%，压缩后不足时只能通过 `replan-underfilled` 追加未映射来源并重跑；merge 只解包一次，repair 只最终封包一次。
-- repair 使用 entityCode 和 Pipeline 固定的 gzipCompressLevel（默认 9，生产 5），request_namespace=deliveryBatch。
-- worker_group 是单服务器执行域，任务创建时固化，retry/resume/rollover 不跨组。
+- 血缘为 BATCH_CREATE delivery_submit → source_data/delivery_batch → BATCH_SUBMIT delivery_submit → delivery_task → delivery_node。
+- archive-batch 准备阶段全量下载 OSS、按 sha256 写 source_data.unique_key，并按包大小和 entityWorkers 容量规划 delivery_batch；archive-delivery 准备阶段只领取未消费批次包。
+- BATCH_CREATE 的 deliveryBatch 唯一，BATCH_SUBMIT 同批次可独立提交多次；不存在旧追加提交、source_data 重复归档或 delivery_mapping。
+- delivery_task.artifacts 只含 dataId/sourceArtifact，来源由 delivery_batch.delivery_id+new_file_name 关联；metadata_ids 已删除。
+- DeliveryProjectionService 同步提交、批次文件和 BATCH_CREATE 总状态；只有全部规划包 DELIVERED，批次创建总单才 DELIVERED。`batch_extension.packageCount` 只表示已交付包数，初始为 0，不随重规划递增；规划总包数只从 delivery_batch 实时统计。
+- 实体与机器容量在 archive-batch `assignment.entityWorkers` 配置，按 maxPackagesPerRound 轮询分配；任务固化实际 worker_group。
+- repair/merge/qualify 从提交 batch_extension 读取批次创建时固化的包大小上限，不设置合并包下限；生产 gzipCompressLevel=5。
+- TaskExecutionService 是唯一任务状态推进入口，Worker 不跨组认领、retry/resume/rollover。
 
-## V24 基线
+## V25 基线
 
-`V24__golden_delivery_baseline.sql` 包含当前表、列、约束、注释、JSONB 白名单和种子 Pipeline。全新库只执行 V24；已有 V23 模型跳过建表，不重复修改业务事实。server/worker 设置 `spring.flyway.ignore-missing-migrations=true` 以接受旧历史，不恢复旧迁移。
+`V25__batch_delivery_baseline.sql` 创建当前模型并将已有 V24 任务关系迁入 delivery_batch。最终模型不存在 delivery_mapping 和 metadata_ids，不保留旧运行时分支。
 
 ## 验证
 
@@ -25,4 +25,8 @@
 ./scripts/maven-test.sh -pl delivery-core test
 ```
 
-`ArchiveModelIntegrationTest` 验证全新 V24 和现有模型幂等升级、注释、血缘、提交、暂停、重试和跨日。模型变化必须同步迁移、Domain、Repository、服务、API、前端、脚本、测试和模块文档；不得恢复旧表或平行实现。
+`ArchiveModelIntegrationTest` 验证 V25、唯一键、两次独立提交、批次消费、状态联动、暂停和跨日；`BatchPlanningServiceTest` 验证动态装箱与多机轮询容量。模型变化必须同步迁移、Domain、Repository、服务、API、前端、脚本、测试和模块文档。
+
+## FTP 与容量边界
+
+FtpNodeConfig.cleanupOtherDeliveryDates 由不可变节点控制，Java 传入任务 deliveryDate 与同机共享 retentionRoot。FTP 上传用 .partial，完整下载 size/SHA 核验后原子改名；旧日期重试不得清理较新日期。claimNext 在同组事务 advisory lock 内检查机器容量并认领，避免多个 Worker 并发超额；锁不替代租约和 fence。

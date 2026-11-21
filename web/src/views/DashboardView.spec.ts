@@ -6,12 +6,13 @@ import { getSummary, getTasks } from '../api'
 
 vi.mock('../api', () => ({
   getSummary: vi.fn(), getTasks: vi.fn(), getTimeline: vi.fn(), retryTask: vi.fn(), resumeDelivery: vi.fn(),
-  pauseDelivery: vi.fn(), submitDelivery: vi.fn()
+  pauseDelivery: vi.fn(), submitDelivery: vi.fn(), createDeliveryBatch: vi.fn()
 }))
 
 const summary = {
   deliveryStatus: 'BLOCKED', taskTotal: 3, targetTotal: 3, succeeded: 2, blocked: 1,
   retrying: 0, waiting: 0, paused: 0, expired: 1,
+  batchPackageTotal: 0, deliveredPackageCount: 0, originalFileCount: 0,
   targets: [
     { targetCount: 1, assignedCount: 1, completedCount: 1, status: 'DELIVERED', deliveryEntityId: 1, workerGroup: 'group1', vendorCode: 'LOCAL-FTP-1', entityCode: 'ENTITY-1', entityName: '实体 1', protocol: 'FTP', accountName: 'entity1' },
     { targetCount: 1, assignedCount: 1, completedCount: 1, status: 'DELIVERED', deliveryEntityId: 2, workerGroup: 'group1', vendorCode: 'LOCAL-FTP-2', entityCode: 'ENTITY-2', entityName: '实体 2', protocol: 'FTP', accountName: 'entity2' },

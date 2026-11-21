@@ -1,32 +1,38 @@
 package com.powerjob.archive.worker;
 
+import com.powerjob.archive.core.service.DeliveryBatchService;
 import com.powerjob.archive.core.service.DeliveryPreparationService;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import tech.powerjob.worker.core.processor.ProcessResult;
 import tech.powerjob.worker.core.processor.TaskContext;
 import tech.powerjob.worker.core.processor.sdk.BasicProcessor;
+
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class DeliveryPreparationProcessor implements BasicProcessor {
     private final DeliveryPreparationService preparation;
+    private final DeliveryBatchService batches;
     private final JdbcTemplate jdbc;
 
-    public DeliveryPreparationProcessor(DeliveryPreparationService preparation, JdbcTemplate jdbc) {
+    public DeliveryPreparationProcessor(DeliveryPreparationService preparation, DeliveryBatchService batches, JdbcTemplate jdbc) {
         this.preparation = preparation;
+        this.batches = batches;
         this.jdbc = jdbc;
     }
 
-    /** PowerJob 只触发通用准备入口；重复触发由 discovery_completed_at 和任务唯一约束幂等。 */
     @Override public ProcessResult process(TaskContext context) {
-        List<Long> deliveryIds = jdbc.queryForList("SELECT delivery_id FROM delivery_submit " +
-                "WHERE status IN('SUBMITTED','DISCOVERING') ORDER BY delivery_id LIMIT 20", Long.class);
+        List<Map<String, Object>> deliveryIds = jdbc.queryForList("SELECT delivery_id,submission_type FROM delivery_submit " +
+                "WHERE status IN('SUBMITTED','DISCOVERING') ORDER BY delivery_id LIMIT 20");
         int discovered = 0;
-        for (long deliveryId : deliveryIds) {
+        for (Map<String, Object> delivery : deliveryIds) {
+            long deliveryId = ((Number) delivery.get("delivery_id")).longValue();
             try {
-                discovered += preparation.prepare(deliveryId);
-            } catch (IllegalArgumentException error) {
+                discovered += "BATCH_CREATE".equals(delivery.get("submission_type"))
+                        ? batches.prepare(deliveryId) : preparation.prepare(deliveryId);
+            } catch (RuntimeException error) {
                 jdbc.update("UPDATE delivery_submit SET status='BLOCKED',updated_at=now() " +
                         "WHERE delivery_id=? AND discovery_completed_at IS NULL", deliveryId);
                 throw error;

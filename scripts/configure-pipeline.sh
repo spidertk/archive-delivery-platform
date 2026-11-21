@@ -34,23 +34,25 @@ for node in definition["nodes"]:
         value = config.get(field)
         if (profile == "production" or value is None or value == "" or "********" in value or value.startswith("replace-")) and os.environ.get(name):
             config[field] = os.environ[name]
-ftp = next(node for node in definition["nodes"] if node["type"] == "ftp.download-verify")
 entity_count = int(os.environ.get("PROD_ENTITY_COUNT", "1"))
-for index in range(1, entity_count + 1):
-    account = os.environ.get(f"PROD_ENTITY_{index}_ACCOUNT", "")
-    value = os.environ.get(f"PROD_FTP_ENTITY_{index}_PASSWORD", "")
-    if not account or not value:
-        raise SystemExit(f"Production entity {index} account/password is required")
-    ftp["config"].setdefault("ftpCredential", {})[account] = value
-if profile == "production":
-    accounts = [os.environ[f"PROD_ENTITY_{index}_ACCOUNT"] for index in range(1, entity_count + 1)]
-    ftp["config"]["ftpCredential"] = {account: ftp["config"]["ftpCredential"][account] for account in accounts}
+ftp = next((node for node in definition["nodes"] if node["type"] == "ftp.download-verify"), None)
+if ftp is not None:
+    for index in range(1, entity_count + 1):
+        account = os.environ.get(f"PROD_ENTITY_{index}_ACCOUNT", "")
+        value = os.environ.get(f"PROD_FTP_ENTITY_{index}_PASSWORD", "")
+        if not account or not value:
+            raise SystemExit(f"Production entity {index} account/password is required")
+        ftp["config"].setdefault("ftpCredential", {})[account] = value
+    if profile == "production":
+        accounts = [os.environ[f"PROD_ENTITY_{index}_ACCOUNT"] for index in range(1, entity_count + 1)]
+        ftp["config"]["ftpCredential"] = {account: ftp["config"]["ftpCredential"][account] for account in accounts}
 with open(path, "w", encoding="utf-8") as stream:
     json.dump(definition, stream, ensure_ascii=False, indent=2)
     stream.write("\n")
 assert definition.get("pipelineCode") and definition["pipelineCode"][0].isalnum()
 assert "ruleSets" not in definition and "selection" not in definition["config"]
-assert definition["config"]["assignment"]["strategySource"] == "SUBMIT_TARGETS"
+expected_strategy = "BATCH_PLANNING" if definition["pipelineCode"] == "archive-batch" else "SUBMIT_TARGETS"
+assert definition["config"]["assignment"]["strategySource"] == expected_strategy
 assert all(node.get("type") for node in definition["nodes"])
 assert all("ruleSet" not in node["config"] for node in definition["nodes"])
 python_nodes = {"package.merge", "python.repair", "ftp.download-verify"}
@@ -66,7 +68,10 @@ for node in definition["nodes"]:
     if not script_file.is_relative_to(script_root) or not script_file.is_file():
         raise SystemExit(f"{node['type']} script does not exist below nodes/python: {value}")
 max_package_bytes = definition["config"]["assignment"].get("maxPackageBytes")
-assert isinstance(max_package_bytes, int) and max_package_bytes > 0
+if definition["pipelineCode"] == "archive-batch":
+    assert isinstance(max_package_bytes, int) and max_package_bytes > 0
+else:
+    assert max_package_bytes is None
 assert set(definition["nodeDefinitions"]) == {node["type"] for node in definition["nodes"]}
 serialized = json.dumps(definition)
 if "replace-" in serialized or "********" in serialized:

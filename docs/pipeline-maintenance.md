@@ -10,7 +10,7 @@
 
 不要直接编辑 `deploy/pipeline.production.json` 作为长期配置。它由 `scripts/pipeline_registry.py materialize <caseId>` 生成，真实 Secret 只在发布时从服务器受控 `.env` 注入。`deploy/golden-case.json` 同样是生成物，均不得提交。
 
-当前注册 case：`archive-delivery-jun`。它承接已完成的 deliveryId=2 真实验证，但注册机制本身是否通过后续真实 case，必须以新的交付证据为准。
+当前注册 case：`archive-batch-jun` 与 `archive-delivery-jun`。archive-batch 负责 OSS 下载和批次容量规划，archive-delivery 负责消费和真实交付；生产结果必须以新的批次及交付证据为准。
 
 ## 2. 本地验证：无真实外部文件
 
@@ -33,7 +33,7 @@
 
 ```bash
 # 一个 case
-./scripts/production-registry.sh archive-delivery-jun
+./scripts/production-registry.sh archive-batch-jun
 
 # 注册表中的全部 case
 ./scripts/production-registry.sh all

@@ -2,18 +2,18 @@
 
 ## 1. 拓扑
 
-`deploy/docker-compose.production.yml` 在交付机启动 PostgreSQL 16、MySQL 8.0.36、PowerJob Server 5.1.7、archive-server 和 worker-1/2/3/4。隔离 ftp-june 仅在 `COMPOSE_PROFILES=embedded-ftp` 时启动；复用已有 FTP 时设置 `COMPOSE_PROFILES=` 并沿用其账户配置，不重复安装。PG、PowerJob、API 默认只绑定回环；内置 FTP 只在 Compose 内网开放。远程 Worker 接入时通过环境变量绑定 `0.0.0.0`，安全组只允许对方公网 IP `/32`。
+`deploy/docker-compose.production.yml` 启动 PostgreSQL 16、MySQL 8.0.36、PowerJob Server 5.1.7、archive-server 和 worker-1/2/3/4。隔离 ftp-june 仅在 `COMPOSE_PROFILES=embedded-ftp` 时启动；复用已有 FTP 时设置 `COMPOSE_PROFILES=` 并沿用其账户配置，不重复安装。PG 为跨机访问绑定 `0.0.0.0`，云安全组按实际访问方公网 IP `/32` 放通。PowerJob 管理/发现端口 7700 和 API 只绑定回环，同机 Worker 从 Compose 内网 `powerjob-server:7700` 发现服务，再通过 `powerjob-server:10010` 执行调度协议；内置 FTP 只在 Compose 内网开放。
 
 同机 Worker 共享本机 archive_data，不同服务器不共享目录。禁止 `down -v`、清库、清空 Bucket/FTP 或同名不同 SHA 覆盖。
 
-## 2. V24 数据库基线
+## 2. V25 批次数据库基线
 
-`delivery-core/src/main/resources/db/migration/V24__golden_delivery_baseline.sql` 是唯一迁移文件，包含当前全部表、列、约束、注释、JSONB 白名单和种子 Pipeline。
+当前迁移为 `delivery-core/src/main/resources/db/migration/V25__batch_delivery_baseline.sql`。
 
-- 全新数据库只执行 V24，创建完整当前模型。
-- 已有 V23 模型执行 V24 时跳过建表语句，不重复修改业务事实。
-- server/worker 使用 `spring.flyway.ignore-missing-migrations=true` 接受已有历史，不恢复旧迁移。
-- 升级前必须备份；pre-V14 旧生产库不由自动脚本处理。
+- BATCH_CREATE 保存 OSS 批次总单，BATCH_SUBMIT 保存每次独立交付提交。
+- source_data.unique_key 固定为 sha256；delivery_batch 保存原始文件到合并包、实体、Worker 和消费提交的关系。
+- delivery_mapping 和 delivery_task.metadata_ids 已删除，旧线上关系在迁移时转入 delivery_batch。
+- 升级前必须备份；server/worker 使用 ignore-missing-migrations 接受已有历史。
 
 ```bash
 docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env \
@@ -21,7 +21,7 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env \
   "SELECT version,success FROM archive_delivery.flyway_schema_history ORDER BY installed_rank DESC LIMIT 3;"
 ```
 
-最新成功版本必须为 24。
+最新成功版本必须为 25。
 
 ## 3. 受控配置
 
@@ -29,24 +29,23 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env \
 cd /opt/archive-delivery-platform
 cp deploy/env.production.example deploy/.env
 python3 scripts/provision-production-config.py
-python3 scripts/pipeline_registry.py materialize archive-delivery-jun
-chmod 600 deploy/.env deploy/pipeline.production.json deploy/golden-case.json
+chmod 600 deploy/.env
 ```
 
-`pipelines/*.md` 是唯一定义来源，生成的 JSON 不提交。管理员在 `.env` 配置源/目标 OSS AK/SK 和独立服务密码；生产发布时以当前 `.env` 刷新 OSS/FTP 凭据。凭据不进入 MD、镜像、日志或证据。
+`pipelines/*.md` 是唯一定义来源。archive-batch 独占 maxPackageBytes 和 entityWorkers 容量映射，不设置合并包下限；archive-delivery 只定义交付 DAG、目标和凭据。真实 Secret 只在发布时从 `.env` 注入，不进入 Git、日志或证据。
 
 ## 4. 一键执行
 
 ```bash
-./scripts/production-registry.sh archive-delivery-jun
+./scripts/production-registry.sh archive-batch-jun
 # 或全部注册 case
 ./scripts/production-registry.sh all
 ```
 
-执行顺序：V24 → PowerJob 通用调度 → 不可变 PipelineVersion → 来源/实体 → 真实预检 → 提交 → 有界等待 → 独立 OSS/FTP 验证和证据。pre-V14 旧生产库阻断，不运行 reset。
+执行顺序：V25 → PowerJob 通用调度 → 发布 archive-batch/archive-delivery → 来源/实体 → 真实预检 → 创建并规划一次 OSS 批次 → 每次独立提交和消费 → 有界等待 → 独立 OSS/FTP 验证和证据。
 
-生产流程：源 OSS 下载并保留 → merge 输出请求目录 → repair 按 entityCode 修复并只最终封包一次 → qualify → OSS SDK PUT/HEAD/GET → FTP 上传下载核验。生产 gzipCompressLevel=5，包大小和最终 SHA 仍须通过原验收边界。
+批次创建执行真实 OSS 下载和装箱；交付执行 merge 请求目录、repair 按 entityCode 修复并只最终封包一次、qualify、OSS SDK PUT/HEAD/GET、FTP 上传下载核验。生产 gzipCompressLevel=5。
 
 ## 5. 证据与运维
 
-成功证据位于 `docs/evidence/<deliveryBatch>/`，必须包含实际 deliveryId/taskId、PipelineVersion、V24、节点 locator、外部 URI、size/SHA 和复核命令。日常磁盘、日志、认证、BLOCKED、暂停续跑、备份和回退见 `production-operations.md`。AI 新增 Pipeline 和 CI review 见 `pipeline-maintenance.md`。
+成功证据位于 `docs/evidence/<deliveryBatch>/`，必须包含 batchDeliveryId、每次 deliveryId/taskId、两个 PipelineVersion、V25、节点 locator、外部 URI、size/SHA、原始文件/批次包/任务数量和复核命令。日常运维见 `production-operations.md`，AI review 见 `pipeline-maintenance.md`。

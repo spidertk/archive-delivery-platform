@@ -17,6 +17,8 @@ public class RetryPolicy {
     }
 
     private static boolean isPermanent(Throwable error) {
+        if (error instanceof PackageOverflowException || error instanceof InterruptedException
+                || error instanceof org.springframework.dao.ConcurrencyFailureException) return false;
         if (error instanceof RemoteConflictException || error instanceof IllegalArgumentException) return true;
         if (error instanceof OSSException oss) {
             String code = oss.getErrorCode();

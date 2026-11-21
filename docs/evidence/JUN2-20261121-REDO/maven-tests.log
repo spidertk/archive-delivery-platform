@@ -1,0 +1,105 @@
+Picked up JAVA_TOOL_OPTIONS: -Xmx512m -Dapi.version=1.44
+Picked up JAVA_TOOL_OPTIONS: -Xmx512m -Dapi.version=1.44
+19:37:49.435 INFO  o.t.d.DockerClientProviderStrategy - Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+19:37:49.444 INFO  o.testcontainers.DockerClientFactory - Docker host IP address is 127.0.0.1
+19:37:49.457 INFO  o.testcontainers.DockerClientFactory - Connected to docker: 
+  Server Version: 29.1.3
+  API Version: 1.52
+  Operating System: Ubuntu 26.04.1 LTS
+  Total Memory: 3622 MB
+19:37:49.459 WARN  o.t.utility.ResourceReaper - 
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+19:37:49.461 INFO  o.testcontainers.DockerClientFactory - Checking the system...
+19:37:49.461 INFO  o.testcontainers.DockerClientFactory - ✔︎ Docker server version should be at least 1.6.0
+19:37:49.477 INFO  org.testcontainers.images.PullPolicy - Image pull policy will be performed by: DefaultPullPolicy()
+19:37:49.478 INFO  o.t.utility.ImageNameSubstitutor - Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+19:37:49.837 INFO  tc.postgres:16-alpine - Creating container for image: postgres:16-alpine
+19:37:49.842 INFO  o.t.utility.RegistryAuthLocator - Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: postgres:16-alpine, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+19:37:49.984 INFO  tc.postgres:16-alpine - Container postgres:16-alpine is starting: b02011a5580f4a8e729d4acccb4709521a361f75419a29126783628487cdf31b
+19:37:51.092 INFO  tc.postgres:16-alpine - Container postgres:16-alpine started in PT1.254626716S
+19:37:51.093 INFO  tc.postgres:16-alpine - Container is started (JDBC URL: jdbc:postgresql://127.0.0.1:32770/archive_delivery?loggerLevel=OFF)
+19:37:51.115 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+19:37:51.115 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+19:37:51.115 INFO  o.f.c.i.license.VersionPrinter - 
+19:37:51.127 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+19:37:51.271 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+19:37:51.284 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://127.0.0.1:32770/archive_delivery (PostgreSQL 16.16)
+19:37:51.290 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.16 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+19:37:51.313 INFO  o.f.c.internal.database.base.Schema - Creating schema "archive_delivery" ...
+19:37:51.318 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "archive_delivery"."flyway_schema_history" ...
+19:37:51.344 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": null
+19:37:51.437 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "25 - batch delivery baseline"
+19:37:51.440 WARN  o.f.c.i.s.DefaultSqlScriptExecutor - DB: schema "archive_delivery" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+19:37:51.713 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 1 migration to schema "archive_delivery", now at version v25 (execution time 00:00.375s)
+19:37:52.048 INFO  c.p.a.c.s.DeliveryPreparationService - Batch delivery prepared deliveryId=1 batchDeliveryId=1007 taskCount=2 sourceCount=2
+19:37:52.078 INFO  c.p.a.c.s.DeliveryPreparationService - Batch delivery prepared deliveryId=2 batchDeliveryId=1007 taskCount=2 sourceCount=2
+19:37:52.121 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+19:37:52.121 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+19:37:52.121 INFO  o.f.c.i.license.VersionPrinter - 
+19:37:52.122 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://127.0.0.1:32770/archive_delivery (PostgreSQL 16.16)
+19:37:52.125 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.16 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+19:37:52.131 INFO  o.f.core.internal.command.DbValidate - Successfully validated 2 migrations (execution time 00:00.005s)
+19:37:52.135 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": 25
+19:37:52.135 INFO  o.f.core.internal.command.DbMigrate - Schema "archive_delivery" is up to date. No migration necessary.
+19:37:52.313 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+19:37:52.319 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+19:37:52.987 INFO  c.p.a.core.node.OssDownloadNode - Source download node started deliveryId=8 taskId=7 processId=100 entityCode=jun sourceCount=1
+19:37:52.987 INFO  c.p.a.core.node.OssDownloadNode - Source download started deliveryId=8 taskId=7 processId=100 dataId=11 uri=oss://bucket/prefix/source.tar.gz expectedSize=25 expectedSha256=dfa89d92a442552d76024c396f2472460def7073e43c66df5bc29066864c2813 target=/tmp/junit14551028106015999175/delivery-8/task-7/sources/data-11/source.tar.gz
+19:37:52.988 INFO  c.p.a.core.node.OssDownloadNode - Source download succeeded deliveryId=8 taskId=7 processId=100 dataId=11 cacheHit=true sizeBytes=25 sha256=dfa89d92a442552d76024c396f2472460def7073e43c66df5bc29066864c2813 localPath=/tmp/junit14551028106015999175/delivery-8/task-7/sources/data-11/source.tar.gz
+19:37:52.989 INFO  c.p.a.core.node.OssDownloadNode - Source download node succeeded deliveryId=8 taskId=7 processId=100 sourceCount=1 cacheHits=1
+19:37:53.007 INFO  c.p.a.core.node.ManifestQualifyNode - Manifest qualification succeeded deliveryId=8 taskId=7 processId=100 entityCode=jun sourceCount=2 requestCount=3 sizeBytes=14 sha256=f940abcd9e6c3a56758e388e3825dbbce8077b55a8ea45055eb9767889c19d2b
+Picked up JAVA_TOOL_OPTIONS: -Xmx512m -Dapi.version=1.44
+19:37:55.270 INFO  o.t.d.DockerClientProviderStrategy - Loaded org.testcontainers.dockerclient.UnixSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+19:37:55.530 INFO  o.t.d.DockerClientProviderStrategy - Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+19:37:55.532 INFO  o.testcontainers.DockerClientFactory - Docker host IP address is 127.0.0.1
+19:37:55.547 INFO  o.testcontainers.DockerClientFactory - Connected to docker: 
+  Server Version: 29.1.3
+  API Version: 1.52
+  Operating System: Ubuntu 26.04.1 LTS
+  Total Memory: 3622 MB
+19:37:55.551 WARN  o.t.utility.ResourceReaper - 
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+19:37:55.556 INFO  o.testcontainers.DockerClientFactory - Checking the system...
+19:37:55.557 INFO  o.testcontainers.DockerClientFactory - ✔︎ Docker server version should be at least 1.6.0
+19:37:55.644 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.powerjob.archive.worker.GoldenPipelineDefinitionTest], using SpringBootContextLoader
+19:37:55.647 INFO  o.s.t.c.s.AbstractContextLoader - Could not detect default resource locations for test class [com.powerjob.archive.worker.GoldenPipelineDefinitionTest]: no resource found for suffixes {-context.xml, Context.groovy}.
+19:37:55.648 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.powerjob.archive.worker.GoldenPipelineDefinitionTest]: GoldenPipelineDefinitionTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+19:37:55.742 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.powerjob.archive.worker.ArchiveWorkerApplication for test class com.powerjob.archive.worker.GoldenPipelineDefinitionTest
+19:37:55.824 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+19:37:55.834 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@61f80d55, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@27a7ef08, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@280e8a1a, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@11e33bac, org.springframework.test.context.support.DirtiesContextTestExecutionListener@30501e60, org.springframework.test.context.transaction.TransactionalTestExecutionListener@289778cd, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@7495699f, org.springframework.test.context.event.EventPublishingTestExecutionListener@7c2312fa, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@4cb0a000, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@5ff2e84b, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@74abbb, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@64a4dd8d, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@2dddc1b9, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@65a5d4f9]
+19:37:55.847 INFO  org.testcontainers.images.PullPolicy - Image pull policy will be performed by: DefaultPullPolicy()
+19:37:55.849 INFO  o.t.utility.ImageNameSubstitutor - Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+19:37:56.019 INFO  tc.postgres:16-alpine - Creating container for image: postgres:16-alpine
+19:37:56.024 INFO  o.t.utility.RegistryAuthLocator - Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: postgres:16-alpine, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+19:37:56.150 INFO  tc.postgres:16-alpine - Container postgres:16-alpine is starting: b26cecd5ecd28e40a4097a63094c3c649b66f18e43840a44064931dcc81a3031
+19:37:57.269 INFO  tc.postgres:16-alpine - Container postgres:16-alpine started in PT1.249324942S
+19:37:57.270 INFO  tc.postgres:16-alpine - Container is started (JDBC URL: jdbc:postgresql://127.0.0.1:32771/archive_delivery?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.18)
+
+19:37:57.595 INFO  c.p.a.w.GoldenPipelineDefinitionTest - Starting GoldenPipelineDefinitionTest using Java 17.0.20.1 on iZt4naqxwl6ndly0dl8zhjZ with PID 104 (started by root in /workspace/delivery-worker)
+19:37:57.595 INFO  c.p.a.w.GoldenPipelineDefinitionTest - No active profile set, falling back to 1 default profile: "default"
+19:37:58.417 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+19:37:58.417 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+19:37:58.417 INFO  o.f.c.i.license.VersionPrinter - 
+19:37:58.422 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+19:37:58.598 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+19:37:58.611 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://127.0.0.1:32771/archive_delivery (PostgreSQL 16.16)
+19:37:58.618 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.16 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+19:37:58.641 INFO  o.f.c.internal.database.base.Schema - Creating schema "archive_delivery" ...
+19:37:58.645 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "archive_delivery"."flyway_schema_history" ...
+19:37:58.683 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": null
+19:37:58.804 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "25 - batch delivery baseline"
+19:37:58.814 WARN  o.f.c.i.s.DefaultSqlScriptExecutor - DB: schema "archive_delivery" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+19:37:59.072 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 1 migration to schema "archive_delivery", now at version v25 (execution time 00:00.397s)
+19:37:59.634 INFO  c.p.a.w.GoldenPipelineDefinitionTest - Started GoldenPipelineDefinitionTest in 2.263 seconds (JVM running for 5.518)

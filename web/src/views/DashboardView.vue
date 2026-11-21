@@ -4,21 +4,23 @@
     <el-form inline class="filters" @submit.prevent>
       <el-form-item label="Delivery ID"><el-input-number v-model="deliveryId" :min="1" /></el-form-item>
       <el-button type="primary" @click="refresh">刷新</el-button>
-      <el-button v-if="!['DELIVERED','CANCELLED'].includes(summary.deliveryStatus)" @click="pause">节点边界暂停</el-button>
+      <el-button v-if="summary.taskTotal > 0 && !['DELIVERED','CANCELLED'].includes(summary.deliveryStatus)" @click="pause">节点边界暂停</el-button>
     </el-form>
     <el-alert v-if="error" :title="error" type="error" :closable="false" />
+    <BatchCreateForm @created="onBatchCreated" />
     <el-card class="submit-card">
-      <template #header>按业务编码提交；相同批次原样再提交可继续暂停流程</template>
+      <template #header>消费已规划批次；每次提交独立创建交付任务</template>
       <el-form inline @submit.prevent>
         <el-form-item label="源 OSS URI"><el-input v-model="submission.ossUri" placeholder="oss://bucket/prefix/" /></el-form-item>
         <el-form-item label="Pipeline Code"><el-input v-model="submission.pipelineCode" /></el-form-item>
         <el-form-item label="交付日"><el-date-picker v-model="submission.deliveryDate" type="date" value-format="YYYY-MM-DD" /></el-form-item>
         <el-form-item label="交付批次"><el-input v-model="submission.deliveryBatch" /></el-form-item>
-        <el-form-item v-for="(target, index) in submission.targets" :key="index" :label="`目标 ${index + 1} vendorCode / entityCode`">
+        <el-form-item v-for="(target, index) in submission.targets" :key="index" :label="`目标 ${index + 1} vendorCode / entityCode / 包数`">
           <el-input v-model="target.vendorCode" placeholder="alibaba" />
           <el-input v-model="target.entityCode" placeholder="jun" />
+          <el-input-number v-model="target.targetCount" :min="1" />
         </el-form-item>
-        <el-button type="primary" :loading="submitting" @click="submit">提交 / 继续</el-button>
+        <el-button type="primary" :loading="submitting" @click="submit">提交交付</el-button>
       </el-form>
     </el-card>
     <section class="cards">
@@ -55,7 +57,6 @@
     <el-drawer v-model="drawer" size="58%" :title="selected ? `Task ${selected.taskId} · ${selected.newFileName}` : '任务时间轴'">
       <el-descriptions v-if="selected" :column="1" border>
         <el-descriptions-item label="来源 Data IDs">{{ selected.sourceDataIds?.join(', ') }}</el-descriptions-item>
-        <el-descriptions-item label="来源 metadata dataIds">{{ selected.metadataIds?.join(', ') }}</el-descriptions-item>
         <el-descriptions-item label="SHA-256">{{ selected.sha256 }}</el-descriptions-item>
         <el-descriptions-item label="Size / Token">{{ selected.sizeBytes }} / {{ selected.tokenCount }}</el-descriptions-item>
         <el-descriptions-item label="错误">{{ selected.lastErrorCode }}</el-descriptions-item>
@@ -68,17 +69,18 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { getSummary, getTasks, getTimeline, pauseDelivery, resumeDelivery, retryTask, submitDelivery } from '../api'
+import BatchCreateForm from '../components/BatchCreateForm.vue'
 import DeliveryTaskTimeline from '../components/DeliveryTaskTimeline.vue'
 import type { DeliveryTask, SubmitDelivery, Summary, Timeline } from '../types'
 
 const deliveryId = ref(1)
 const today = new Date().toISOString().slice(0, 10)
 const submission = reactive<SubmitDelivery>({ ossUri: 'oss://bucket/prefix/', pipelineCode: 'archive-delivery', deliveryDate: today,
-  deliveryBatch: `BATCH-${Date.now()}`,
-  targets: ['jun', 'jun2'].map(entityCode => ({ targetCount: 1, vendorCode: 'alibaba', entityCode })) })
+  deliveryBatch: '', targets: [{ targetCount: 100, vendorCode: 'alibaba', entityCode: 'jun' }] })
 const submitting = ref(false)
 const emptySummary: Summary = { deliveryStatus: 'SUBMITTED', taskTotal: 0, targetTotal: 0, succeeded: 0,
-  blocked: 0, retrying: 0, waiting: 0, paused: 0, expired: 0, targets: [] }
+  blocked: 0, retrying: 0, waiting: 0, paused: 0, expired: 0, batchPackageTotal: 0, deliveredPackageCount: 0,
+  originalFileCount: 0, targets: [] }
 const summary = ref<Summary>({ ...emptySummary })
 const tasks = ref<DeliveryTask[]>([])
 const total = ref(0)
@@ -90,9 +92,11 @@ let timer: ReturnType<typeof setInterval> | undefined
 
 const cards = computed(() => [
   { label: '聚合状态', value: summary.value.deliveryStatus }, { label: '有效任务', value: summary.value.taskTotal },
-  { label: '已交付', value: summary.value.succeeded }, { label: 'BLOCKED', value: summary.value.blocked },
-  { label: 'RETRY', value: summary.value.retrying }, { label: 'WAITING', value: summary.value.waiting },
-  { label: 'PAUSED', value: summary.value.paused }, { label: '超期历史', value: summary.value.expired }
+  { label: '已交付', value: summary.value.succeeded }, { label: '批次包', value: summary.value.batchPackageTotal },
+  { label: '批次已交付', value: summary.value.deliveredPackageCount }, { label: '原始文件', value: summary.value.originalFileCount },
+  { label: 'BLOCKED', value: summary.value.blocked }, { label: 'RETRY', value: summary.value.retrying },
+  { label: 'WAITING', value: summary.value.waiting }, { label: 'PAUSED', value: summary.value.paused },
+  { label: '超期历史', value: summary.value.expired }
 ])
 
 async function refresh() {
@@ -105,6 +109,12 @@ async function refresh() {
   } catch (cause) {
     error.value = cause instanceof Error ? cause.message : String(cause)
   }
+}
+
+function onBatchCreated(id: number, batch: string) {
+  deliveryId.value = id
+  submission.deliveryBatch = batch
+  refresh()
 }
 
 async function submit() {
@@ -149,7 +159,8 @@ defineExpose({ refresh })
 <style scoped>
 .dashboard { max-width: 1500px; margin: 20px auto; padding: 0 16px; }
 .filters { margin-bottom: 12px; }
-.cards { display: grid; grid-template-columns: repeat(8, minmax(100px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.submit-card { margin-bottom: 14px; }
+.cards { display: grid; grid-template-columns: repeat(6, minmax(100px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .cards .el-card { text-align: center; }
 .cards strong { display: block; font-size: 22px; margin-top: 6px; }
 .target-row { margin: 10px 0; display: flex; gap: 20px; align-items: center; }

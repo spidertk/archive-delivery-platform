@@ -41,12 +41,14 @@ public class DeliveryRolloverService {
     }
 
     public int rolloverDue() {
-        List<Long> deliveryIds = jdbc.queryForList("SELECT DISTINCT delivery_id FROM delivery_task WHERE cutoff_at<=now() " +
-                "AND execution_status NOT IN('SUCCEEDED','EXPIRED','CANCELLED') ORDER BY delivery_id", Long.class);
+        List<Long> deliveryIds = jdbc.queryForList("SELECT DISTINCT t.delivery_id FROM delivery_task t " +
+                "JOIN delivery_submit s ON s.delivery_id=t.delivery_id " +
+                "JOIN delivery_submit b ON b.delivery_id=s.batch_delivery_id AND b.submission_type='BATCH_CREATE' " +
+                "WHERE s.submission_type='BATCH_SUBMIT' AND s.batch_delivery_id IS NOT NULL " +
+                "AND t.cutoff_at<=now() AND t.execution_status NOT IN('SUCCEEDED','EXPIRED','CANCELLED') ORDER BY t.delivery_id", Long.class);
         return deliveryIds.stream().mapToInt(id -> transactions.execute(status -> rollover(id, null, null, true, "system"))).sum();
     }
 
-    /** 人工续交必须指定原日期和新交付日期；同一主单只迁移未完成任务，新任务占用新日期目标配额。 */
     public int rolloverDelivery(long deliveryId, LocalDate expectedDeliveryDate, LocalDate deliveryDate, String reason, String operator) {
         if (expectedDeliveryDate == null || deliveryDate == null || reason == null || reason.isBlank()) {
             throw new IllegalArgumentException("expectedDeliveryDate, deliveryDate and reason are required");
@@ -55,7 +57,6 @@ public class DeliveryRolloverService {
         return transactions.execute(status -> rollover(deliveryId, expectedDeliveryDate, deliveryDate, false, operator));
     }
 
-    /** 跨日完整复制映射与产物对，新旧 taskId 和作废原因只写不可变事件，不在任务表保存反向指针。 */
     private int rollover(long deliveryId, LocalDate expectedDate, LocalDate requestedDate, boolean dueOnly, String operator) {
         jdbc.queryForObject("SELECT delivery_id FROM delivery_submit WHERE delivery_id=? FOR UPDATE", Long.class, deliveryId);
         PipelineDefinition pipeline = pipeline(deliveryId);
@@ -77,18 +78,15 @@ public class DeliveryRolloverService {
             if (expired != 1) continue;
             jdbc.update("UPDATE delivery_node SET status='CANCELLED',finished_at=now() WHERE task_id=? AND status IN('RUNNING','WAITING')", old.taskId());
             long newTaskId = jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,delivery_entity_id,entity_code,worker_group," +
-                            "delivery_date,cutoff_at,new_file_name,size_bytes,token_count,artifacts,metadata_ids,current_node_id) " +
-                            "VALUES(?,?,?,?,?,?,?,?,?,?::jsonb,?::jsonb,?) RETURNING task_id", Long.class, old.deliveryId(), old.deliveryEntityId(),
+                            "delivery_date,cutoff_at,new_file_name,size_bytes,token_count,artifacts,current_node_id) " +
+                            "VALUES(?,?,?,?,?,?,?,?,?,?::jsonb,?) RETURNING task_id", Long.class, old.deliveryId(), old.deliveryEntityId(),
                     old.entityCode(), old.workerGroup(), nextDate, nextCutoff, old.newFileName(), old.sizeBytes(), old.tokenCount(),
-                    old.artifacts().toString(), old.metadataIds().toString(), pipeline.rolloverStartNode());
-            jdbc.update("INSERT INTO delivery_mapping(task_id,delivery_id,data_id,source_seq) " +
-                    "SELECT ?,delivery_id,data_id,source_seq FROM delivery_mapping WHERE task_id=? ORDER BY source_seq", newTaskId, old.taskId());
-            // targetUpload 等非首节点跨日时，新任务必须同时继承 repair/qualify 等前置成功 locator。
+                    old.artifacts().toString(), pipeline.rolloverStartNode());
             copyPrerequisiteNodes(old.taskId(), newTaskId, pipeline);
             ObjectNode expiredPayload = mapper.createObjectNode().put("taskId", old.taskId()).put("oldTaskId", old.taskId())
                     .put("newTaskId", newTaskId).put("oldDeliveryDate", old.deliveryDate().toString()).put("newDeliveryDate", nextDate.toString());
-            Long sourceDataId = jdbc.queryForObject("SELECT data_id FROM delivery_mapping WHERE task_id=? ORDER BY source_seq LIMIT 1",
-                    Long.class, old.taskId());
+            Long sourceDataId = jdbc.queryForObject("SELECT b.data_id FROM delivery_batch b WHERE b.delivery_id=? AND b.new_file_name=? " +
+                    "ORDER BY b.source_seq LIMIT 1", Long.class, old.deliveryId(), old.newFileName());
             events.append(deliveryId, old.taskId(), null, old.deliveryEntityId(), sourceDataId, "TASK_EXPIRED", "WARN",
                     "CUTOFF_EXCEEDED", "Task expired and continued with a new taskId", expiredPayload, operator, "task-expired-" + old.taskId());
             events.append(deliveryId, newTaskId, null, old.deliveryEntityId(), sourceDataId, "TASK_REGENERATED", "INFO",
@@ -101,42 +99,33 @@ public class DeliveryRolloverService {
     }
 
     private void copyPrerequisiteNodes(long oldTaskId, long newTaskId, PipelineDefinition pipeline) {
-        // 按 DAG 顺序收集跨日起点之前的节点，绝不复制目标节点自身或后续失败记录。
         List<String> prerequisiteIds = new ArrayList<>();
         String cursor = pipeline.firstNode();
         while (!cursor.equals(pipeline.rolloverStartNode())) {
             prerequisiteIds.add(cursor);
             cursor = pipeline.node(cursor).next();
         }
-        // 跨日起点就是首节点时没有任何前置 locator 需要复制。
         if (prerequisiteIds.isEmpty()) return;
-        // IN 列表只来自当前不可变 Pipeline 的节点 ID，不接收外部 SQL。
         String placeholders = String.join(",", java.util.Collections.nCopies(prerequisiteIds.size(), "?"));
-        // 每个前置节点只复制最新成功 attempt，新 process_id 由数据库生成。
         String sql = "INSERT INTO delivery_node(delivery_id,task_id,original_file_name,new_file_name,node_id,node_type,stage_code," +
                 "attempt,fence,status,worker_instance_id,input_locator,output_locator,error_code,error_detail,started_at,heartbeat_at,finished_at) " +
                 "SELECT delivery_id,?,original_file_name,new_file_name,node_id,node_type,stage_code,attempt,fence,status,worker_instance_id," +
                 "input_locator,output_locator,error_code,error_detail,started_at,heartbeat_at,finished_at FROM (" +
                 "SELECT DISTINCT ON(node_id) * FROM delivery_node WHERE task_id=? AND status='SUCCEEDED' AND node_id IN(" + placeholders + ") " +
                 "ORDER BY node_id,attempt DESC) prerequisite";
-        // 参数顺序依次为新 task、旧 task 和 DAG 前置节点 ID。
         List<Object> arguments = new ArrayList<>();
         arguments.add(newTaskId);
         arguments.add(oldTaskId);
         arguments.addAll(prerequisiteIds);
-        int copied = jdbc.update(sql, arguments.toArray());
-        // 日志记录新旧任务及复制数量，便于核对跨日 locator 血缘。
-        org.slf4j.LoggerFactory.getLogger(DeliveryRolloverService.class).info(
-                "Rollover prerequisite locators copied oldTaskId={} newTaskId={} rolloverStartNode={} copiedNodes={}",
-                oldTaskId, newTaskId, pipeline.rolloverStartNode(), copied);
+        jdbc.update(sql, arguments.toArray());
     }
 
     private PipelineDefinition pipeline(long deliveryId) {
         try {
             return pipelines.read(mapper.readTree(jdbc.queryForObject("SELECT pv.definition::text FROM delivery_submit s " +
                     "JOIN pipeline_version pv ON pv.pipeline_version_id=s.pipeline_version_id WHERE s.delivery_id=?", String.class, deliveryId)));
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid delivery PipelineVersion", e);
+        } catch (Exception error) {
+            throw new IllegalArgumentException("Invalid delivery PipelineVersion", error);
         }
     }
 }

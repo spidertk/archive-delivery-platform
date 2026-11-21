@@ -38,7 +38,7 @@ class RemotePathServiceTest {
     private static DeliveryTask task() {
         return new DeliveryTask(7, 8, 10, "ENTITY-10", "group1",
                 LocalDate.parse("2026-11-08"), OffsetDateTime.parse("2026-11-08T18:00:00+08:00"),
-                "batch_00001.tar.gz", 1, 1, null, null,
+                "batch_00001.tar.gz", 1, 1, null,
                 "targetUpload", "READY", null, null, 0, 0, null, null, null);
     }
 }

@@ -1,0 +1,84 @@
+{
+  "at": "2026-11-20T20:21:02.564889+00:00",
+  "workerApplicationsReady": 4,
+  "health": "UP",
+  "dashboardAndAssetsHttp": 200,
+  "services": [
+    {
+      "service": "archive-server",
+      "image": "sha256:63c82de54be071efbc1ecbb29c0fa8c04a7b1c5c071840d1cd319890b9690531",
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms64m -Xmx256m"
+      }
+    },
+    {
+      "service": "worker-1",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms64m -Xmx256m",
+        "ARCHIVE_MAX_RUNNING_TASKS": "3",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true"
+      }
+    },
+    {
+      "service": "worker-2",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms64m -Xmx256m",
+        "ARCHIVE_MAX_RUNNING_TASKS": "3",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true"
+      }
+    },
+    {
+      "service": "worker-3",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms64m -Xmx256m",
+        "ARCHIVE_MAX_RUNNING_TASKS": "3",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true"
+      }
+    },
+    {
+      "service": "worker-4",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms64m -Xmx256m",
+        "ARCHIVE_MAX_RUNNING_TASKS": "3",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true"
+      }
+    },
+    {
+      "service": "ftp-june",
+      "image": "sha256:b104f3379827737933ce4c4e04231a392e0390a9fc7696ad37aaa5536d6d32f5",
+      "restartCount": 0,
+      "oomKilled": false,
+      "running": true,
+      "settings": {
+        "FTP_ALLOW_DATE_CLEANUP": "true"
+      }
+    }
+  ]
+}

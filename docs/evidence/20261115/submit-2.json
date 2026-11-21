@@ -1,0 +1,13 @@
+{
+  "ossUri": "oss://sg-storage-20261013-6vmlk/internal/gpt-sse-wire-fix-20261112-v1/products/",
+  "pipelineCode": "archive-delivery",
+  "deliveryDate": "2026-11-15",
+  "deliveryBatch": "20261115",
+  "targets": [
+    {
+      "targetCount": 100,
+      "vendorCode": "alibaba",
+      "entityCode": "jun"
+    }
+  ]
+}

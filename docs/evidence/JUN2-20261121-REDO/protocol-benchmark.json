@@ -1,0 +1,13 @@
+{
+  "at": "2026-11-21T04:00:50+0800",
+  "artifact": "/srv/maas-sftp/maasData/archive/june-2/2026-11-21/batch_00001.tar.gz",
+  "sizeBytes": 71835408,
+  "sha256": "7087b5d8516812d407c6236dbe700692127da8e031b4db9c25e86ac87205ce69",
+  "beforeSeconds": 77.92377559933811,
+  "afterSeconds": 1.6357975010760128,
+  "speedup": 47.636565985753464,
+  "bothProtocolChecksPassed": true,
+  "artifactUnchanged": true,
+  "comparison": "same existing FTP artifact, new then old, live delivery concurrently active",
+  "afterCodeSha256": "1f0d238d59bf09ef135e429183475ae6ef7426f2a21044dba4e299e422602251"
+}

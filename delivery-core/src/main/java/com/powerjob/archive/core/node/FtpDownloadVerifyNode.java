@@ -80,7 +80,10 @@ public class FtpDownloadVerifyNode implements NodeHandler {
                 .put("password", config.passwordFor(context.entity().accountName())).put("rootPath", rootPath)
                 .put("remotePath", relative).put("sourcePath", ossCopy.toAbsolutePath().toString())
                 .put("downloadPath", download.toAbsolutePath().toString())
-                .put("expectedSize", context.task().sizeBytes()).put("expectedSha256", expectedSha);
+                .put("expectedSize", context.task().sizeBytes()).put("expectedSha256", expectedSha)
+                .put("cleanupOtherDeliveryDates", config.cleanupOtherDeliveryDates())
+                .put("deliveryDate", context.task().deliveryDate().toString())
+                .put("retentionRoot", Path.of(properties.getFtpVerificationRoot(), ".retention").toString());
         // 开始日志只记录连接位置、业务血缘和预期文件事实。
         log.info("FTP verification started deliveryId={} taskId={} processId={} entityCode={} host={} port={} rootPath={} remotePath={} expectedSize={} expectedSha256={}",
                 context.task().deliveryId(), context.task().taskId(), context.processId(), context.task().entityCode(),

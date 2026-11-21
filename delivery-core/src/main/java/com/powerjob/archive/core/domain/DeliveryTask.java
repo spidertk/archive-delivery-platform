@@ -4,11 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
-/** 合并交付包的执行原子；artifacts[i] 与 metadataIds[i] 描述同一来源，跨日仍保持同执行组。 */
 public record DeliveryTask(
         long taskId, long deliveryId, long deliveryEntityId, String entityCode, String workerGroup,
         LocalDate deliveryDate, OffsetDateTime cutoffAt, String newFileName,
-        long sizeBytes, long tokenCount, JsonNode artifacts, JsonNode metadataIds,
+        long sizeBytes, long tokenCount, JsonNode artifacts,
         String currentNodeId, String executionStatus, String leaseOwner,
         OffsetDateTime leaseUntil, long fence, int retryCount, OffsetDateTime nextRetryAt,
         String lastErrorCode, OffsetDateTime completedAt) {

@@ -1,0 +1,26 @@
+{
+  "appliedAt": "2026-11-20T20:02:00.880545+00:00",
+  "sameArtifactProtocolPassed": true,
+  "files": {
+    "nodes/python/archive_repair.py": {
+      "beforeSha256": "4f4f7b5f624a515295aa096018a2d98a6477e71d48afc4d5c5d1441f44869af3",
+      "afterSha256": "9c9b7a68934afd0cb08a5f5c9f5fd6dfb67e68d52e2a4e1c7db131dada00bd0c"
+    },
+    "nodes/python/legacy_fix_archive.py": {
+      "beforeSha256": "24a078cbe0713f981ddf3e93c58e3187ba9ef5a1849833f7b378fb35ce373469",
+      "afterSha256": "1f0d238d59bf09ef135e429183475ae6ef7426f2a21044dba4e299e422602251"
+    },
+    "nodes/python/test_archive_protocol.py": {
+      "beforeSha256": null,
+      "afterSha256": "a927db5cb56912cae4e7494ad9ec5d7fc6091ee31c94fcf71ea408096473ca89"
+    },
+    "nodes/python/AGENTS.md": {
+      "beforeSha256": "1f3125ed1da1244612b84d509a8b5c29f695f9e26c12c7cb2323092481c4e8b3",
+      "afterSha256": "6152b8b1fab8e3052aa3da15ddd7eccfdb8cd249fc9fd79ef0b1ec65cbade175"
+    },
+    "nodes/AGENTS.md": {
+      "beforeSha256": "14ea9ba87b99563711b51a82e9bd111a979ef6055ea1544e8d650db456813996",
+      "afterSha256": "62e9595eea8a92d87b492623f37a3d12c02426d818f93c103f5e87d969503489"
+    }
+  }
+}

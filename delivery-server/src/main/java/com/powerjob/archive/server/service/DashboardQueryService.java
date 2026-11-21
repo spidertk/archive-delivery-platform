@@ -6,6 +6,7 @@ import com.powerjob.archive.core.repository.DeliveryNodeRepository;
 import com.powerjob.archive.core.repository.DeliveryTaskRepository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ public class DashboardQueryService {
         this.jdbc.setResultsMapCaseInsensitive(true);
     }
 
-    /** 看板只统计最新有效任务，交付目标直接从提交快照和任务事实派生，不维护组状态。 */
     public Map<String, Object> summary(long deliveryId) {
         Map<String, Object> result = jsonRow(jdbc.queryForMap("SELECT s.status AS \"deliveryStatus\"," +
                 "count(t.task_id) FILTER(WHERE t.execution_status NOT IN('EXPIRED','CANCELLED')) AS \"taskTotal\"," +
@@ -38,9 +38,12 @@ public class DashboardQueryService {
                 "count(t.task_id) FILTER(WHERE t.execution_status='WAITING') AS waiting," +
                 "count(t.task_id) FILTER(WHERE t.execution_status='PAUSED') AS paused," +
                 "count(t.task_id) FILTER(WHERE t.execution_status='EXPIRED') AS expired," +
-                "(SELECT COALESCE(sum((target->>'targetCount')::int),0) FROM jsonb_array_elements(s.target_strategy->'targets') target) AS \"targetTotal\" " +
+                "(SELECT COALESCE(sum((target->>'targetCount')::int),0) FROM jsonb_array_elements(s.target_strategy->'targets') target) AS \"targetTotal\"," +
+                "(SELECT count(DISTINCT b.new_file_name) FROM delivery_batch b WHERE b.batch_delivery_id=s.delivery_id) AS \"batchPackageTotal\"," +
+                "(SELECT count(DISTINCT b.new_file_name) FROM delivery_batch b WHERE b.batch_delivery_id=s.delivery_id AND b.status='DELIVERED') AS \"deliveredPackageCount\"," +
+                "(SELECT count(*) FROM delivery_batch b WHERE b.batch_delivery_id=s.delivery_id) AS \"originalFileCount\" " +
                 "FROM delivery_submit s LEFT JOIN delivery_task t ON t.delivery_id=s.delivery_id " +
-                "WHERE s.delivery_id=? GROUP BY s.delivery_id,s.status,s.target_strategy", deliveryId));
+                "WHERE s.delivery_id=? GROUP BY s.delivery_id", deliveryId));
         result.put("targets", targets(deliveryId));
         return result;
     }
@@ -71,11 +74,22 @@ public class DashboardQueryService {
                 "s.delivery_batch AS \"deliveryBatch\",s.delivery_date AS \"deliveryDate\",s.cutoff_at AS \"cutoffAt\"," +
                 "s.status,i.oss_uri AS \"sourceUri\",p.pipeline_code AS \"pipelineCode\",pv.version_no AS \"pipelineVersion\"," +
                 "s.target_strategy AS \"targetStrategy\",s.submitted_at AS \"submittedAt\",s.discovery_completed_at AS \"discoveryCompletedAt\"," +
-                "s.completed_at AS \"completedAt\" FROM delivery_submit s JOIN ingest_source i ON i.source_id=s.source_id " +
+                "s.completed_at AS \"completedAt\",s.submission_type AS \"submissionType\",s.batch_delivery_id AS \"batchDeliveryId\"," +
+                "s.batch_extension AS \"batchExtension\" FROM delivery_submit s JOIN ingest_source i ON i.source_id=s.source_id " +
                 "JOIN pipeline_version pv ON pv.pipeline_version_id=s.pipeline_version_id JOIN pipeline p ON p.pipeline_id=pv.pipeline_id " +
                 "WHERE s.delivery_id=?", deliveryId));
         result.put("targets", targets(deliveryId));
         return result;
+    }
+
+    public List<Map<String, Object>> packages(long batchDeliveryId) {
+        return jsonRows(jdbc.queryForList("SELECT b.new_file_name AS \"newFileName\",b.entity_code AS \"entityCode\"," +
+                "b.worker_group AS \"workerGroup\",b.status,b.delivery_id AS \"deliveryId\",count(*) AS \"originalFileCount\"," +
+                "sum(sd.size_bytes) AS \"sourceBytes\",min(b.started_at) AS \"startedAt\",max(b.completed_at) AS \"completedAt\"," +
+                "min(t.task_id) AS \"taskId\" FROM delivery_batch b JOIN source_data sd ON sd.data_id=b.data_id " +
+                "LEFT JOIN delivery_task t ON t.delivery_id=b.delivery_id AND t.new_file_name=b.new_file_name " +
+                "AND t.execution_status NOT IN('EXPIRED','CANCELLED') WHERE b.batch_delivery_id=? " +
+                "GROUP BY b.new_file_name,b.entity_code,b.worker_group,b.status,b.delivery_id ORDER BY b.new_file_name", batchDeliveryId));
     }
 
     public Map<String, Object> tasks(long deliveryId, boolean includeHistory) {
@@ -87,7 +101,6 @@ public class DashboardQueryService {
 
     public Map<String, Object> taskDetail(long taskId) { return jsonRow(jdbc.queryForMap(taskSelect() + " WHERE t.task_id=?", taskId)); }
 
-    /** 时间轴同时返回 delivery_node 与不可变 event，locator 已由执行内核做 Secret/签名 URL 检查。 */
     public Map<String, Object> timeline(long taskId) {
         var task = tasks.findById(taskId).orElseThrow();
         return Map.of("taskId", taskId, "nodes", nodes.timeline(taskId), "events", events.timeline(task.deliveryId(), taskId));
@@ -120,13 +133,14 @@ public class DashboardQueryService {
                 "t.token_count AS \"tokenCount\",(SELECT repair_node.output_locator->>'sha256' FROM delivery_node repair_node " +
                 "WHERE repair_node.task_id=t.task_id AND repair_node.node_type='python.repair' AND repair_node.status='SUCCEEDED' " +
                 "ORDER BY repair_node.attempt DESC LIMIT 1) AS sha256," +
-                "t.artifacts,t.metadata_ids AS \"metadataIds\",t.current_node_id AS \"currentNodeId\"," +
+                "t.artifacts,t.current_node_id AS \"currentNodeId\"," +
                 "t.execution_status AS \"executionStatus\",t.fence,t.retry_count AS \"retryCount\"," +
                 "t.next_retry_at AS \"nextRetryAt\",t.last_error_code AS \"lastErrorCode\",t.completed_at AS \"completedAt\"," +
-                "sd.qualification,(SELECT jsonb_agg(mapping.data_id ORDER BY mapping.source_seq) FROM delivery_mapping mapping " +
-                "WHERE mapping.task_id=t.task_id) AS \"sourceDataIds\",node.stage_code AS \"stageCode\",node.display_name AS \"displayName\" " +
+                "sd.qualification,(SELECT jsonb_agg(b.data_id ORDER BY b.source_seq,b.batch_item_id) FROM delivery_batch b " +
+                "WHERE b.delivery_id=t.delivery_id AND b.new_file_name=t.new_file_name) AS \"sourceDataIds\",node.stage_code AS \"stageCode\",node.display_name AS \"displayName\" " +
                 "FROM delivery_task t JOIN delivery_entity e ON e.delivery_entity_id=t.delivery_entity_id " +
-                "LEFT JOIN delivery_mapping primary_source ON primary_source.task_id=t.task_id AND primary_source.source_seq=1 " +
+                "LEFT JOIN delivery_batch primary_source ON primary_source.delivery_id=t.delivery_id " +
+                "AND primary_source.new_file_name=t.new_file_name AND primary_source.source_seq=1 " +
                 "LEFT JOIN source_data sd ON sd.data_id=primary_source.data_id JOIN delivery_submit s ON s.delivery_id=t.delivery_id " +
                 "JOIN pipeline_version pv ON pv.pipeline_version_id=s.pipeline_version_id " +
                 "CROSS JOIN LATERAL(SELECT n->>'stageCode' AS stage_code,n->>'displayName' AS display_name " +

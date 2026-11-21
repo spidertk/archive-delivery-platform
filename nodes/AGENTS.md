@@ -20,4 +20,10 @@
 
 ## 合并节点
 
-archive_merge.py 按 delivery_mapping.source_seq 解包并汇聚请求目录，输出 workspacePath；不再生成中间 tar/gzip。archive_repair.py 直接消费该目录并只封存最终交付包一次。merge/repair 临时目录和 .tmp 必须在重试前及异常后清理，日志不得包含 Secret。
+archive_merge.py 按 delivery_batch.source_seq 解包并汇聚请求目录，输出 workspacePath；不再生成中间 tar/gzip。archive_repair.py 直接消费该目录并只封存最终交付包一次。merge/repair 临时目录和 .tmp 必须在重试前及异常后清理，日志不得包含 Secret。
+
+## 授权日期保留例外
+
+仅 FTP 节点显式 cleanupOtherDeliveryDates=true 时按任务日期保留直属 FTP 日期目录，使用同机文件锁等待传输边界；不清理非日期目录、OSS、PG 或工作目录。默认禁止清历史的边界继续适用于未启用此策略的节点。
+
+2026-11-21 性能优化：merge 使用 r|gz 顺序安全解包一次；最终协议校验按 TAR 流建立直属文件与 metadata 索引，单次解压，禁止 getmembers 后逐请求 gzip 回卷。完整保留 requestId、UTC 纳秒时间、providerCode、模式及必需文件检查，并拒绝空包、重复成员、路径穿越和链接。

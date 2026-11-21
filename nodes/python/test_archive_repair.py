@@ -85,6 +85,19 @@ class ArchiveRepairTest(unittest.TestCase):
             self.assertIsNotNone(archive.extractfile(second + "/biz_response.json"))
             self.assertIsNotNone(archive.extractfile(first + "/biz_stream_response.jsonl"))
 
+    def test_duplicate_valid_request_ids_use_reserved_fallback_range(self):
+        duplicate = self.request_id(7)
+        source = self.make_source("duplicate-valid.tar.gz", [
+            ("old_a", {"requestId": duplicate, "requestMode": "SYNC", "requestTime": "2026-10-27 01:02:03"}, "biz_response.json"),
+            ("old_z", {"requestId": duplicate, "requestMode": "SYNC", "requestTime": "2026-10-27 12:34:56"}, "biz_response.json")])
+        merged = self.merge_sources([source], "merged-valid-duplicates")
+        result = self.run_script("--source", merged["workspacePath"], *self.repair_args(
+            self.root / "duplicate-valid-out", date="2026-11-01", start="1")).json
+        self.assertEqual([mapping["originalRequestId"] for mapping in result["mappings"]], [duplicate, duplicate])
+        self.assertEqual(result["mappings"][0]["newRequestId"], duplicate)
+        self.assertEqual(result["mappings"][1]["newRequestId"], "20261101123456" + "0" * 24 + "4")
+        self.assertEqual(len({mapping["newRequestId"] for mapping in result["mappings"]}), 2)
+
     def test_missing_request_id_and_time_use_deterministic_fallback(self):
         source = self.make_source("batch_00004.tar.gz", [
             ("req_old", {"requestId": "", "requestMode": "SYNC"}, "biz_stream_response.jsonl")])
@@ -155,11 +168,17 @@ class ArchiveRepairTest(unittest.TestCase):
         self.assertEqual(merged["requestCount"], 3)
         self.assertTrue(Path(merged["workspacePath"]).is_dir())
         self.assertFalse((merged_dir / "merged-source.tar.gz").exists())
-        repaired = self.run_script("--source", merged["workspacePath"], *self.repair_args(
-            self.root / "delivery", provider="june-2", manifest=self.root / "delivery" / "manifest.json")).json
+        repair_result = self.run_script("--source", merged["workspacePath"], *self.repair_args(
+            self.root / "delivery", provider="june-2", manifest=self.root / "delivery" / "manifest.json"))
+        repaired = repair_result.json
         self.assertEqual(repaired["requestCount"], 3)
         self.assertEqual(len(repaired["artifacts"][0]["file_mapping"]), 3)
         self.assertLessEqual(repaired["artifacts"][0]["sizeBytes"], 10 * 1024 * 1024)
+        self.assertEqual(set(repaired["timings"]), {
+            "copyWorkspaceSeconds", "repairRequestsSeconds", "gzipPackSeconds", "verifyArtifactSeconds", "sha256Seconds",
+            "cleanupSeconds", "totalSeconds"})
+        self.assertTrue(all(value >= 0 for value in repaired["timings"].values()))
+        self.assertIn("REPAIR_TIMINGS ", repair_result.stdout)
         self.assertFalse(list(merged_dir.glob("*.tmp")))
 
     def test_merge_namespaces_duplicate_directories_and_legacy_ids_are_renumbered(self):

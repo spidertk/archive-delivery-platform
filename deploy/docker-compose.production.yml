@@ -9,6 +9,7 @@ x-worker-common: &worker-common
       condition: service_started
   environment:
     SPRING_PROFILES_ACTIVE: production
+    JAVA_TOOL_OPTIONS: ${ARCHIVE_WORKER_JAVA_OPTIONS:--Xms64m -Xmx256m}
     ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
     ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
     ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
@@ -68,7 +69,9 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-    ports: ["${POWERJOB_BIND_ADDRESS:-127.0.0.1}:7700:7700"]
+    ports:
+      - "${POWERJOB_BIND_ADDRESS:-127.0.0.1}:7700:7700"
+      - "${POWERJOB_PROTOCOL_BIND_ADDRESS:-127.0.0.1}:10010:10010"
 
   archive-server:
     build:
@@ -78,6 +81,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
+      JAVA_TOOL_OPTIONS: ${ARCHIVE_SERVER_JAVA_OPTIONS:--Xms64m -Xmx256m}
       ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
       ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
       ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
@@ -96,6 +100,7 @@ services:
     environment:
       HOSTNAME: worker-1
       SPRING_PROFILES_ACTIVE: production
+      JAVA_TOOL_OPTIONS: ${ARCHIVE_WORKER_JAVA_OPTIONS:--Xms64m -Xmx256m}
       ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
       ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
       ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
@@ -103,6 +108,8 @@ services:
       ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group1}
       ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-4}
       ARCHIVE_PREPARATION_DOWNLOAD_THREADS: ${ARCHIVE_PREPARATION_DOWNLOAD_THREADS:-8}
+      ARCHIVE_TASK_LEASE_SECONDS: ${ARCHIVE_TASK_LEASE_SECONDS:-900}
+      ARCHIVE_CLEANUP_WORK_AFTER_VERIFY: ${ARCHIVE_CLEANUP_WORK_AFTER_VERIFY:-true}
       POWERJOB_ENABLED: "true"
       POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
       POWERJOB_SERVER_ADDRESS: powerjob-server:7700
@@ -112,6 +119,7 @@ services:
     environment:
       HOSTNAME: worker-2
       SPRING_PROFILES_ACTIVE: production
+      JAVA_TOOL_OPTIONS: ${ARCHIVE_WORKER_JAVA_OPTIONS:--Xms64m -Xmx256m}
       ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
       ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
       ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
@@ -119,6 +127,8 @@ services:
       ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group1}
       ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-4}
       ARCHIVE_PREPARATION_DOWNLOAD_THREADS: ${ARCHIVE_PREPARATION_DOWNLOAD_THREADS:-8}
+      ARCHIVE_TASK_LEASE_SECONDS: ${ARCHIVE_TASK_LEASE_SECONDS:-900}
+      ARCHIVE_CLEANUP_WORK_AFTER_VERIFY: ${ARCHIVE_CLEANUP_WORK_AFTER_VERIFY:-true}
       POWERJOB_ENABLED: "true"
       POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
       POWERJOB_SERVER_ADDRESS: powerjob-server:7700
@@ -128,6 +138,7 @@ services:
     environment:
       HOSTNAME: worker-3
       SPRING_PROFILES_ACTIVE: production
+      JAVA_TOOL_OPTIONS: ${ARCHIVE_WORKER_JAVA_OPTIONS:--Xms64m -Xmx256m}
       ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
       ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
       ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
@@ -135,6 +146,8 @@ services:
       ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group1}
       ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-4}
       ARCHIVE_PREPARATION_DOWNLOAD_THREADS: ${ARCHIVE_PREPARATION_DOWNLOAD_THREADS:-8}
+      ARCHIVE_TASK_LEASE_SECONDS: ${ARCHIVE_TASK_LEASE_SECONDS:-900}
+      ARCHIVE_CLEANUP_WORK_AFTER_VERIFY: ${ARCHIVE_CLEANUP_WORK_AFTER_VERIFY:-true}
       POWERJOB_ENABLED: "true"
       POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
       POWERJOB_SERVER_ADDRESS: powerjob-server:7700
@@ -144,6 +157,7 @@ services:
     environment:
       HOSTNAME: worker-4
       SPRING_PROFILES_ACTIVE: production
+      JAVA_TOOL_OPTIONS: ${ARCHIVE_WORKER_JAVA_OPTIONS:--Xms64m -Xmx256m}
       ARCHIVE_DB_URL: jdbc:postgresql://postgres:5432/archive_delivery
       ARCHIVE_DB_USER: ${ARCHIVE_DB_USER:?ARCHIVE_DB_USER is required}
       ARCHIVE_DB_PASSWORD: ${ARCHIVE_DB_PASSWORD:?ARCHIVE_DB_PASSWORD is required}
@@ -151,6 +165,8 @@ services:
       ARCHIVE_WORKER_GROUP: ${ARCHIVE_WORKER_GROUP:-group1}
       ARCHIVE_MAX_RUNNING_TASKS: ${ARCHIVE_MAX_RUNNING_TASKS:-4}
       ARCHIVE_PREPARATION_DOWNLOAD_THREADS: ${ARCHIVE_PREPARATION_DOWNLOAD_THREADS:-8}
+      ARCHIVE_TASK_LEASE_SECONDS: ${ARCHIVE_TASK_LEASE_SECONDS:-900}
+      ARCHIVE_CLEANUP_WORK_AFTER_VERIFY: ${ARCHIVE_CLEANUP_WORK_AFTER_VERIFY:-true}
       POWERJOB_ENABLED: "true"
       POWERJOB_APP_NAME: ${POWERJOB_APP_NAME:-archive-delivery}
       POWERJOB_SERVER_ADDRESS: powerjob-server:7700
@@ -161,9 +177,10 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.ftp
     environment:
-      FTP_USER_NAME: june
+      FTP_USER_NAME: ${PROD_ENTITY_1_ACCOUNT:-june}
       FTP_USER_PASS: ${PROD_FTP_ENTITY_1_PASSWORD:?PROD_FTP_ENTITY_1_PASSWORD is required}
       FTP_USER_HOME: /home/ftpusers/june
+      FTP_ALLOW_DATE_CLEANUP: ${FTP_ALLOW_DATE_CLEANUP:-false}
       PUBLICHOST: ftp-june
     volumes:
       - ${PROD_JUNE_HOST_ROOT:?PROD_JUNE_HOST_ROOT is required}:/home/ftpusers/june

@@ -1,0 +1,9 @@
+{
+  "at": "2026-11-20T20:28:33.343807+00:00",
+  "activeCredentialValuesChecked": 9,
+  "activeCredentialHits": 0,
+  "retiredPublicBootstrapKeyExcluded": "POWERJOB_ADMIN_INITIAL_PASSWORD",
+  "retiredSeedDiffersFromCurrentPassword": true,
+  "sourceFilesVerified": 158,
+  "sourceMismatches": 0
+}

@@ -1,0 +1,56 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon    894kB
+Step 1/17 : FROM maven:3.9-eclipse-temurin-17 AS build
+ ---> 1a352420f7ab
+Step 2/17 : WORKDIR /workspace
+ ---> Using cache
+ ---> fdfcd2ffe3ac
+Step 3/17 : COPY pom.xml ./
+ ---> Using cache
+ ---> ac943f809d7f
+Step 4/17 : COPY delivery-core/pom.xml delivery-core/pom.xml
+ ---> Using cache
+ ---> 2b1509f4c070
+Step 5/17 : COPY delivery-worker/pom.xml delivery-worker/pom.xml
+ ---> Using cache
+ ---> 2377d0ae6c86
+Step 6/17 : COPY delivery-server/pom.xml delivery-server/pom.xml
+ ---> Using cache
+ ---> fa1bb5b1044c
+Step 7/17 : COPY deploy/maven-settings.xml deploy/maven-settings.xml
+ ---> Using cache
+ ---> 8119563e3955
+Step 8/17 : RUN mvn -q -s deploy/maven-settings.xml -DskipTests dependency:go-offline
+ ---> Using cache
+ ---> 083f643de0a8
+Step 9/17 : COPY . .
+ ---> b01248b57209
+Step 10/17 : RUN mvn -q -s deploy/maven-settings.xml -DskipTests package
+ ---> Running in f3f2bbb90c77
+ ---> Removed intermediate container f3f2bbb90c77
+ ---> 1b36f8c0194c
+Step 11/17 : FROM maven:3.9-eclipse-temurin-17
+ ---> 1a352420f7ab
+Step 12/17 : RUN apt-get update && apt-get install -y --no-install-recommends python3     && rm -rf /var/lib/apt/lists/*     && useradd -r -u 10001 -m delivery     && mkdir -p /data/work /data/ftp-verify     && chown -R 10001:10001 /data
+ ---> Using cache
+ ---> d69133738314
+Step 13/17 : WORKDIR /app
+ ---> Using cache
+ ---> cc30621ac191
+Step 14/17 : COPY --from=build /workspace/delivery-worker/target/delivery-worker.jar app.jar
+ ---> 7fca347d1e27
+Step 15/17 : COPY nodes/python /app/nodes/python
+ ---> ca684d514ffb
+Step 16/17 : USER 10001
+ ---> Running in 1386f5dca6c3
+ ---> Removed intermediate container 1386f5dca6c3
+ ---> 73181f4022f1
+Step 17/17 : ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ ---> Running in 826ac9df63b1
+ ---> Removed intermediate container 826ac9df63b1
+ ---> 0d4328fbbb34
+Successfully built 0d4328fbbb34
+Successfully tagged archive_delivery_production-worker-1:jun2-20261121-final

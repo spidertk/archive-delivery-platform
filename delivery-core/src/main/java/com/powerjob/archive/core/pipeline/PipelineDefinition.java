@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-/** Pipeline 快照统一承载节点定义、执行配置和 DAG；执行内核不读取独立节点或规则配置表。 */
 public record PipelineDefinition(String pipelineCode, int version, Map<String, Object> config,
                                  Map<String, Object> nodeDefinitions, List<NodeDefinition> nodes) {
     public NodeDefinition node(String id) {
@@ -34,7 +33,6 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
         return value == null ? firstNode() : node(value.toString()).id();
     }
 
-    /** 发布时同时校验 DAG、集中节点元数据、脚本路径与外部连接安全边界。 */
     public void validateProduction() {
         if (nodes.isEmpty() || nodes.stream().map(NodeDefinition::id).distinct().count() != nodes.size()) {
             throw new IllegalArgumentException("Pipeline nodes must be non-empty and have unique ids");
@@ -47,7 +45,6 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
             if (node.type().startsWith("ssh.") || node.type().contains("crr") || node.type().equals("delivery.group")) {
                 throw new IllegalArgumentException("Unsupported legacy Pipeline node: " + node.type());
             }
-            if (node.type().equals("package.merge")) maxPackageBytes();
         }
         Set<String> visited = new HashSet<>();
         String current = firstNode();
@@ -57,10 +54,17 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
         }
         if (visited.size() != nodes.size()) throw new IllegalArgumentException("Pipeline DAG contains unreachable nodes");
         Object assignment = config.get("assignment");
-        if (!(assignment instanceof Map<?, ?> map) || !"SUBMIT_TARGETS".equals(map.get("strategySource"))) {
-            throw new IllegalArgumentException("Pipeline config.assignment.strategySource must be SUBMIT_TARGETS");
+        if (!(assignment instanceof Map<?, ?> map)) throw new IllegalArgumentException("Pipeline config.assignment is required");
+        String expectedStrategy = "archive-batch".equals(pipelineCode) ? "BATCH_PLANNING" : "SUBMIT_TARGETS";
+        if (!expectedStrategy.equals(map.get("strategySource"))) {
+            throw new IllegalArgumentException("Pipeline config.assignment.strategySource must be " + expectedStrategy);
         }
-        minPackageBytes();
+        if ("archive-batch".equals(pipelineCode)) {
+            com.powerjob.archive.core.service.BatchPlanningService.limits(this);
+            if (!(map.get("entityWorkers") instanceof List<?> workers) || workers.isEmpty()) {
+                throw new IllegalArgumentException("archive-batch entityWorkers must be non-empty");
+            }
+        }
         PipelineNodeConfig configs = new PipelineNodeConfig(new com.fasterxml.jackson.databind.ObjectMapper());
         for (NodeDefinition node : nodes) {
             if (node.type().equals("oss.download")) configs.oss(node, true);
@@ -69,23 +73,5 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
             if (node.type().equals("package.merge") || node.type().equals("python.repair")
                     || node.type().equals("ftp.download-verify")) configs.script(node);
         }
-    }
-
-    public long maxPackageBytes() {
-        Object assignment = config.get("assignment");
-        Object configured = assignment instanceof Map<?, ?> map ? map.get("maxPackageBytes") : null;
-        long value = configured instanceof Number number ? number.longValue() : -1;
-        if (value <= 0) throw new IllegalArgumentException("config.assignment.maxPackageBytes must be positive");
-        return value;
-    }
-
-    public long minPackageBytes() {
-        Object assignment = config.get("assignment");
-        Object configured = assignment instanceof Map<?, ?> map ? map.get("minPackageBytes") : null;
-        long value = configured instanceof Number number ? number.longValue() : maxPackageBytes() * 4 / 5;
-        if (value <= 0 || value > maxPackageBytes()) {
-            throw new IllegalArgumentException("config.assignment.minPackageBytes must be positive and no greater than maxPackageBytes");
-        }
-        return value;
     }
 }

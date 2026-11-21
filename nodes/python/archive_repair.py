@@ -8,6 +8,7 @@ import re
 import shutil
 import tarfile
 import tempfile
+import time
 from pathlib import Path
 
 from legacy_fix_archive import fix_request, verify_output
@@ -37,8 +38,9 @@ def request_directories(source):
 
 
 def safe_extract(source, target):
-    with tarfile.open(source, "r:gz") as archive:
-        for member in archive.getmembers():
+    # 源包只顺序解压一次；非法成员即失败，调用方负责销毁私有 merge staging。
+    with tarfile.open(source, "r|gz") as archive:
+        for member in archive:
             path = Path(member.name)
             if path.is_absolute() or ".." in path.parts:
                 raise ValueError("Unsafe archive path: " + member.name)
@@ -87,16 +89,38 @@ def repair(source, target, delivery_date, entity_code, start_number, max_bytes, 
     artifact_path = target / output_name
     temporary_artifact = target / (output_name + ".tmp")
     temporary_artifact.unlink(missing_ok=True)
+    timings = {}
+    repair_started = time.perf_counter()
     try:
+        # 分段计时用于定位真实 IO/CPU 瓶颈，不改变修复和原子发布语义。
+        stage_started = time.perf_counter()
         shutil.copytree(source, temp_dir, dirs_exist_ok=True)
+        timings["copyWorkspaceSeconds"] = time.perf_counter() - stage_started
         mappings = []
         new_request_ids = set()
+        stage_started = time.perf_counter()
         for offset, old_name in enumerate(names):
             old_path = temp_dir / old_name
             original_request_id, new_request_id = fix_request(
                 old_path, start_number + offset, delivery_date, entity_code)
             if new_request_id in new_request_ids:
-                raise ValueError("Duplicate requestId after repair: " + new_request_id)
+                duplicate_original_id = original_request_id
+                fallback_number = start_number + len(names) + offset
+                while fallback_number < start_number + 2 * len(names):
+                    metadata_path = old_path / "metadata.json"
+                    with metadata_path.open(encoding="utf-8") as stream:
+                        metadata = json.load(stream)
+                    metadata["requestId"] = "duplicate-" + str(fallback_number)
+                    with metadata_path.open("w", encoding="utf-8") as stream:
+                        json.dump(metadata, stream, ensure_ascii=False)
+                    _, candidate = fix_request(old_path, fallback_number, delivery_date, entity_code)
+                    if candidate not in new_request_ids:
+                        new_request_id = candidate
+                        original_request_id = duplicate_original_id
+                        break
+                    fallback_number += 1
+                else:
+                    raise ValueError("Insufficient allocated requestIds to repair duplicates")
             new_request_ids.add(new_request_id)
             new_path = temp_dir / new_request_id
             old_path.rename(new_path)
@@ -104,22 +128,30 @@ def repair(source, target, delivery_date, entity_code, start_number, max_bytes, 
                              "originalRequestId": original_request_id, "newRequestId": new_request_id,
                              "qualification": "QUALIFIED"})
             print(f"REPAIR_REQUEST sourceMember={old_name} originalRequestId={original_request_id or ''} newRequestId={new_request_id}", flush=True)
+        timings["repairRequestsSeconds"] = time.perf_counter() - stage_started
+        stage_started = time.perf_counter()
         with temporary_artifact.open("wb") as raw:
             with gzip.GzipFile(filename="", mode="wb", fileobj=raw, compresslevel=gzip_level, mtime=0) as compressed:
                 with tarfile.open(fileobj=compressed, mode="w") as archive:
                     for mapping in mappings:
                         archive.add(temp_dir / mapping["newRequestId"],
                                     arcname=mapping["newRequestId"], filter=stable_member)
+        timings["gzipPackSeconds"] = time.perf_counter() - stage_started
         size_bytes = temporary_artifact.stat().st_size
         if size_bytes > max_bytes:
             raise ValueError(f"Repaired artifact exceeds maxPackageBytes: {size_bytes}>{max_bytes}")
+        stage_started = time.perf_counter()
         verify_output(temporary_artifact, delivery_date, entity_code)
+        timings["verifyArtifactSeconds"] = time.perf_counter() - stage_started
         os.replace(temporary_artifact, artifact_path)
+        stage_started = time.perf_counter()
+        artifact_sha256 = sha256(artifact_path)
+        timings["sha256Seconds"] = time.perf_counter() - stage_started
         artifact = {"artifactSeq": 1, "originalFileName": original_name, "newFileName": output_name,
-                    "sizeBytes": size_bytes, "sha256": sha256(artifact_path), "token": size_bytes,
+                    "sizeBytes": size_bytes, "sha256": artifact_sha256, "token": size_bytes,
                     "file_mapping": {mapping["memberKey"]: mapping["newRequestId"] for mapping in mappings}}
         manifest = {"protocolVersion": 3, "requestCount": len(mappings), "mappings": mappings,
-                    "artifactPath": str(artifact_path), "artifacts": [artifact]}
+                    "artifactPath": str(artifact_path), "artifacts": [artifact], "timings": timings}
         manifest_path = Path(manifest_path).resolve()
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         temporary_manifest = manifest_path.with_name(manifest_path.name + ".tmp")
@@ -134,7 +166,11 @@ def repair(source, target, delivery_date, entity_code, start_number, max_bytes, 
         temporary_artifact.unlink(missing_ok=True)
         raise
     finally:
+        cleanup_started = time.perf_counter()
         shutil.rmtree(temp_dir, ignore_errors=True)
+        timings["cleanupSeconds"] = time.perf_counter() - cleanup_started
+        timings["totalSeconds"] = time.perf_counter() - repair_started
+        print("REPAIR_TIMINGS " + json.dumps(timings, sort_keys=True), flush=True)
 
 
 def main():

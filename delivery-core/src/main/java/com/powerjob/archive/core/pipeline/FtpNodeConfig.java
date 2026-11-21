@@ -5,7 +5,7 @@ import java.util.Map;
 
 /** FTP 节点只持有账户到密码的受控映射；主机、目录和账户关系仍来自任务直属交付实体。 */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record FtpNodeConfig(String deliveryEntityFrom, Map<String, String> ftpCredential) {
+public record FtpNodeConfig(String deliveryEntityFrom, Map<String, String> ftpCredential, boolean cleanupOtherDeliveryDates) {
     public void validate() {
         if (!"TASK".equals(deliveryEntityFrom) || ftpCredential == null || ftpCredential.isEmpty()
                 || ftpCredential.values().stream().anyMatch(value -> value == null || value.isBlank()

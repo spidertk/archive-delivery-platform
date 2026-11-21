@@ -1,7 +1,7 @@
 import json
 import re
 import tarfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 TIME_OF_DAY_RE = re.compile(r"(\d{2}):(\d{2}):(\d{2})(\.\d+)?")
 REQUEST_ID_RE = re.compile(r"^\d{14}[A-Za-z0-9]{25}$")
@@ -69,37 +69,57 @@ def fix_request(request_dir, fallback_number, archive_date, provider_code):
 
 
 def verify_output(artifact, archive_date, provider_code):
+    """一次顺序读取 gzip 即完成全部请求协议校验，避免逐请求回卷重解压。"""
     errors = []
-    with tarfile.open(artifact, "r:gz") as archive:
-        members = archive.getmembers()
-        directories = sorted({Path(member.name).parts[0] for member in members
-                              if len(Path(member.name).parts) > 1})
-        for directory in directories:
-            files = {Path(member.name).name for member in members
-                     if member.isfile() and Path(member.name).parts[0] == directory}
-            if not REQUEST_ID_RE.fullmatch(directory):
-                errors.append(directory + ": directory is not a 39-character requestId")
+    requests = {}
+    seen = set()
+    with tarfile.open(artifact, "r|gz") as archive:
+        # metadata 在成员经过时读取；只保存协议字段和文件名，不保留响应正文。
+        for member in archive:
+            path = PurePosixPath(member.name)
+            if path.is_absolute() or ".." in path.parts or "\\" in member.name or member.issym() or member.islnk():
+                raise ValueError("Protocol validation failed: unsafe archive member")
+            if member.name in seen:
+                raise ValueError("Protocol validation failed: duplicate archive member")
+            seen.add(member.name)
+            if not path.parts:
                 continue
-            if "metadata.json" not in files:
-                errors.append(directory + ": missing metadata.json")
-                continue
-            if "biz_request.json" not in files:
-                errors.append(directory + ": missing biz_request.json")
-            metadata = json.load(archive.extractfile(directory + "/metadata.json"))
-            if metadata.get("requestId") != directory:
-                errors.append(directory + ": requestId does not match directory")
-            expected_time = re.compile(rf"^{re.escape(archive_date)}T\d{{2}}:\d{{2}}:\d{{2}}\.\d{{9}}Z$")
-            if not expected_time.fullmatch(str(metadata.get("requestTime") or "")):
-                errors.append(directory + ": requestTime does not match ISO UTC nanoseconds")
-            if metadata.get("providerCode") != provider_code:
-                errors.append(directory + ": providerCode mismatch")
-            has_stream = "biz_stream_response.jsonl" in files
-            has_sync = "biz_response.json" in files
-            if not has_stream and not has_sync:
-                errors.append(directory + ": missing response")
-            if metadata.get("requestMode") == "STREAM" and not has_stream:
-                errors.append(directory + ": STREAM response mismatch")
-            if metadata.get("requestMode") == "SYNC" and not has_sync:
-                errors.append(directory + ": SYNC response mismatch")
+            request = requests.setdefault(path.parts[0], {"files": set(), "metadata": None})
+            if len(path.parts) == 2 and member.isfile():
+                request["files"].add(path.name)
+                if path.name == "metadata.json":
+                    with archive.extractfile(member) as stream:
+                        request["metadata"] = json.load(stream)
+    expected_time = re.compile(rf"^{re.escape(archive_date)}T\d{{2}}:\d{{2}}:\d{{2}}\.\d{{9}}Z$")
+    if not requests:
+        errors.append("archive contains no request directories")
+    for directory, request in sorted(requests.items()):
+        errors.extend(validate_request_metadata(directory, request, expected_time, provider_code))
     if errors:
         raise ValueError("Protocol validation failed: " + "; ".join(errors))
+
+
+def validate_request_metadata(directory, request, expected_time, provider_code):
+    """索引完成后校验直属协议文件，保持 ID、日期、实体和响应模式的失败边界。"""
+    errors = []
+    files, metadata = request["files"], request["metadata"]
+    if not REQUEST_ID_RE.fullmatch(directory):
+        return [directory + ": directory is not a 39-character requestId"]
+    if not isinstance(metadata, dict):
+        return [directory + ": missing or invalid metadata.json"]
+    if "biz_request.json" not in files:
+        errors.append(directory + ": missing biz_request.json")
+    if metadata.get("requestId") != directory:
+        errors.append(directory + ": requestId does not match directory")
+    if not expected_time.fullmatch(str(metadata.get("requestTime") or "")):
+        errors.append(directory + ": requestTime does not match ISO UTC nanoseconds")
+    if metadata.get("providerCode") != provider_code:
+        errors.append(directory + ": providerCode mismatch")
+    mode = metadata.get("requestMode")
+    if mode not in ("STREAM", "SYNC"):
+        errors.append(directory + ": unsupported requestMode")
+    if mode == "STREAM" and "biz_stream_response.jsonl" not in files:
+        errors.append(directory + ": STREAM response mismatch")
+    if mode == "SYNC" and "biz_response.json" not in files:
+        errors.append(directory + ": SYNC response mismatch")
+    return errors

@@ -1,0 +1,27 @@
+{
+  "deliverySeconds": 850.747859,
+  "packagesPerMinute": 6.276830371664797,
+  "sourceCount": 343,
+  "packageCount": 89,
+  "requestCount": 18455,
+  "sourceBytes": 6507105830,
+  "outputBytes": 6003554194,
+  "taskWindowSamples": 47,
+  "totalSamples": 109,
+  "minMemAvailableBytes": 1184342016,
+  "maxSwapUsedBytes": 1770041344,
+  "postOptimizationRepairCount": 47,
+  "postOptimizationRepairAvgSeconds": 12.365548042553192,
+  "postOptimizationTimingsMean": {
+    "totalSeconds": 12.202736376556865,
+    "sha256Seconds": 0.12273583009323859,
+    "cleanupSeconds": 0.030110256538349898,
+    "gzipPackSeconds": 8.452608209687899,
+    "copyWorkspaceSeconds": 0.770721784079487,
+    "repairRequestsSeconds": 1.5906375134760078,
+    "verifyArtifactSeconds": 1.221432547560556
+  },
+  "estimated6000PackagePersistentBytes": 1248149273123.5955,
+  "estimated6000SourcePersistentBytes": 323863805562.6822,
+  "sameRate6000PackageHours": 15.931607846441947
+}

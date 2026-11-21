@@ -1,0 +1,3366 @@
+[
+  {
+    "path": "2026-11-19/batch_00000001.tar.gz",
+    "sizeBytes": 52840407
+  },
+  {
+    "path": "2026-11-19/batch_00000002.tar.gz",
+    "sizeBytes": 85471585
+  },
+  {
+    "path": "2026-11-19/batch_00000003.tar.gz",
+    "sizeBytes": 95493718
+  },
+  {
+    "path": "2026-11-19/batch_00000004.tar.gz",
+    "sizeBytes": 25190004
+  },
+  {
+    "path": "2026-11-19/batch_00000005.tar.gz",
+    "sizeBytes": 89379682
+  },
+  {
+    "path": "2026-11-19/batch_00000006.tar.gz",
+    "sizeBytes": 3589091
+  },
+  {
+    "path": "2026-11-19/batch_00000007.tar.gz",
+    "sizeBytes": 95079306
+  },
+  {
+    "path": "2026-11-19/batch_00000008.tar.gz",
+    "sizeBytes": 32215235
+  },
+  {
+    "path": "2026-11-19/batch_00000009.tar.gz",
+    "sizeBytes": 88960295
+  },
+  {
+    "path": "2026-11-19/batch_00000010.tar.gz",
+    "sizeBytes": 8819578
+  },
+  {
+    "path": "2026-11-19/batch_00000011.tar.gz",
+    "sizeBytes": 94986149
+  },
+  {
+    "path": "2026-11-19/batch_00000012.tar.gz",
+    "sizeBytes": 30578848
+  },
+  {
+    "path": "2026-11-19/batch_00000013.tar.gz",
+    "sizeBytes": 93947999
+  },
+  {
+    "path": "2026-11-19/batch_00000014.tar.gz",
+    "sizeBytes": 33484334
+  },
+  {
+    "path": "2026-11-19/batch_00000015.tar.gz",
+    "sizeBytes": 81588442
+  },
+  {
+    "path": "2026-11-19/batch_00000016.tar.gz",
+    "sizeBytes": 20064831
+  },
+  {
+    "path": "2026-11-19/batch_00000017.tar.gz",
+    "sizeBytes": 94751082
+  },
+  {
+    "path": "2026-11-19/batch_00000018.tar.gz",
+    "sizeBytes": 81150935
+  },
+  {
+    "path": "2026-11-19/batch_00000019.tar.gz",
+    "sizeBytes": 67574815
+  },
+  {
+    "path": "2026-11-19/batch_00000020.tar.gz",
+    "sizeBytes": 78117370
+  },
+  {
+    "path": "2026-11-19/batch_00000021.tar.gz",
+    "sizeBytes": 35529479
+  },
+  {
+    "path": "2026-11-19/batch_00000022.tar.gz",
+    "sizeBytes": 95488579
+  },
+  {
+    "path": "2026-11-19/batch_00000023.tar.gz",
+    "sizeBytes": 90797659
+  },
+  {
+    "path": "2026-11-19/batch_00000024.tar.gz",
+    "sizeBytes": 78332729
+  },
+  {
+    "path": "2026-11-19/batch_00000025.tar.gz",
+    "sizeBytes": 77152692
+  },
+  {
+    "path": "2026-11-19/batch_00000026.tar.gz",
+    "sizeBytes": 83879758
+  },
+  {
+    "path": "2026-11-19/batch_00000027.tar.gz",
+    "sizeBytes": 88299561
+  },
+  {
+    "path": "2026-11-19/batch_00000028.tar.gz",
+    "sizeBytes": 49464736
+  },
+  {
+    "path": "2026-11-19/batch_00000029.tar.gz",
+    "sizeBytes": 92345693
+  },
+  {
+    "path": "2026-11-19/batch_00000030.tar.gz",
+    "sizeBytes": 41416493
+  },
+  {
+    "path": "2026-11-19/batch_00000031.tar.gz",
+    "sizeBytes": 95541271
+  },
+  {
+    "path": "2026-11-19/batch_00000032.tar.gz",
+    "sizeBytes": 69855120
+  },
+  {
+    "path": "2026-11-19/batch_00000033.tar.gz",
+    "sizeBytes": 28650479
+  },
+  {
+    "path": "2026-11-19/batch_00000034.tar.gz",
+    "sizeBytes": 90265388
+  },
+  {
+    "path": "2026-11-19/batch_00000035.tar.gz",
+    "sizeBytes": 69070984
+  },
+  {
+    "path": "2026-11-19/batch_00000036.tar.gz",
+    "sizeBytes": 96288082
+  },
+  {
+    "path": "2026-11-19/batch_00000037.tar.gz",
+    "sizeBytes": 78501126
+  },
+  {
+    "path": "2026-11-19/batch_00000038.tar.gz",
+    "sizeBytes": 10630540
+  },
+  {
+    "path": "2026-11-19/batch_00000039.tar.gz",
+    "sizeBytes": 94010521
+  },
+  {
+    "path": "2026-11-19/batch_00000040.tar.gz",
+    "sizeBytes": 96069706
+  },
+  {
+    "path": "2026-11-19/batch_00000041.tar.gz",
+    "sizeBytes": 63267369
+  },
+  {
+    "path": "2026-11-19/batch_00000042.tar.gz",
+    "sizeBytes": 90329497
+  },
+  {
+    "path": "2026-11-19/batch_00000043.tar.gz",
+    "sizeBytes": 33611520
+  },
+  {
+    "path": "2026-11-19/batch_00000044.tar.gz",
+    "sizeBytes": 91518376
+  },
+  {
+    "path": "2026-11-19/batch_00000045.tar.gz",
+    "sizeBytes": 37698435
+  },
+  {
+    "path": "2026-11-19/batch_00000046.tar.gz",
+    "sizeBytes": 95225927
+  },
+  {
+    "path": "2026-11-19/batch_00000047.tar.gz",
+    "sizeBytes": 32116868
+  },
+  {
+    "path": "2026-11-19/batch_00000048.tar.gz",
+    "sizeBytes": 64769912
+  },
+  {
+    "path": "2026-11-19/batch_00000049.tar.gz",
+    "sizeBytes": 78952213
+  },
+  {
+    "path": "2026-11-19/batch_00000050.tar.gz",
+    "sizeBytes": 77611372
+  },
+  {
+    "path": "2026-11-19/batch_00000051.tar.gz",
+    "sizeBytes": 72337279
+  },
+  {
+    "path": "2026-11-19/batch_00000052.tar.gz",
+    "sizeBytes": 93794490
+  },
+  {
+    "path": "2026-11-19/batch_00000053.tar.gz",
+    "sizeBytes": 70067718
+  },
+  {
+    "path": "2026-11-19/batch_00000054.tar.gz",
+    "sizeBytes": 81307930
+  },
+  {
+    "path": "2026-11-19/batch_00000055.tar.gz",
+    "sizeBytes": 74122235
+  },
+  {
+    "path": "2026-11-19/batch_00000056.tar.gz",
+    "sizeBytes": 51863048
+  },
+  {
+    "path": "2026-11-19/batch_00000057.tar.gz",
+    "sizeBytes": 80765856
+  },
+  {
+    "path": "2026-11-19/batch_00000058.tar.gz",
+    "sizeBytes": 4905198
+  },
+  {
+    "path": "2026-11-19/batch_00000059.tar.gz",
+    "sizeBytes": 91795620
+  },
+  {
+    "path": "2026-11-19/batch_00000060.tar.gz",
+    "sizeBytes": 75640941
+  },
+  {
+    "path": "2026-11-19/batch_00000061.tar.gz",
+    "sizeBytes": 54992753
+  },
+  {
+    "path": "2026-11-19/batch_00000062.tar.gz",
+    "sizeBytes": 96604615
+  },
+  {
+    "path": "2026-11-19/batch_00000063.tar.gz",
+    "sizeBytes": 2975040
+  },
+  {
+    "path": "2026-11-19/batch_00000064.tar.gz",
+    "sizeBytes": 90006138
+  },
+  {
+    "path": "2026-11-19/batch_00000065.tar.gz",
+    "sizeBytes": 93850245
+  },
+  {
+    "path": "2026-11-19/batch_00000066.tar.gz",
+    "sizeBytes": 80289813
+  },
+  {
+    "path": "2026-11-19/batch_00000067.tar.gz",
+    "sizeBytes": 59059133
+  },
+  {
+    "path": "2026-11-19/batch_00000068.tar.gz",
+    "sizeBytes": 88819486
+  },
+  {
+    "path": "2026-11-19/batch_00000069.tar.gz",
+    "sizeBytes": 43490582
+  },
+  {
+    "path": "2026-11-19/batch_00000070.tar.gz",
+    "sizeBytes": 94751748
+  },
+  {
+    "path": "2026-11-19/batch_00000071.tar.gz",
+    "sizeBytes": 41798366
+  },
+  {
+    "path": "2026-11-19/batch_00000072.tar.gz",
+    "sizeBytes": 68009880
+  },
+  {
+    "path": "2026-11-19/batch_00000073.tar.gz",
+    "sizeBytes": 27559097
+  },
+  {
+    "path": "2026-11-19/batch_00000074.tar.gz",
+    "sizeBytes": 95766144
+  },
+  {
+    "path": "2026-11-19/batch_00000075.tar.gz",
+    "sizeBytes": 74944362
+  },
+  {
+    "path": "2026-11-19/batch_00000076.tar.gz",
+    "sizeBytes": 13198677
+  },
+  {
+    "path": "2026-11-19/batch_00000077.tar.gz",
+    "sizeBytes": 95530894
+  },
+  {
+    "path": "2026-11-19/batch_00000078.tar.gz",
+    "sizeBytes": 17157333
+  },
+  {
+    "path": "2026-11-19/batch_00000079.tar.gz",
+    "sizeBytes": 94151110
+  },
+  {
+    "path": "2026-11-19/batch_00000080.tar.gz",
+    "sizeBytes": 79034674
+  },
+  {
+    "path": "2026-11-19/batch_00000081.tar.gz",
+    "sizeBytes": 83093725
+  },
+  {
+    "path": "2026-11-19/batch_00000082.tar.gz",
+    "sizeBytes": 36640276
+  },
+  {
+    "path": "2026-11-19/batch_00000083.tar.gz",
+    "sizeBytes": 92151632
+  },
+  {
+    "path": "2026-11-19/batch_00000084.tar.gz",
+    "sizeBytes": 94827504
+  },
+  {
+    "path": "2026-11-19/batch_00000085.tar.gz",
+    "sizeBytes": 5257579
+  },
+  {
+    "path": "2026-11-19/batch_00000086.tar.gz",
+    "sizeBytes": 86882892
+  },
+  {
+    "path": "2026-11-19/batch_00000087.tar.gz",
+    "sizeBytes": 11114216
+  },
+  {
+    "path": "2026-11-19/batch_00000088.tar.gz",
+    "sizeBytes": 91530643
+  },
+  {
+    "path": "2026-11-19/batch_00000089.tar.gz",
+    "sizeBytes": 61283083
+  },
+  {
+    "path": "2026-11-19/batch_00000090.tar.gz",
+    "sizeBytes": 94466819
+  },
+  {
+    "path": "2026-11-19/batch_00000091.tar.gz",
+    "sizeBytes": 66892717
+  },
+  {
+    "path": "2026-11-19/batch_00000092.tar.gz",
+    "sizeBytes": 95161963
+  },
+  {
+    "path": "2026-11-19/batch_00000093.tar.gz",
+    "sizeBytes": 40925646
+  },
+  {
+    "path": "2026-11-19/batch_00000094.tar.gz",
+    "sizeBytes": 92540672
+  },
+  {
+    "path": "2026-11-19/batch_00000095.tar.gz",
+    "sizeBytes": 79873140
+  },
+  {
+    "path": "2026-11-19/batch_00000096.tar.gz",
+    "sizeBytes": 76406216
+  },
+  {
+    "path": "2026-11-19/batch_00000097.tar.gz",
+    "sizeBytes": 64020553
+  },
+  {
+    "path": "2026-11-19/batch_00000098.tar.gz",
+    "sizeBytes": 18390576
+  },
+  {
+    "path": "2026-11-19/batch_00000099.tar.gz",
+    "sizeBytes": 97646052
+  },
+  {
+    "path": "2026-11-19/batch_00000100.tar.gz",
+    "sizeBytes": 85015269
+  },
+  {
+    "path": "2026-11-19/batch_00000101.tar.gz",
+    "sizeBytes": 52615822
+  },
+  {
+    "path": "2026-11-19/batch_00000102.tar.gz",
+    "sizeBytes": 79072544
+  },
+  {
+    "path": "2026-11-19/batch_00000103.tar.gz",
+    "sizeBytes": 79403282
+  },
+  {
+    "path": "2026-11-19/batch_00000104.tar.gz",
+    "sizeBytes": 93194590
+  },
+  {
+    "path": "2026-11-19/batch_00000105.tar.gz",
+    "sizeBytes": 73041970
+  },
+  {
+    "path": "2026-11-19/batch_00000106.tar.gz",
+    "sizeBytes": 60807923
+  },
+  {
+    "path": "2026-11-19/batch_00000107.tar.gz",
+    "sizeBytes": 97178546
+  },
+  {
+    "path": "2026-11-19/batch_00000108.tar.gz",
+    "sizeBytes": 93510637
+  },
+  {
+    "path": "2026-11-19/batch_00000109.tar.gz",
+    "sizeBytes": 57308783
+  },
+  {
+    "path": "2026-11-19/batch_00000110.tar.gz",
+    "sizeBytes": 26483495
+  },
+  {
+    "path": "2026-11-19/batch_00000111.tar.gz",
+    "sizeBytes": 95968341
+  },
+  {
+    "path": "2026-11-19/batch_00000112.tar.gz",
+    "sizeBytes": 58226782
+  },
+  {
+    "path": "2026-11-19/batch_00000113.tar.gz",
+    "sizeBytes": 86143393
+  },
+  {
+    "path": "2026-11-19/batch_00000114.tar.gz",
+    "sizeBytes": 94976695
+  },
+  {
+    "path": "2026-11-19/batch_00000115.tar.gz",
+    "sizeBytes": 81486762
+  },
+  {
+    "path": "2026-11-19/batch_00000116.tar.gz",
+    "sizeBytes": 81406023
+  },
+  {
+    "path": "2026-11-19/batch_00000117.tar.gz",
+    "sizeBytes": 89176087
+  },
+  {
+    "path": "2026-11-19/batch_00000118.tar.gz",
+    "sizeBytes": 94226186
+  },
+  {
+    "path": "2026-11-19/batch_00000119.tar.gz",
+    "sizeBytes": 5135844
+  },
+  {
+    "path": "2026-11-19/batch_00000120.tar.gz",
+    "sizeBytes": 96111741
+  },
+  {
+    "path": "2026-11-19/batch_00000121.tar.gz",
+    "sizeBytes": 68367705
+  },
+  {
+    "path": "2026-11-19/batch_00000122.tar.gz",
+    "sizeBytes": 68629915
+  },
+  {
+    "path": "2026-11-19/batch_00000123.tar.gz",
+    "sizeBytes": 95074386
+  },
+  {
+    "path": "2026-11-19/batch_00000124.tar.gz",
+    "sizeBytes": 61223326
+  },
+  {
+    "path": "2026-11-19/batch_00000125.tar.gz",
+    "sizeBytes": 95586332
+  },
+  {
+    "path": "2026-11-19/batch_00000126.tar.gz",
+    "sizeBytes": 18870328
+  },
+  {
+    "path": "2026-11-19/batch_00000127.tar.gz",
+    "sizeBytes": 91981676
+  },
+  {
+    "path": "2026-11-19/batch_00000128.tar.gz",
+    "sizeBytes": 68626751
+  },
+  {
+    "path": "2026-11-19/batch_00000129.tar.gz",
+    "sizeBytes": 87715770
+  },
+  {
+    "path": "2026-11-19/batch_00000130.tar.gz",
+    "sizeBytes": 81521318
+  },
+  {
+    "path": "2026-11-19/batch_00000131.tar.gz",
+    "sizeBytes": 52525788
+  },
+  {
+    "path": "2026-11-19/batch_00000132.tar.gz",
+    "sizeBytes": 65108773
+  },
+  {
+    "path": "2026-11-19/batch_00000133.tar.gz",
+    "sizeBytes": 97348927
+  },
+  {
+    "path": "2026-11-19/batch_00000134.tar.gz",
+    "sizeBytes": 52312244
+  },
+  {
+    "path": "2026-11-19/batch_00000135.tar.gz",
+    "sizeBytes": 86233561
+  },
+  {
+    "path": "2026-11-19/batch_00000136.tar.gz",
+    "sizeBytes": 82835766
+  },
+  {
+    "path": "2026-11-19/batch_00000137.tar.gz",
+    "sizeBytes": 67534846
+  },
+  {
+    "path": "2026-11-19/batch_00000138.tar.gz",
+    "sizeBytes": 93852467
+  },
+  {
+    "path": "2026-11-19/batch_00000139.tar.gz",
+    "sizeBytes": 4365384
+  },
+  {
+    "path": "2026-11-19/batch_00000140.tar.gz",
+    "sizeBytes": 94728242
+  },
+  {
+    "path": "2026-11-19/batch_00000141.tar.gz",
+    "sizeBytes": 67802065
+  },
+  {
+    "path": "2026-11-19/batch_00000142.tar.gz",
+    "sizeBytes": 81566114
+  },
+  {
+    "path": "2026-11-19/batch_00000143.tar.gz",
+    "sizeBytes": 2766936
+  },
+  {
+    "path": "2026-11-19/batch_00000144.tar.gz",
+    "sizeBytes": 96386687
+  },
+  {
+    "path": "2026-11-19/batch_00000145.tar.gz",
+    "sizeBytes": 59613585
+  },
+  {
+    "path": "2026-11-19/batch_00000146.tar.gz",
+    "sizeBytes": 36687271
+  },
+  {
+    "path": "2026-11-19/batch_00000147.tar.gz",
+    "sizeBytes": 83607853
+  },
+  {
+    "path": "2026-11-19/batch_00000148.tar.gz",
+    "sizeBytes": 3917437
+  },
+  {
+    "path": "2026-11-19/batch_00000149.tar.gz",
+    "sizeBytes": 93706886
+  },
+  {
+    "path": "2026-11-19/batch_00000150.tar.gz",
+    "sizeBytes": 81734096
+  },
+  {
+    "path": "2026-11-19/batch_00000151.tar.gz",
+    "sizeBytes": 18604900
+  },
+  {
+    "path": "2026-11-19/batch_00000152.tar.gz",
+    "sizeBytes": 93083163
+  },
+  {
+    "path": "2026-11-19/batch_00000153.tar.gz",
+    "sizeBytes": 83125798
+  },
+  {
+    "path": "2026-11-19/batch_00000154.tar.gz",
+    "sizeBytes": 31048409
+  },
+  {
+    "path": "2026-11-19/batch_00000155.tar.gz",
+    "sizeBytes": 89548059
+  },
+  {
+    "path": "2026-11-19/batch_00000156.tar.gz",
+    "sizeBytes": 59154878
+  },
+  {
+    "path": "2026-11-19/batch_00000157.tar.gz",
+    "sizeBytes": 95549255
+  },
+  {
+    "path": "2026-11-19/batch_00000158.tar.gz",
+    "sizeBytes": 46798475
+  },
+  {
+    "path": "2026-11-19/batch_00000159.tar.gz",
+    "sizeBytes": 82712971
+  },
+  {
+    "path": "2026-11-19/batch_00000160.tar.gz",
+    "sizeBytes": 27874421
+  },
+  {
+    "path": "2026-11-19/batch_00000161.tar.gz",
+    "sizeBytes": 96214678
+  },
+  {
+    "path": "2026-11-19/batch_00000162.tar.gz",
+    "sizeBytes": 5000581
+  },
+  {
+    "path": "2026-11-19/batch_00000163.tar.gz",
+    "sizeBytes": 91225467
+  },
+  {
+    "path": "2026-11-19/batch_00000164.tar.gz",
+    "sizeBytes": 21729474
+  },
+  {
+    "path": "2026-11-19/batch_00000165.tar.gz",
+    "sizeBytes": 89781383
+  },
+  {
+    "path": "2026-11-19/batch_00000166.tar.gz",
+    "sizeBytes": 50782862
+  },
+  {
+    "path": "2026-11-19/batch_00000167.tar.gz",
+    "sizeBytes": 94575728
+  },
+  {
+    "path": "2026-11-19/batch_00000168.tar.gz",
+    "sizeBytes": 16405198
+  },
+  {
+    "path": "2026-11-19/batch_00000169.tar.gz",
+    "sizeBytes": 70692007
+  },
+  {
+    "path": "2026-11-19/batch_00000170.tar.gz",
+    "sizeBytes": 91184113
+  },
+  {
+    "path": "2026-11-19/batch_00000171.tar.gz",
+    "sizeBytes": 5476869
+  },
+  {
+    "path": "2026-11-19/batch_00000172.tar.gz",
+    "sizeBytes": 97213900
+  },
+  {
+    "path": "2026-11-19/batch_00000173.tar.gz",
+    "sizeBytes": 41090047
+  },
+  {
+    "path": "2026-11-19/batch_00000174.tar.gz",
+    "sizeBytes": 65524186
+  },
+  {
+    "path": "2026-11-19/batch_00000175.tar.gz",
+    "sizeBytes": 96241730
+  },
+  {
+    "path": "2026-11-19/batch_00000176.tar.gz",
+    "sizeBytes": 91070306
+  },
+  {
+    "path": "2026-11-19/batch_00000177.tar.gz",
+    "sizeBytes": 61655679
+  },
+  {
+    "path": "2026-11-19/batch_00000178.tar.gz",
+    "sizeBytes": 85881689
+  },
+  {
+    "path": "2026-11-19/batch_00000179.tar.gz",
+    "sizeBytes": 26644694
+  },
+  {
+    "path": "2026-11-19/batch_00000180.tar.gz",
+    "sizeBytes": 90015513
+  },
+  {
+    "path": "2026-11-19/batch_00000181.tar.gz",
+    "sizeBytes": 78501929
+  },
+  {
+    "path": "2026-11-19/batch_00000182.tar.gz",
+    "sizeBytes": 54108112
+  },
+  {
+    "path": "2026-11-19/batch_00000183.tar.gz",
+    "sizeBytes": 93634614
+  },
+  {
+    "path": "2026-11-19/batch_00000184.tar.gz",
+    "sizeBytes": 39398200
+  },
+  {
+    "path": "2026-11-19/batch_00000185.tar.gz",
+    "sizeBytes": 76347370
+  },
+  {
+    "path": "2026-11-19/batch_00000186.tar.gz",
+    "sizeBytes": 78892852
+  },
+  {
+    "path": "2026-11-19/batch_00000187.tar.gz",
+    "sizeBytes": 83435486
+  },
+  {
+    "path": "2026-11-19/batch_00000188.tar.gz",
+    "sizeBytes": 42030001
+  },
+  {
+    "path": "2026-11-19/batch_00000189.tar.gz",
+    "sizeBytes": 93706953
+  },
+  {
+    "path": "2026-11-19/batch_00000190.tar.gz",
+    "sizeBytes": 62876127
+  },
+  {
+    "path": "2026-11-19/batch_00000191.tar.gz",
+    "sizeBytes": 96278428
+  },
+  {
+    "path": "2026-11-19/batch_00000192.tar.gz",
+    "sizeBytes": 79672131
+  },
+  {
+    "path": "2026-11-19/batch_00000193.tar.gz",
+    "sizeBytes": 66820916
+  },
+  {
+    "path": "2026-11-19/batch_00000194.tar.gz",
+    "sizeBytes": 97728780
+  },
+  {
+    "path": "2026-11-19/batch_00000195.tar.gz",
+    "sizeBytes": 14059650
+  },
+  {
+    "path": "2026-11-19/batch_00000196.tar.gz",
+    "sizeBytes": 94329214
+  },
+  {
+    "path": "2026-11-19/batch_00000197.tar.gz",
+    "sizeBytes": 95147660
+  },
+  {
+    "path": "2026-11-19/batch_00000198.tar.gz",
+    "sizeBytes": 17890529
+  },
+  {
+    "path": "2026-11-19/batch_00000199.tar.gz",
+    "sizeBytes": 87770187
+  },
+  {
+    "path": "2026-11-19/batch_00000200.tar.gz",
+    "sizeBytes": 89429568
+  },
+  {
+    "path": "2026-11-19/batch_00000201.tar.gz",
+    "sizeBytes": 44632788
+  },
+  {
+    "path": "2026-11-19/batch_00000202.tar.gz",
+    "sizeBytes": 48073687
+  },
+  {
+    "path": "2026-11-19/batch_00000203.tar.gz",
+    "sizeBytes": 83809934
+  },
+  {
+    "path": "2026-11-19/batch_00000204.tar.gz",
+    "sizeBytes": 84257446
+  },
+  {
+    "path": "2026-11-19/batch_00000205.tar.gz",
+    "sizeBytes": 52063962
+  },
+  {
+    "path": "2026-11-19/batch_00000206.tar.gz",
+    "sizeBytes": 82333616
+  },
+  {
+    "path": "2026-11-19/batch_00000207.tar.gz",
+    "sizeBytes": 92061278
+  },
+  {
+    "path": "2026-11-19/batch_00000208.tar.gz",
+    "sizeBytes": 73124424
+  },
+  {
+    "path": "2026-11-19/batch_00000209.tar.gz",
+    "sizeBytes": 65042935
+  },
+  {
+    "path": "2026-11-19/batch_00000210.tar.gz",
+    "sizeBytes": 85255562
+  },
+  {
+    "path": "2026-11-19/batch_00000211.tar.gz",
+    "sizeBytes": 9876858
+  },
+  {
+    "path": "2026-11-19/batch_00000212.tar.gz",
+    "sizeBytes": 93691128
+  },
+  {
+    "path": "2026-11-19/batch_00000213.tar.gz",
+    "sizeBytes": 10847402
+  },
+  {
+    "path": "2026-11-19/batch_00000214.tar.gz",
+    "sizeBytes": 95789546
+  },
+  {
+    "path": "2026-11-19/batch_00000215.tar.gz",
+    "sizeBytes": 38331654
+  },
+  {
+    "path": "2026-11-19/batch_00000216.tar.gz",
+    "sizeBytes": 95643278
+  },
+  {
+    "path": "2026-11-19/batch_00000217.tar.gz",
+    "sizeBytes": 8815601
+  },
+  {
+    "path": "2026-11-19/batch_00000218.tar.gz",
+    "sizeBytes": 94128306
+  },
+  {
+    "path": "2026-11-19/batch_00000219.tar.gz",
+    "sizeBytes": 82493238
+  },
+  {
+    "path": "2026-11-19/batch_00000220.tar.gz",
+    "sizeBytes": 28742459
+  },
+  {
+    "path": "2026-11-19/batch_00000221.tar.gz",
+    "sizeBytes": 93725125
+  },
+  {
+    "path": "2026-11-19/batch_00000222.tar.gz",
+    "sizeBytes": 69610113
+  },
+  {
+    "path": "2026-11-19/batch_00000223.tar.gz",
+    "sizeBytes": 97168090
+  },
+  {
+    "path": "2026-11-19/batch_00000224.tar.gz",
+    "sizeBytes": 5523725
+  },
+  {
+    "path": "2026-11-19/batch_00000225.tar.gz",
+    "sizeBytes": 90864432
+  },
+  {
+    "path": "2026-11-19/batch_00000226.tar.gz",
+    "sizeBytes": 57675566
+  },
+  {
+    "path": "2026-11-19/batch_00000227.tar.gz",
+    "sizeBytes": 94629055
+  },
+  {
+    "path": "2026-11-19/batch_00000228.tar.gz",
+    "sizeBytes": 71644942
+  },
+  {
+    "path": "2026-11-19/batch_00000229.tar.gz",
+    "sizeBytes": 64637057
+  },
+  {
+    "path": "2026-11-19/batch_00000230.tar.gz",
+    "sizeBytes": 94976881
+  },
+  {
+    "path": "2026-11-19/batch_00000231.tar.gz",
+    "sizeBytes": 77477363
+  },
+  {
+    "path": "2026-11-19/batch_00000232.tar.gz",
+    "sizeBytes": 71697123
+  },
+  {
+    "path": "2026-11-19/batch_00000233.tar.gz",
+    "sizeBytes": 72530104
+  },
+  {
+    "path": "2026-11-19/batch_00000234.tar.gz",
+    "sizeBytes": 89308074
+  },
+  {
+    "path": "2026-11-19/batch_00000235.tar.gz",
+    "sizeBytes": 74612359
+  },
+  {
+    "path": "2026-11-19/batch_00000236.tar.gz",
+    "sizeBytes": 57375925
+  },
+  {
+    "path": "2026-11-19/batch_00000237.tar.gz",
+    "sizeBytes": 94049003
+  },
+  {
+    "path": "2026-11-19/batch_00000238.tar.gz",
+    "sizeBytes": 71713226
+  },
+  {
+    "path": "2026-11-19/batch_00000239.tar.gz",
+    "sizeBytes": 95501374
+  },
+  {
+    "path": "2026-11-19/batch_00000240.tar.gz",
+    "sizeBytes": 32506920
+  },
+  {
+    "path": "2026-11-19/batch_00000241.tar.gz",
+    "sizeBytes": 93115032
+  },
+  {
+    "path": "2026-11-19/batch_00000242.tar.gz",
+    "sizeBytes": 70297810
+  },
+  {
+    "path": "2026-11-19/batch_00000243.tar.gz",
+    "sizeBytes": 87262587
+  },
+  {
+    "path": "2026-11-19/batch_00000244.tar.gz",
+    "sizeBytes": 76026612
+  },
+  {
+    "path": "2026-11-19/batch_00000245.tar.gz",
+    "sizeBytes": 95863976
+  },
+  {
+    "path": "2026-11-19/batch_00000246.tar.gz",
+    "sizeBytes": 53891872
+  },
+  {
+    "path": "2026-11-19/batch_00000247.tar.gz",
+    "sizeBytes": 89266529
+  },
+  {
+    "path": "2026-11-19/batch_00000248.tar.gz",
+    "sizeBytes": 86116198
+  },
+  {
+    "path": "2026-11-19/batch_00000249.tar.gz",
+    "sizeBytes": 62642555
+  },
+  {
+    "path": "2026-11-19/batch_00000250.tar.gz",
+    "sizeBytes": 91819429
+  },
+  {
+    "path": "2026-11-19/batch_00000251.tar.gz",
+    "sizeBytes": 1588913
+  },
+  {
+    "path": "2026-11-19/batch_00000252.tar.gz",
+    "sizeBytes": 93894184
+  },
+  {
+    "path": "2026-11-19/batch_00000253.tar.gz",
+    "sizeBytes": 70342142
+  },
+  {
+    "path": "2026-11-19/batch_00000254.tar.gz",
+    "sizeBytes": 96303873
+  },
+  {
+    "path": "2026-11-19/batch_00000255.tar.gz",
+    "sizeBytes": 78497580
+  },
+  {
+    "path": "2026-11-19/batch_00000256.tar.gz",
+    "sizeBytes": 30160439
+  },
+  {
+    "path": "2026-11-19/batch_00000257.tar.gz",
+    "sizeBytes": 96401077
+  },
+  {
+    "path": "2026-11-19/batch_00000258.tar.gz",
+    "sizeBytes": 66963383
+  },
+  {
+    "path": "2026-11-19/batch_00000259.tar.gz",
+    "sizeBytes": 90395788
+  },
+  {
+    "path": "2026-11-19/batch_00000260.tar.gz",
+    "sizeBytes": 49744080
+  },
+  {
+    "path": "2026-11-19/batch_00000261.tar.gz",
+    "sizeBytes": 38491275
+  },
+  {
+    "path": "2026-11-19/batch_00000262.tar.gz",
+    "sizeBytes": 70930506
+  },
+  {
+    "path": "2026-11-19/batch_00000263.tar.gz",
+    "sizeBytes": 79517021
+  },
+  {
+    "path": "2026-11-19/batch_00000264.tar.gz",
+    "sizeBytes": 64355448
+  },
+  {
+    "path": "2026-11-19/batch_00000265.tar.gz",
+    "sizeBytes": 93943002
+  },
+  {
+    "path": "2026-11-19/batch_00000266.tar.gz",
+    "sizeBytes": 13095918
+  },
+  {
+    "path": "2026-11-19/batch_00000267.tar.gz",
+    "sizeBytes": 91314483
+  },
+  {
+    "path": "2026-11-19/batch_00000268.tar.gz",
+    "sizeBytes": 80323156
+  },
+  {
+    "path": "2026-11-19/batch_00000269.tar.gz",
+    "sizeBytes": 69662655
+  },
+  {
+    "path": "2026-11-19/batch_00000270.tar.gz",
+    "sizeBytes": 87933235
+  },
+  {
+    "path": "2026-11-19/batch_00000271.tar.gz",
+    "sizeBytes": 35079822
+  },
+  {
+    "path": "2026-11-19/batch_00000272.tar.gz",
+    "sizeBytes": 94624881
+  },
+  {
+    "path": "2026-11-19/batch_00000273.tar.gz",
+    "sizeBytes": 89155447
+  },
+  {
+    "path": "2026-11-19/batch_00000274.tar.gz",
+    "sizeBytes": 23397742
+  },
+  {
+    "path": "2026-11-19/batch_00000275.tar.gz",
+    "sizeBytes": 94488095
+  },
+  {
+    "path": "2026-11-19/batch_00000276.tar.gz",
+    "sizeBytes": 57001425
+  },
+  {
+    "path": "2026-11-19/batch_00000277.tar.gz",
+    "sizeBytes": 85385135
+  },
+  {
+    "path": "2026-11-19/batch_00000278.tar.gz",
+    "sizeBytes": 82185240
+  },
+  {
+    "path": "2026-11-19/batch_00000279.tar.gz",
+    "sizeBytes": 60227772
+  },
+  {
+    "path": "2026-11-19/batch_00000280.tar.gz",
+    "sizeBytes": 92572479
+  },
+  {
+    "path": "2026-11-19/batch_00000281.tar.gz",
+    "sizeBytes": 30425991
+  },
+  {
+    "path": "2026-11-19/batch_00000282.tar.gz",
+    "sizeBytes": 92303182
+  },
+  {
+    "path": "2026-11-19/batch_00000283.tar.gz",
+    "sizeBytes": 3150699
+  },
+  {
+    "path": "2026-11-19/batch_00000284.tar.gz",
+    "sizeBytes": 95139461
+  },
+  {
+    "path": "2026-11-19/batch_00000285.tar.gz",
+    "sizeBytes": 69031763
+  },
+  {
+    "path": "2026-11-19/batch_00000286.tar.gz",
+    "sizeBytes": 57422516
+  },
+  {
+    "path": "2026-11-19/batch_00000287.tar.gz",
+    "sizeBytes": 91618649
+  },
+  {
+    "path": "2026-11-19/batch_00000288.tar.gz",
+    "sizeBytes": 65728336
+  },
+  {
+    "path": "2026-11-19/batch_00000289.tar.gz",
+    "sizeBytes": 94987836
+  },
+  {
+    "path": "2026-11-19/batch_00000290.tar.gz",
+    "sizeBytes": 70692078
+  },
+  {
+    "path": "2026-11-19/batch_00000291.tar.gz",
+    "sizeBytes": 93780588
+  },
+  {
+    "path": "2026-11-19/batch_00000292.tar.gz",
+    "sizeBytes": 35862688
+  },
+  {
+    "path": "2026-11-19/batch_00000293.tar.gz",
+    "sizeBytes": 94889643
+  },
+  {
+    "path": "2026-11-19/batch_00000294.tar.gz",
+    "sizeBytes": 75268618
+  },
+  {
+    "path": "2026-11-19/batch_00000295.tar.gz",
+    "sizeBytes": 83026756
+  },
+  {
+    "path": "2026-11-19/batch_00000296.tar.gz",
+    "sizeBytes": 94170127
+  },
+  {
+    "path": "2026-11-19/batch_00000297.tar.gz",
+    "sizeBytes": 95202432
+  },
+  {
+    "path": "2026-11-19/batch_00000298.tar.gz",
+    "sizeBytes": 23852163
+  },
+  {
+    "path": "2026-11-19/batch_00000299.tar.gz",
+    "sizeBytes": 92500557
+  },
+  {
+    "path": "2026-11-19/batch_00000300.tar.gz",
+    "sizeBytes": 83314732
+  },
+  {
+    "path": "2026-11-19/batch_00000301.tar.gz",
+    "sizeBytes": 82987950
+  },
+  {
+    "path": "2026-11-19/batch_00000302.tar.gz",
+    "sizeBytes": 84657677
+  },
+  {
+    "path": "2026-11-19/batch_00000303.tar.gz",
+    "sizeBytes": 62348144
+  },
+  {
+    "path": "2026-11-19/batch_00000304.tar.gz",
+    "sizeBytes": 91797144
+  },
+  {
+    "path": "2026-11-19/batch_00000305.tar.gz",
+    "sizeBytes": 91030340
+  },
+  {
+    "path": "2026-11-19/batch_00000306.tar.gz",
+    "sizeBytes": 63453550
+  },
+  {
+    "path": "2026-11-19/batch_00000307.tar.gz",
+    "sizeBytes": 88864573
+  },
+  {
+    "path": "2026-11-19/batch_00000308.tar.gz",
+    "sizeBytes": 89290768
+  },
+  {
+    "path": "2026-11-19/batch_00000309.tar.gz",
+    "sizeBytes": 58178398
+  },
+  {
+    "path": "2026-11-19/batch_00000310.tar.gz",
+    "sizeBytes": 94234117
+  },
+  {
+    "path": "2026-11-19/batch_00000311.tar.gz",
+    "sizeBytes": 2296347
+  },
+  {
+    "path": "2026-11-19/batch_00000312.tar.gz",
+    "sizeBytes": 92666299
+  },
+  {
+    "path": "2026-11-19/batch_00000313.tar.gz",
+    "sizeBytes": 72233369
+  },
+  {
+    "path": "2026-11-19/batch_00000314.tar.gz",
+    "sizeBytes": 94530303
+  },
+  {
+    "path": "2026-11-19/batch_00000315.tar.gz",
+    "sizeBytes": 82433094
+  },
+  {
+    "path": "2026-11-19/batch_00000316.tar.gz",
+    "sizeBytes": 85126637
+  },
+  {
+    "path": "2026-11-19/batch_00000317.tar.gz",
+    "sizeBytes": 72684736
+  },
+  {
+    "path": "2026-11-19/batch_00000318.tar.gz",
+    "sizeBytes": 93502284
+  },
+  {
+    "path": "2026-11-19/batch_00000319.tar.gz",
+    "sizeBytes": 55018860
+  },
+  {
+    "path": "2026-11-19/batch_00000320.tar.gz",
+    "sizeBytes": 95775532
+  },
+  {
+    "path": "2026-11-19/batch_00000321.tar.gz",
+    "sizeBytes": 94268780
+  },
+  {
+    "path": "2026-11-19/batch_00000322.tar.gz",
+    "sizeBytes": 34935378
+  },
+  {
+    "path": "2026-11-19/batch_00000323.tar.gz",
+    "sizeBytes": 71542297
+  },
+  {
+    "path": "2026-11-19/batch_00000324.tar.gz",
+    "sizeBytes": 93910000
+  },
+  {
+    "path": "2026-11-19/batch_00000325.tar.gz",
+    "sizeBytes": 72358166
+  },
+  {
+    "path": "2026-11-19/batch_00000326.tar.gz",
+    "sizeBytes": 93352551
+  },
+  {
+    "path": "2026-11-19/batch_00000327.tar.gz",
+    "sizeBytes": 83431349
+  },
+  {
+    "path": "2026-11-19/batch_00000328.tar.gz",
+    "sizeBytes": 91830198
+  },
+  {
+    "path": "2026-11-19/batch_00000329.tar.gz",
+    "sizeBytes": 73370064
+  },
+  {
+    "path": "2026-11-19/batch_00000330.tar.gz",
+    "sizeBytes": 66360993
+  },
+  {
+    "path": "2026-11-19/batch_00000331.tar.gz",
+    "sizeBytes": 85514837
+  },
+  {
+    "path": "2026-11-19/batch_00000332.tar.gz",
+    "sizeBytes": 59319349
+  },
+  {
+    "path": "2026-11-19/batch_00000333.tar.gz",
+    "sizeBytes": 92555671
+  },
+  {
+    "path": "2026-11-19/batch_00000334.tar.gz",
+    "sizeBytes": 74402659
+  },
+  {
+    "path": "2026-11-19/batch_00000335.tar.gz",
+    "sizeBytes": 14714683
+  },
+  {
+    "path": "2026-11-19/batch_00000336.tar.gz",
+    "sizeBytes": 94341269
+  },
+  {
+    "path": "2026-11-19/batch_00000337.tar.gz",
+    "sizeBytes": 26317625
+  },
+  {
+    "path": "2026-11-19/batch_00000338.tar.gz",
+    "sizeBytes": 87790356
+  },
+  {
+    "path": "2026-11-19/batch_00000339.tar.gz",
+    "sizeBytes": 80746118
+  },
+  {
+    "path": "2026-11-19/batch_00000340.tar.gz",
+    "sizeBytes": 34501453
+  },
+  {
+    "path": "2026-11-19/batch_00000341.tar.gz",
+    "sizeBytes": 79818342
+  },
+  {
+    "path": "2026-11-19/batch_00000342.tar.gz",
+    "sizeBytes": 95759271
+  },
+  {
+    "path": "2026-11-19/batch_00000343.tar.gz",
+    "sizeBytes": 11892638
+  },
+  {
+    "path": "2026-11-19/batch_00000344.tar.gz",
+    "sizeBytes": 91884939
+  },
+  {
+    "path": "2026-11-19/batch_00000345.tar.gz",
+    "sizeBytes": 64547286
+  },
+  {
+    "path": "2026-11-19/batch_00000346.tar.gz",
+    "sizeBytes": 94493255
+  },
+  {
+    "path": "2026-11-19/batch_00000347.tar.gz",
+    "sizeBytes": 902997
+  },
+  {
+    "path": "2026-11-19/batch_00000348.tar.gz",
+    "sizeBytes": 91113081
+  },
+  {
+    "path": "2026-11-19/batch_00000349.tar.gz",
+    "sizeBytes": 31305955
+  },
+  {
+    "path": "2026-11-19/batch_00000350.tar.gz",
+    "sizeBytes": 95254483
+  },
+  {
+    "path": "2026-11-19/batch_00000351.tar.gz",
+    "sizeBytes": 39645315
+  },
+  {
+    "path": "2026-11-19/batch_00000352.tar.gz",
+    "sizeBytes": 87771009
+  },
+  {
+    "path": "2026-11-19/batch_00000353.tar.gz",
+    "sizeBytes": 22853864
+  },
+  {
+    "path": "2026-11-19/batch_00000354.tar.gz",
+    "sizeBytes": 81549179
+  },
+  {
+    "path": "2026-11-19/batch_00000355.tar.gz",
+    "sizeBytes": 74526069
+  },
+  {
+    "path": "2026-11-19/batch_00000356.tar.gz",
+    "sizeBytes": 11815999
+  },
+  {
+    "path": "2026-11-19/batch_00000357.tar.gz",
+    "sizeBytes": 92905826
+  },
+  {
+    "path": "2026-11-19/batch_00000358.tar.gz",
+    "sizeBytes": 87086255
+  },
+  {
+    "path": "2026-11-19/batch_00000359.tar.gz",
+    "sizeBytes": 53888772
+  },
+  {
+    "path": "2026-11-19/batch_00000360.tar.gz",
+    "sizeBytes": 57128615
+  },
+  {
+    "path": "2026-11-19/batch_00000361.tar.gz",
+    "sizeBytes": 90742858
+  },
+  {
+    "path": "2026-11-19/batch_00000362.tar.gz",
+    "sizeBytes": 52627808
+  },
+  {
+    "path": "2026-11-19/batch_00000363.tar.gz",
+    "sizeBytes": 67334969
+  },
+  {
+    "path": "2026-11-19/batch_00000364.tar.gz",
+    "sizeBytes": 22558396
+  },
+  {
+    "path": "2026-11-19/batch_00000365.tar.gz",
+    "sizeBytes": 92491154
+  },
+  {
+    "path": "2026-11-19/batch_00000366.tar.gz",
+    "sizeBytes": 83767989
+  },
+  {
+    "path": "2026-11-19/batch_00000367.tar.gz",
+    "sizeBytes": 8487699
+  },
+  {
+    "path": "2026-11-19/batch_00000368.tar.gz",
+    "sizeBytes": 93382332
+  },
+  {
+    "path": "2026-11-19/batch_00000369.tar.gz",
+    "sizeBytes": 74564904
+  },
+  {
+    "path": "2026-11-19/batch_00000370.tar.gz",
+    "sizeBytes": 41031184
+  },
+  {
+    "path": "2026-11-19/batch_00000371.tar.gz",
+    "sizeBytes": 92232771
+  },
+  {
+    "path": "2026-11-19/batch_00000372.tar.gz",
+    "sizeBytes": 82237581
+  },
+  {
+    "path": "2026-11-19/batch_00000373.tar.gz",
+    "sizeBytes": 19752609
+  },
+  {
+    "path": "2026-11-19/batch_00000374.tar.gz",
+    "sizeBytes": 92986204
+  },
+  {
+    "path": "2026-11-19/batch_00000375.tar.gz",
+    "sizeBytes": 62078588
+  },
+  {
+    "path": "2026-11-19/batch_00000376.tar.gz",
+    "sizeBytes": 84100409
+  },
+  {
+    "path": "2026-11-19/batch_00000377.tar.gz",
+    "sizeBytes": 83304231
+  },
+  {
+    "path": "2026-11-19/batch_00000378.tar.gz",
+    "sizeBytes": 12073671
+  },
+  {
+    "path": "2026-11-19/batch_00000379.tar.gz",
+    "sizeBytes": 91318609
+  },
+  {
+    "path": "2026-11-19/batch_00000380.tar.gz",
+    "sizeBytes": 56987934
+  },
+  {
+    "path": "2026-11-19/batch_00000381.tar.gz",
+    "sizeBytes": 68514630
+  },
+  {
+    "path": "2026-11-19/batch_00000382.tar.gz",
+    "sizeBytes": 77848548
+  },
+  {
+    "path": "2026-11-19/batch_00000383.tar.gz",
+    "sizeBytes": 49632491
+  },
+  {
+    "path": "2026-11-19/batch_00000384.tar.gz",
+    "sizeBytes": 93495447
+  },
+  {
+    "path": "2026-11-19/batch_00000385.tar.gz",
+    "sizeBytes": 1807152
+  },
+  {
+    "path": "2026-11-19/batch_00000386.tar.gz",
+    "sizeBytes": 89470663
+  },
+  {
+    "path": "2026-11-19/batch_00000387.tar.gz",
+    "sizeBytes": 65905641
+  },
+  {
+    "path": "2026-11-19/batch_00000388.tar.gz",
+    "sizeBytes": 88193659
+  },
+  {
+    "path": "2026-11-19/batch_00000389.tar.gz",
+    "sizeBytes": 79272968
+  },
+  {
+    "path": "2026-11-19/batch_00000390.tar.gz",
+    "sizeBytes": 72710383
+  },
+  {
+    "path": "2026-11-19/batch_00000391.tar.gz",
+    "sizeBytes": 95205466
+  },
+  {
+    "path": "2026-11-19/batch_00000392.tar.gz",
+    "sizeBytes": 88380392
+  },
+  {
+    "path": "2026-11-19/batch_00000393.tar.gz",
+    "sizeBytes": 49790195
+  },
+  {
+    "path": "2026-11-19/batch_00000394.tar.gz",
+    "sizeBytes": 93396182
+  },
+  {
+    "path": "2026-11-19/batch_00000395.tar.gz",
+    "sizeBytes": 14342951
+  },
+  {
+    "path": "2026-11-19/batch_00000396.tar.gz",
+    "sizeBytes": 96745877
+  },
+  {
+    "path": "2026-11-19/batch_00000397.tar.gz",
+    "sizeBytes": 67729669
+  },
+  {
+    "path": "2026-11-19/batch_00000398.tar.gz",
+    "sizeBytes": 96751915
+  },
+  {
+    "path": "2026-11-19/batch_00000399.tar.gz",
+    "sizeBytes": 53950875
+  },
+  {
+    "path": "2026-11-19/batch_00000400.tar.gz",
+    "sizeBytes": 96394324
+  },
+  {
+    "path": "2026-11-19/batch_00000401.tar.gz",
+    "sizeBytes": 58959980
+  },
+  {
+    "path": "2026-11-19/batch_00000402.tar.gz",
+    "sizeBytes": 73031799
+  },
+  {
+    "path": "2026-11-19/batch_00000403.tar.gz",
+    "sizeBytes": 35442052
+  },
+  {
+    "path": "2026-11-19/batch_00000404.tar.gz",
+    "sizeBytes": 83545010
+  },
+  {
+    "path": "2026-11-19/batch_00000405.tar.gz",
+    "sizeBytes": 79574820
+  },
+  {
+    "path": "2026-11-19/batch_00000406.tar.gz",
+    "sizeBytes": 29130410
+  },
+  {
+    "path": "2026-11-19/batch_00000407.tar.gz",
+    "sizeBytes": 93637533
+  },
+  {
+    "path": "2026-11-19/batch_00000408.tar.gz",
+    "sizeBytes": 51578121
+  },
+  {
+    "path": "2026-11-19/batch_00000409.tar.gz",
+    "sizeBytes": 47243295
+  },
+  {
+    "path": "2026-11-19/batch_00000410.tar.gz",
+    "sizeBytes": 76035702
+  },
+  {
+    "path": "2026-11-19/batch_00000411.tar.gz",
+    "sizeBytes": 33631503
+  },
+  {
+    "path": "2026-11-19/batch_00000412.tar.gz",
+    "sizeBytes": 87245801
+  },
+  {
+    "path": "2026-11-19/batch_00000413.tar.gz",
+    "sizeBytes": 96311732
+  },
+  {
+    "path": "2026-11-19/batch_00000414.tar.gz",
+    "sizeBytes": 26483143
+  },
+  {
+    "path": "2026-11-19/batch_00000415.tar.gz",
+    "sizeBytes": 83658416
+  },
+  {
+    "path": "2026-11-19/batch_00000416.tar.gz",
+    "sizeBytes": 78682197
+  },
+  {
+    "path": "2026-11-19/batch_00000417.tar.gz",
+    "sizeBytes": 32533781
+  },
+  {
+    "path": "2026-11-19/batch_00000418.tar.gz",
+    "sizeBytes": 92376544
+  },
+  {
+    "path": "2026-11-19/batch_00000419.tar.gz",
+    "sizeBytes": 52851587
+  },
+  {
+    "path": "2026-11-19/batch_00000420.tar.gz",
+    "sizeBytes": 82591006
+  },
+  {
+    "path": "2026-11-19/batch_00000421.tar.gz",
+    "sizeBytes": 37864144
+  },
+  {
+    "path": "2026-11-19/batch_00000422.tar.gz",
+    "sizeBytes": 90629387
+  },
+  {
+    "path": "2026-11-19/batch_00000423.tar.gz",
+    "sizeBytes": 65443099
+  },
+  {
+    "path": "2026-11-19/batch_00000424.tar.gz",
+    "sizeBytes": 91180201
+  },
+  {
+    "path": "2026-11-19/batch_00000425.tar.gz",
+    "sizeBytes": 2083416
+  },
+  {
+    "path": "2026-11-19/batch_00000426.tar.gz",
+    "sizeBytes": 92795668
+  },
+  {
+    "path": "2026-11-19/batch_00000427.tar.gz",
+    "sizeBytes": 11078247
+  },
+  {
+    "path": "2026-11-19/batch_00000428.tar.gz",
+    "sizeBytes": 93452095
+  },
+  {
+    "path": "2026-11-19/batch_00000429.tar.gz",
+    "sizeBytes": 79118012
+  },
+  {
+    "path": "2026-11-19/batch_00000430.tar.gz",
+    "sizeBytes": 80375852
+  },
+  {
+    "path": "2026-11-19/batch_00000431.tar.gz",
+    "sizeBytes": 67586798
+  },
+  {
+    "path": "2026-11-19/batch_00000432.tar.gz",
+    "sizeBytes": 72075528
+  },
+  {
+    "path": "2026-11-19/batch_00000433.tar.gz",
+    "sizeBytes": 89003556
+  },
+  {
+    "path": "2026-11-19/batch_00000434.tar.gz",
+    "sizeBytes": 12956070
+  },
+  {
+    "path": "2026-11-19/batch_00000435.tar.gz",
+    "sizeBytes": 96821801
+  },
+  {
+    "path": "2026-11-19/batch_00000436.tar.gz",
+    "sizeBytes": 27884789
+  },
+  {
+    "path": "2026-11-19/batch_00000437.tar.gz",
+    "sizeBytes": 91350483
+  },
+  {
+    "path": "2026-11-19/batch_00000438.tar.gz",
+    "sizeBytes": 65885195
+  },
+  {
+    "path": "2026-11-19/batch_00000439.tar.gz",
+    "sizeBytes": 84134263
+  },
+  {
+    "path": "2026-11-19/batch_00000440.tar.gz",
+    "sizeBytes": 58069852
+  },
+  {
+    "path": "2026-11-19/batch_00000441.tar.gz",
+    "sizeBytes": 94016009
+  },
+  {
+    "path": "2026-11-19/batch_00000442.tar.gz",
+    "sizeBytes": 55085800
+  },
+  {
+    "path": "2026-11-19/batch_00000443.tar.gz",
+    "sizeBytes": 90209061
+  },
+  {
+    "path": "2026-11-19/batch_00000444.tar.gz",
+    "sizeBytes": 8082230
+  },
+  {
+    "path": "2026-11-19/batch_00000445.tar.gz",
+    "sizeBytes": 88850995
+  },
+  {
+    "path": "2026-11-19/batch_00000446.tar.gz",
+    "sizeBytes": 59387685
+  },
+  {
+    "path": "2026-11-19/batch_00000447.tar.gz",
+    "sizeBytes": 91208470
+  },
+  {
+    "path": "2026-11-19/batch_00000448.tar.gz",
+    "sizeBytes": 44521849
+  },
+  {
+    "path": "2026-11-19/batch_00000449.tar.gz",
+    "sizeBytes": 83915905
+  },
+  {
+    "path": "2026-11-19/batch_00000450.tar.gz",
+    "sizeBytes": 7796206
+  },
+  {
+    "path": "2026-11-19/batch_00000451.tar.gz",
+    "sizeBytes": 95536227
+  },
+  {
+    "path": "2026-11-19/batch_00000452.tar.gz",
+    "sizeBytes": 13947548
+  },
+  {
+    "path": "2026-11-19/batch_00000453.tar.gz",
+    "sizeBytes": 94914731
+  },
+  {
+    "path": "2026-11-19/batch_00000454.tar.gz",
+    "sizeBytes": 88509923
+  },
+  {
+    "path": "2026-11-19/batch_00000455.tar.gz",
+    "sizeBytes": 67821570
+  },
+  {
+    "path": "2026-11-19/batch_00000456.tar.gz",
+    "sizeBytes": 84130560
+  },
+  {
+    "path": "2026-11-19/batch_00000457.tar.gz",
+    "sizeBytes": 73097967
+  },
+  {
+    "path": "2026-11-19/batch_00000458.tar.gz",
+    "sizeBytes": 92838041
+  },
+  {
+    "path": "2026-11-19/batch_00000459.tar.gz",
+    "sizeBytes": 82718318
+  },
+  {
+    "path": "2026-11-19/batch_00000460.tar.gz",
+    "sizeBytes": 50096541
+  },
+  {
+    "path": "2026-11-19/batch_00000461.tar.gz",
+    "sizeBytes": 94770299
+  },
+  {
+    "path": "2026-11-19/batch_00000462.tar.gz",
+    "sizeBytes": 82593928
+  },
+  {
+    "path": "2026-11-19/batch_00000463.tar.gz",
+    "sizeBytes": 29931547
+  },
+  {
+    "path": "2026-11-19/batch_00000464.tar.gz",
+    "sizeBytes": 73221597
+  },
+  {
+    "path": "2026-11-19/batch_00000465.tar.gz",
+    "sizeBytes": 71978185
+  },
+  {
+    "path": "2026-11-19/batch_00000466.tar.gz",
+    "sizeBytes": 97344893
+  },
+  {
+    "path": "2026-11-19/batch_00000467.tar.gz",
+    "sizeBytes": 36041702
+  },
+  {
+    "path": "2026-11-19/batch_00000468.tar.gz",
+    "sizeBytes": 62479904
+  },
+  {
+    "path": "2026-11-19/batch_00000469.tar.gz",
+    "sizeBytes": 91005978
+  },
+  {
+    "path": "2026-11-19/batch_00000470.tar.gz",
+    "sizeBytes": 43027617
+  },
+  {
+    "path": "2026-11-19/batch_00000471.tar.gz",
+    "sizeBytes": 77631790
+  },
+  {
+    "path": "2026-11-19/batch_00000472.tar.gz",
+    "sizeBytes": 63365811
+  },
+  {
+    "path": "2026-11-19/batch_00000473.tar.gz",
+    "sizeBytes": 61607608
+  },
+  {
+    "path": "2026-11-19/batch_00000474.tar.gz",
+    "sizeBytes": 83269406
+  },
+  {
+    "path": "2026-11-19/batch_00000475.tar.gz",
+    "sizeBytes": 29274503
+  },
+  {
+    "path": "2026-11-19/batch_00000476.tar.gz",
+    "sizeBytes": 93281072
+  },
+  {
+    "path": "2026-11-19/batch_00000477.tar.gz",
+    "sizeBytes": 13308
+  },
+  {
+    "path": "2026-11-19/batch_00000478.tar.gz",
+    "sizeBytes": 95250442
+  },
+  {
+    "path": "2026-11-19/batch_00000479.tar.gz",
+    "sizeBytes": 34070741
+  },
+  {
+    "path": "2026-11-19/batch_00000480.tar.gz",
+    "sizeBytes": 63897127
+  },
+  {
+    "path": "2026-11-19/batch_00000481.tar.gz",
+    "sizeBytes": 74848442
+  },
+  {
+    "path": "2026-11-19/batch_00000482.tar.gz",
+    "sizeBytes": 63280162
+  },
+  {
+    "path": "2026-11-19/batch_00000483.tar.gz",
+    "sizeBytes": 31682157
+  },
+  {
+    "path": "2026-11-19/batch_00000484.tar.gz",
+    "sizeBytes": 90153213
+  },
+  {
+    "path": "2026-11-19/batch_00000485.tar.gz",
+    "sizeBytes": 95532926
+  },
+  {
+    "path": "2026-11-19/batch_00000486.tar.gz",
+    "sizeBytes": 81941470
+  },
+  {
+    "path": "2026-11-19/batch_00000487.tar.gz",
+    "sizeBytes": 84398155
+  },
+  {
+    "path": "2026-11-19/batch_00000488.tar.gz",
+    "sizeBytes": 33733587
+  },
+  {
+    "path": "2026-11-19/batch_00000489.tar.gz",
+    "sizeBytes": 91516461
+  },
+  {
+    "path": "2026-11-19/batch_00000490.tar.gz",
+    "sizeBytes": 46167439
+  },
+  {
+    "path": "2026-11-19/batch_00000491.tar.gz",
+    "sizeBytes": 93553623
+  },
+  {
+    "path": "2026-11-19/batch_00000492.tar.gz",
+    "sizeBytes": 71038808
+  },
+  {
+    "path": "2026-11-19/batch_00000493.tar.gz",
+    "sizeBytes": 57860351
+  },
+  {
+    "path": "2026-11-19/batch_00000494.tar.gz",
+    "sizeBytes": 91146361
+  },
+  {
+    "path": "2026-11-19/batch_00000495.tar.gz",
+    "sizeBytes": 21973753
+  },
+  {
+    "path": "2026-11-19/batch_00000496.tar.gz",
+    "sizeBytes": 89763116
+  },
+  {
+    "path": "2026-11-19/batch_00000497.tar.gz",
+    "sizeBytes": 3662483
+  },
+  {
+    "path": "2026-11-19/batch_00000498.tar.gz",
+    "sizeBytes": 90994992
+  },
+  {
+    "path": "2026-11-19/batch_00000499.tar.gz",
+    "sizeBytes": 83399295
+  },
+  {
+    "path": "2026-11-19/batch_00000500.tar.gz",
+    "sizeBytes": 5742268
+  },
+  {
+    "path": "2026-11-19/batch_00000501.tar.gz",
+    "sizeBytes": 94055844
+  },
+  {
+    "path": "2026-11-19/batch_00000502.tar.gz",
+    "sizeBytes": 63898728
+  },
+  {
+    "path": "2026-11-19/batch_00000503.tar.gz",
+    "sizeBytes": 84305904
+  },
+  {
+    "path": "2026-11-19/batch_00000504.tar.gz",
+    "sizeBytes": 19091908
+  },
+  {
+    "path": "2026-11-19/batch_00000505.tar.gz",
+    "sizeBytes": 75313988
+  },
+  {
+    "path": "2026-11-19/batch_00000506.tar.gz",
+    "sizeBytes": 12331471
+  },
+  {
+    "path": "2026-11-19/batch_00000507.tar.gz",
+    "sizeBytes": 82145664
+  },
+  {
+    "path": "2026-11-19/batch_00000508.tar.gz",
+    "sizeBytes": 51501989
+  },
+  {
+    "path": "2026-11-19/batch_00000509.tar.gz",
+    "sizeBytes": 49302909
+  },
+  {
+    "path": "2026-11-19/batch_00000510.tar.gz",
+    "sizeBytes": 93936301
+  },
+  {
+    "path": "2026-11-19/batch_00000511.tar.gz",
+    "sizeBytes": 66339676
+  },
+  {
+    "path": "2026-11-19/batch_00000512.tar.gz",
+    "sizeBytes": 94981038
+  },
+  {
+    "path": "2026-11-19/batch_00000513.tar.gz",
+    "sizeBytes": 13605632
+  },
+  {
+    "path": "2026-11-19/batch_00000514.tar.gz",
+    "sizeBytes": 91468232
+  },
+  {
+    "path": "2026-11-19/batch_00000515.tar.gz",
+    "sizeBytes": 88082778
+  },
+  {
+    "path": "2026-11-19/batch_00000516.tar.gz",
+    "sizeBytes": 23592033
+  },
+  {
+    "path": "2026-11-19/batch_00000517.tar.gz",
+    "sizeBytes": 94904345
+  },
+  {
+    "path": "2026-11-19/batch_00000518.tar.gz",
+    "sizeBytes": 22154220
+  },
+  {
+    "path": "2026-11-19/batch_00000519.tar.gz",
+    "sizeBytes": 97258531
+  },
+  {
+    "path": "2026-11-19/batch_00000520.tar.gz",
+    "sizeBytes": 73907084
+  },
+  {
+    "path": "2026-11-19/batch_00000521.tar.gz",
+    "sizeBytes": 96749095
+  },
+  {
+    "path": "2026-11-19/batch_00000522.tar.gz",
+    "sizeBytes": 64775631
+  },
+  {
+    "path": "2026-11-19/batch_00000523.tar.gz",
+    "sizeBytes": 47544465
+  },
+  {
+    "path": "2026-11-19/batch_00000524.tar.gz",
+    "sizeBytes": 96055141
+  },
+  {
+    "path": "2026-11-19/batch_00000525.tar.gz",
+    "sizeBytes": 91469168
+  },
+  {
+    "path": "2026-11-19/batch_00000526.tar.gz",
+    "sizeBytes": 61227036
+  },
+  {
+    "path": "2026-11-19/batch_00000527.tar.gz",
+    "sizeBytes": 72297824
+  },
+  {
+    "path": "2026-11-19/batch_00000528.tar.gz",
+    "sizeBytes": 88640014
+  },
+  {
+    "path": "2026-11-19/batch_00000529.tar.gz",
+    "sizeBytes": 20444940
+  },
+  {
+    "path": "2026-11-19/batch_00000530.tar.gz",
+    "sizeBytes": 94099665
+  },
+  {
+    "path": "2026-11-19/batch_00000531.tar.gz",
+    "sizeBytes": 83848765
+  },
+  {
+    "path": "2026-11-19/batch_00000532.tar.gz",
+    "sizeBytes": 51026789
+  },
+  {
+    "path": "2026-11-19/batch_00000533.tar.gz",
+    "sizeBytes": 94299884
+  },
+  {
+    "path": "2026-11-19/batch_00000534.tar.gz",
+    "sizeBytes": 63319388
+  },
+  {
+    "path": "2026-11-19/batch_00000535.tar.gz",
+    "sizeBytes": 63793653
+  },
+  {
+    "path": "2026-11-19/batch_00000536.tar.gz",
+    "sizeBytes": 88814469
+  },
+  {
+    "path": "2026-11-19/batch_00000537.tar.gz",
+    "sizeBytes": 14662834
+  },
+  {
+    "path": "2026-11-19/batch_00000538.tar.gz",
+    "sizeBytes": 87842111
+  },
+  {
+    "path": "2026-11-19/batch_00000539.tar.gz",
+    "sizeBytes": 8795571
+  },
+  {
+    "path": "2026-11-19/batch_00000540.tar.gz",
+    "sizeBytes": 92265765
+  },
+  {
+    "path": "2026-11-19/batch_00000541.tar.gz",
+    "sizeBytes": 92529981
+  },
+  {
+    "path": "2026-11-19/batch_00000542.tar.gz",
+    "sizeBytes": 82672592
+  },
+  {
+    "path": "2026-11-19/batch_00000543.tar.gz",
+    "sizeBytes": 52156724
+  },
+  {
+    "path": "2026-11-19/batch_00000544.tar.gz",
+    "sizeBytes": 90830163
+  },
+  {
+    "path": "2026-11-19/batch_00000545.tar.gz",
+    "sizeBytes": 65832370
+  },
+  {
+    "path": "2026-11-19/batch_00000546.tar.gz",
+    "sizeBytes": 24801254
+  },
+  {
+    "path": "2026-11-19/batch_00000547.tar.gz",
+    "sizeBytes": 93922489
+  },
+  {
+    "path": "2026-11-19/batch_00000548.tar.gz",
+    "sizeBytes": 6947437
+  },
+  {
+    "path": "2026-11-19/batch_00000549.tar.gz",
+    "sizeBytes": 93959820
+  },
+  {
+    "path": "2026-11-19/batch_00000550.tar.gz",
+    "sizeBytes": 80873692
+  },
+  {
+    "path": "2026-11-19/batch_00000551.tar.gz",
+    "sizeBytes": 95385207
+  },
+  {
+    "path": "2026-11-19/batch_00000552.tar.gz",
+    "sizeBytes": 96090975
+  },
+  {
+    "path": "2026-11-19/batch_00000553.tar.gz",
+    "sizeBytes": 63855726
+  },
+  {
+    "path": "2026-11-19/batch_00000554.tar.gz",
+    "sizeBytes": 66854905
+  },
+  {
+    "path": "2026-11-19/batch_00000555.tar.gz",
+    "sizeBytes": 61014564
+  },
+  {
+    "path": "2026-11-19/batch_00000556.tar.gz",
+    "sizeBytes": 89442765
+  },
+  {
+    "path": "2026-11-19/batch_00000557.tar.gz",
+    "sizeBytes": 29041912
+  },
+  {
+    "path": "2026-11-19/batch_00000558.tar.gz",
+    "sizeBytes": 92752442
+  },
+  {
+    "path": "2026-11-19/batch_00000559.tar.gz",
+    "sizeBytes": 83026459
+  },
+  {
+    "path": "2026-11-19/batch_00000560.tar.gz",
+    "sizeBytes": 83686619
+  },
+  {
+    "path": "2026-11-19/batch_00000561.tar.gz",
+    "sizeBytes": 3728579
+  },
+  {
+    "path": "2026-11-19/batch_00000562.tar.gz",
+    "sizeBytes": 95012230
+  },
+  {
+    "path": "2026-11-19/batch_00000563.tar.gz",
+    "sizeBytes": 51441613
+  },
+  {
+    "path": "2026-11-19/batch_00000564.tar.gz",
+    "sizeBytes": 87803117
+  },
+  {
+    "path": "2026-11-19/batch_00000565.tar.gz",
+    "sizeBytes": 47108814
+  },
+  {
+    "path": "2026-11-19/batch_00000566.tar.gz",
+    "sizeBytes": 51239654
+  },
+  {
+    "path": "2026-11-19/batch_00000567.tar.gz",
+    "sizeBytes": 67245696
+  },
+  {
+    "path": "2026-11-19/batch_00000568.tar.gz",
+    "sizeBytes": 80497437
+  },
+  {
+    "path": "2026-11-19/batch_00000569.tar.gz",
+    "sizeBytes": 85686840
+  },
+  {
+    "path": "2026-11-19/batch_00000570.tar.gz",
+    "sizeBytes": 84468455
+  },
+  {
+    "path": "2026-11-19/batch_00000571.tar.gz",
+    "sizeBytes": 71909310
+  },
+  {
+    "path": "2026-11-19/batch_00000572.tar.gz",
+    "sizeBytes": 93347583
+  },
+  {
+    "path": "2026-11-19/batch_00000573.tar.gz",
+    "sizeBytes": 80883611
+  },
+  {
+    "path": "2026-11-19/batch_00000574.tar.gz",
+    "sizeBytes": 91847745
+  },
+  {
+    "path": "2026-11-19/batch_00000575.tar.gz",
+    "sizeBytes": 76599038
+  },
+  {
+    "path": "2026-11-19/batch_00000576.tar.gz",
+    "sizeBytes": 93018340
+  },
+  {
+    "path": "2026-11-19/batch_00000577.tar.gz",
+    "sizeBytes": 81796310
+  },
+  {
+    "path": "2026-11-19/batch_00000578.tar.gz",
+    "sizeBytes": 59803228
+  },
+  {
+    "path": "2026-11-19/batch_00000579.tar.gz",
+    "sizeBytes": 32461058
+  },
+  {
+    "path": "2026-11-19/batch_00000580.tar.gz",
+    "sizeBytes": 97084449
+  },
+  {
+    "path": "2026-11-19/batch_00000581.tar.gz",
+    "sizeBytes": 34261435
+  },
+  {
+    "path": "2026-11-19/batch_00000582.tar.gz",
+    "sizeBytes": 86065819
+  },
+  {
+    "path": "2026-11-19/batch_00000583.tar.gz",
+    "sizeBytes": 2541013
+  },
+  {
+    "path": "2026-11-19/batch_00000584.tar.gz",
+    "sizeBytes": 96082829
+  },
+  {
+    "path": "2026-11-19/batch_00000585.tar.gz",
+    "sizeBytes": 50655124
+  },
+  {
+    "path": "2026-11-19/batch_00000586.tar.gz",
+    "sizeBytes": 92749968
+  },
+  {
+    "path": "2026-11-19/batch_00000587.tar.gz",
+    "sizeBytes": 73825439
+  },
+  {
+    "path": "2026-11-19/batch_00000588.tar.gz",
+    "sizeBytes": 93296485
+  },
+  {
+    "path": "2026-11-19/batch_00000589.tar.gz",
+    "sizeBytes": 11831512
+  },
+  {
+    "path": "2026-11-19/batch_00000590.tar.gz",
+    "sizeBytes": 95513879
+  },
+  {
+    "path": "2026-11-19/batch_00000591.tar.gz",
+    "sizeBytes": 71980361
+  },
+  {
+    "path": "2026-11-19/batch_00000592.tar.gz",
+    "sizeBytes": 87056700
+  },
+  {
+    "path": "2026-11-19/batch_00000593.tar.gz",
+    "sizeBytes": 40284855
+  },
+  {
+    "path": "2026-11-19/batch_00000594.tar.gz",
+    "sizeBytes": 95218560
+  },
+  {
+    "path": "2026-11-19/batch_00000595.tar.gz",
+    "sizeBytes": 68505698
+  },
+  {
+    "path": "2026-11-19/batch_00000596.tar.gz",
+    "sizeBytes": 70763614
+  },
+  {
+    "path": "2026-11-19/batch_00000597.tar.gz",
+    "sizeBytes": 88539669
+  },
+  {
+    "path": "2026-11-19/batch_00000598.tar.gz",
+    "sizeBytes": 3074269
+  },
+  {
+    "path": "2026-11-19/batch_00000599.tar.gz",
+    "sizeBytes": 90486947
+  },
+  {
+    "path": "2026-11-19/batch_00000600.tar.gz",
+    "sizeBytes": 54582904
+  },
+  {
+    "path": "2026-11-19/batch_00000601.tar.gz",
+    "sizeBytes": 37067813
+  },
+  {
+    "path": "2026-11-19/batch_00000602.tar.gz",
+    "sizeBytes": 92577947
+  },
+  {
+    "path": "2026-11-19/batch_00000603.tar.gz",
+    "sizeBytes": 85688772
+  },
+  {
+    "path": "2026-11-19/batch_00000604.tar.gz",
+    "sizeBytes": 90846720
+  },
+  {
+    "path": "2026-11-19/batch_00000605.tar.gz",
+    "sizeBytes": 11125890
+  },
+  {
+    "path": "2026-11-19/batch_00000606.tar.gz",
+    "sizeBytes": 91459318
+  },
+  {
+    "path": "2026-11-19/batch_00000607.tar.gz",
+    "sizeBytes": 72512395
+  },
+  {
+    "path": "2026-11-19/batch_00000608.tar.gz",
+    "sizeBytes": 82033855
+  },
+  {
+    "path": "2026-11-19/batch_00000609.tar.gz",
+    "sizeBytes": 79873038
+  },
+  {
+    "path": "2026-11-19/batch_00000610.tar.gz",
+    "sizeBytes": 26065683
+  },
+  {
+    "path": "2026-11-19/batch_00000611.tar.gz",
+    "sizeBytes": 64830152
+  },
+  {
+    "path": "2026-11-19/batch_00000612.tar.gz",
+    "sizeBytes": 88024864
+  },
+  {
+    "path": "2026-11-19/batch_00000613.tar.gz",
+    "sizeBytes": 81532343
+  },
+  {
+    "path": "2026-11-19/batch_00000614.tar.gz",
+    "sizeBytes": 84090075
+  },
+  {
+    "path": "2026-11-19/batch_00000615.tar.gz",
+    "sizeBytes": 79807488
+  },
+  {
+    "path": "2026-11-19/batch_00000616.tar.gz",
+    "sizeBytes": 96333176
+  },
+  {
+    "path": "2026-11-19/batch_00000617.tar.gz",
+    "sizeBytes": 35136051
+  },
+  {
+    "path": "2026-11-19/batch_00000618.tar.gz",
+    "sizeBytes": 82933741
+  },
+  {
+    "path": "2026-11-19/batch_00000619.tar.gz",
+    "sizeBytes": 16661369
+  },
+  {
+    "path": "2026-11-19/batch_00000620.tar.gz",
+    "sizeBytes": 83537499
+  },
+  {
+    "path": "2026-11-19/batch_00000621.tar.gz",
+    "sizeBytes": 56178012
+  },
+  {
+    "path": "2026-11-19/batch_00000622.tar.gz",
+    "sizeBytes": 88599585
+  },
+  {
+    "path": "2026-11-19/batch_00000623.tar.gz",
+    "sizeBytes": 18761471
+  },
+  {
+    "path": "2026-11-19/batch_00000624.tar.gz",
+    "sizeBytes": 89636526
+  },
+  {
+    "path": "2026-11-19/batch_00000625.tar.gz",
+    "sizeBytes": 6451940
+  },
+  {
+    "path": "2026-11-19/batch_00000626.tar.gz",
+    "sizeBytes": 89824336
+  },
+  {
+    "path": "2026-11-19/batch_00000627.tar.gz",
+    "sizeBytes": 244832
+  },
+  {
+    "path": "2026-11-19/batch_00000628.tar.gz",
+    "sizeBytes": 92225858
+  },
+  {
+    "path": "2026-11-19/batch_00000629.tar.gz",
+    "sizeBytes": 64212451
+  },
+  {
+    "path": "2026-11-19/batch_00000630.tar.gz",
+    "sizeBytes": 95212645
+  },
+  {
+    "path": "2026-11-19/batch_00000631.tar.gz",
+    "sizeBytes": 82704957
+  },
+  {
+    "path": "2026-11-19/batch_00000632.tar.gz",
+    "sizeBytes": 60626262
+  },
+  {
+    "path": "2026-11-19/batch_00000633.tar.gz",
+    "sizeBytes": 64391309
+  },
+  {
+    "path": "2026-11-19/batch_00000634.tar.gz",
+    "sizeBytes": 92314689
+  },
+  {
+    "path": "2026-11-19/batch_00000635.tar.gz",
+    "sizeBytes": 39811425
+  },
+  {
+    "path": "2026-11-19/batch_00000636.tar.gz",
+    "sizeBytes": 93224860
+  },
+  {
+    "path": "2026-11-19/batch_00000637.tar.gz",
+    "sizeBytes": 80317693
+  },
+  {
+    "path": "2026-11-19/batch_00000638.tar.gz",
+    "sizeBytes": 11193478
+  },
+  {
+    "path": "2026-11-19/batch_00000639.tar.gz",
+    "sizeBytes": 94138264
+  },
+  {
+    "path": "2026-11-19/batch_00000640.tar.gz",
+    "sizeBytes": 92586562
+  },
+  {
+    "path": "2026-11-19/batch_00000641.tar.gz",
+    "sizeBytes": 42734574
+  },
+  {
+    "path": "2026-11-19/batch_00000642.tar.gz",
+    "sizeBytes": 96141322
+  },
+  {
+    "path": "2026-11-19/batch_00000643.tar.gz",
+    "sizeBytes": 20857506
+  },
+  {
+    "path": "2026-11-19/batch_00000644.tar.gz",
+    "sizeBytes": 89502659
+  },
+  {
+    "path": "2026-11-19/batch_00000645.tar.gz",
+    "sizeBytes": 80146680
+  },
+  {
+    "path": "2026-11-19/batch_00000646.tar.gz",
+    "sizeBytes": 65079307
+  },
+  {
+    "path": "2026-11-19/batch_00000647.tar.gz",
+    "sizeBytes": 66846144
+  },
+  {
+    "path": "2026-11-19/batch_00000648.tar.gz",
+    "sizeBytes": 73456942
+  },
+  {
+    "path": "2026-11-19/batch_00000649.tar.gz",
+    "sizeBytes": 78368658
+  },
+  {
+    "path": "2026-11-19/batch_00000650.tar.gz",
+    "sizeBytes": 47113025
+  },
+  {
+    "path": "2026-11-19/batch_00000651.tar.gz",
+    "sizeBytes": 97362499
+  },
+  {
+    "path": "2026-11-19/batch_00000652.tar.gz",
+    "sizeBytes": 50064194
+  },
+  {
+    "path": "2026-11-19/batch_00000653.tar.gz",
+    "sizeBytes": 93918371
+  },
+  {
+    "path": "2026-11-19/batch_00000654.tar.gz",
+    "sizeBytes": 56871976
+  },
+  {
+    "path": "2026-11-19/batch_00000655.tar.gz",
+    "sizeBytes": 81400776
+  },
+  {
+    "path": "2026-11-19/batch_00000656.tar.gz",
+    "sizeBytes": 92645947
+  },
+  {
+    "path": "2026-11-19/batch_00000657.tar.gz",
+    "sizeBytes": 75954759
+  },
+  {
+    "path": "2026-11-19/batch_00000658.tar.gz",
+    "sizeBytes": 63549696
+  },
+  {
+    "path": "2026-11-19/batch_00000659.tar.gz",
+    "sizeBytes": 41974256
+  },
+  {
+    "path": "2026-11-19/batch_00000660.tar.gz",
+    "sizeBytes": 72466534
+  },
+  {
+    "path": "2026-11-19/batch_00000661.tar.gz",
+    "sizeBytes": 42663741
+  },
+  {
+    "path": "2026-11-19/batch_00000662.tar.gz",
+    "sizeBytes": 91038598
+  },
+  {
+    "path": "2026-11-19/batch_00000663.tar.gz",
+    "sizeBytes": 14916158
+  },
+  {
+    "path": "2026-11-19/batch_00000664.tar.gz",
+    "sizeBytes": 89887467
+  },
+  {
+    "path": "2026-11-19/batch_00000665.tar.gz",
+    "sizeBytes": 65282490
+  },
+  {
+    "path": "2026-11-19/batch_00000666.tar.gz",
+    "sizeBytes": 28679655
+  },
+  {
+    "path": "2026-11-19/batch_00000667.tar.gz",
+    "sizeBytes": 83907311
+  },
+  {
+    "path": "2026-11-19/batch_00000668.tar.gz",
+    "sizeBytes": 37307216
+  },
+  {
+    "path": "2026-11-19/batch_00000669.tar.gz",
+    "sizeBytes": 57405655
+  },
+  {
+    "path": "2026-11-19/batch_00000670.tar.gz",
+    "sizeBytes": 67660655
+  },
+  {
+    "path": "2026-11-19/batch_00000671.tar.gz",
+    "sizeBytes": 94945653
+  },
+  {
+    "path": "2026-11-19/batch_00000672.tar.gz",
+    "sizeBytes": 90940481
+  },
+  {
+    "path": "2026-11-19/batch_00000673.tar.gz",
+    "sizeBytes": 78738576
+  },
+  {
+    "path": "2026-11-19/batch_00000674.tar.gz",
+    "sizeBytes": 46213099
+  },
+  {
+    "path": "2026-11-19/batch_00000675.tar.gz",
+    "sizeBytes": 91128270
+  },
+  {
+    "path": "2026-11-19/batch_00000676.tar.gz",
+    "sizeBytes": 94317657
+  },
+  {
+    "path": "2026-11-19/batch_00000677.tar.gz",
+    "sizeBytes": 86703042
+  },
+  {
+    "path": "2026-11-19/batch_00000678.tar.gz",
+    "sizeBytes": 39338725
+  },
+  {
+    "path": "2026-11-19/batch_00000679.tar.gz",
+    "sizeBytes": 93084862
+  },
+  {
+    "path": "2026-11-19/batch_00000680.tar.gz",
+    "sizeBytes": 87812682
+  },
+  {
+    "path": "2026-11-19/batch_00000681.tar.gz",
+    "sizeBytes": 75780189
+  },
+  {
+    "path": "2026-11-19/batch_00000682.tar.gz",
+    "sizeBytes": 83295155
+  },
+  {
+    "path": "2026-11-19/batch_00000683.tar.gz",
+    "sizeBytes": 11101679
+  },
+  {
+    "path": "2026-11-19/batch_00000684.tar.gz",
+    "sizeBytes": 91191076
+  },
+  {
+    "path": "2026-11-19/batch_00000685.tar.gz",
+    "sizeBytes": 13177231
+  },
+  {
+    "path": "2026-11-19/batch_00000686.tar.gz",
+    "sizeBytes": 92317522
+  },
+  {
+    "path": "2026-11-19/batch_00000687.tar.gz",
+    "sizeBytes": 35503747
+  },
+  {
+    "path": "2026-11-19/batch_00000688.tar.gz",
+    "sizeBytes": 96878268
+  },
+  {
+    "path": "2026-11-19/batch_00000689.tar.gz",
+    "sizeBytes": 70558435
+  },
+  {
+    "path": "2026-11-19/batch_00000690.tar.gz",
+    "sizeBytes": 97512953
+  },
+  {
+    "path": "2026-11-19/batch_00000691.tar.gz",
+    "sizeBytes": 25046195
+  },
+  {
+    "path": "2026-11-19/batch_00000692.tar.gz",
+    "sizeBytes": 88296901
+  },
+  {
+    "path": "2026-11-19/batch_00000693.tar.gz",
+    "sizeBytes": 16003874
+  },
+  {
+    "path": "2026-11-19/batch_00000694.tar.gz",
+    "sizeBytes": 90839763
+  },
+  {
+    "path": "2026-11-19/batch_00000695.tar.gz",
+    "sizeBytes": 84727981
+  },
+  {
+    "path": "2026-11-19/batch_00000696.tar.gz",
+    "sizeBytes": 76749234
+  },
+  {
+    "path": "2026-11-19/batch_00000697.tar.gz",
+    "sizeBytes": 21335497
+  },
+  {
+    "path": "2026-11-19/batch_00000698.tar.gz",
+    "sizeBytes": 92030533
+  },
+  {
+    "path": "2026-11-19/batch_00000699.tar.gz",
+    "sizeBytes": 56019958
+  },
+  {
+    "path": "2026-11-19/batch_00000700.tar.gz",
+    "sizeBytes": 90502872
+  },
+  {
+    "path": "2026-11-19/batch_00000701.tar.gz",
+    "sizeBytes": 47061681
+  },
+  {
+    "path": "2026-11-19/batch_00000702.tar.gz",
+    "sizeBytes": 92176807
+  },
+  {
+    "path": "2026-11-19/batch_00000703.tar.gz",
+    "sizeBytes": 92042250
+  },
+  {
+    "path": "2026-11-19/batch_00000704.tar.gz",
+    "sizeBytes": 83020202
+  },
+  {
+    "path": "2026-11-19/batch_00000705.tar.gz",
+    "sizeBytes": 74531988
+  },
+  {
+    "path": "2026-11-19/batch_00000706.tar.gz",
+    "sizeBytes": 93813171
+  },
+  {
+    "path": "2026-11-19/batch_00000707.tar.gz",
+    "sizeBytes": 18551307
+  },
+  {
+    "path": "2026-11-19/batch_00000708.tar.gz",
+    "sizeBytes": 92125948
+  },
+  {
+    "path": "2026-11-19/batch_00000709.tar.gz",
+    "sizeBytes": 11719064
+  },
+  {
+    "path": "2026-11-19/batch_00000710.tar.gz",
+    "sizeBytes": 89973646
+  },
+  {
+    "path": "2026-11-19/batch_00000711.tar.gz",
+    "sizeBytes": 3594004
+  },
+  {
+    "path": "2026-11-19/batch_00000712.tar.gz",
+    "sizeBytes": 84495240
+  },
+  {
+    "path": "2026-11-19/batch_00000713.tar.gz",
+    "sizeBytes": 84529490
+  },
+  {
+    "path": "2026-11-19/batch_00000714.tar.gz",
+    "sizeBytes": 39497872
+  },
+  {
+    "path": "2026-11-19/batch_00000715.tar.gz",
+    "sizeBytes": 95986264
+  },
+  {
+    "path": "2026-11-19/batch_00000716.tar.gz",
+    "sizeBytes": 21495425
+  },
+  {
+    "path": "2026-11-19/batch_00000717.tar.gz",
+    "sizeBytes": 96240970
+  },
+  {
+    "path": "2026-11-19/batch_00000718.tar.gz",
+    "sizeBytes": 10829031
+  },
+  {
+    "path": "2026-11-19/batch_00000719.tar.gz",
+    "sizeBytes": 87239315
+  },
+  {
+    "path": "2026-11-19/batch_00000720.tar.gz",
+    "sizeBytes": 78177875
+  },
+  {
+    "path": "2026-11-19/batch_00000721.tar.gz",
+    "sizeBytes": 72475371
+  },
+  {
+    "path": "2026-11-19/batch_00000722.tar.gz",
+    "sizeBytes": 59202210
+  },
+  {
+    "path": "2026-11-19/batch_00000723.tar.gz",
+    "sizeBytes": 93488671
+  },
+  {
+    "path": "2026-11-19/batch_00000724.tar.gz",
+    "sizeBytes": 82154410
+  },
+  {
+    "path": "2026-11-19/batch_00000725.tar.gz",
+    "sizeBytes": 36600937
+  },
+  {
+    "path": "2026-11-19/batch_00000726.tar.gz",
+    "sizeBytes": 93501683
+  },
+  {
+    "path": "2026-11-19/batch_00000727.tar.gz",
+    "sizeBytes": 40832591
+  },
+  {
+    "path": "2026-11-19/batch_00000728.tar.gz",
+    "sizeBytes": 94761828
+  },
+  {
+    "path": "2026-11-19/batch_00000729.tar.gz",
+    "sizeBytes": 5983563
+  },
+  {
+    "path": "2026-11-19/batch_00000730.tar.gz",
+    "sizeBytes": 86005715
+  },
+  {
+    "path": "2026-11-19/batch_00000731.tar.gz",
+    "sizeBytes": 49662338
+  },
+  {
+    "path": "2026-11-19/batch_00000732.tar.gz",
+    "sizeBytes": 90422135
+  },
+  {
+    "path": "2026-11-19/batch_00000733.tar.gz",
+    "sizeBytes": 80393358
+  },
+  {
+    "path": "2026-11-19/batch_00000734.tar.gz",
+    "sizeBytes": 84552184
+  },
+  {
+    "path": "2026-11-19/batch_00000735.tar.gz",
+    "sizeBytes": 28698053
+  },
+  {
+    "path": "2026-11-19/batch_00000736.tar.gz",
+    "sizeBytes": 96221495
+  },
+  {
+    "path": "2026-11-19/batch_00000737.tar.gz",
+    "sizeBytes": 69514161
+  },
+  {
+    "path": "2026-11-19/batch_00000738.tar.gz",
+    "sizeBytes": 96244306
+  },
+  {
+    "path": "2026-11-19/batch_00000739.tar.gz",
+    "sizeBytes": 89739865
+  },
+  {
+    "path": "2026-11-19/batch_00000740.tar.gz",
+    "sizeBytes": 81609892
+  },
+  {
+    "path": "2026-11-19/batch_00000741.tar.gz",
+    "sizeBytes": 73665161
+  },
+  {
+    "path": "2026-11-19/batch_00000742.tar.gz",
+    "sizeBytes": 94559803
+  },
+  {
+    "path": "2026-11-19/batch_00000743.tar.gz",
+    "sizeBytes": 32137094
+  },
+  {
+    "path": "2026-11-19/batch_00000744.tar.gz",
+    "sizeBytes": 85070586
+  },
+  {
+    "path": "2026-11-19/batch_00000745.tar.gz",
+    "sizeBytes": 35678296
+  },
+  {
+    "path": "2026-11-19/batch_00000746.tar.gz",
+    "sizeBytes": 89146954
+  },
+  {
+    "path": "2026-11-19/batch_00000747.tar.gz",
+    "sizeBytes": 79003869
+  },
+  {
+    "path": "2026-11-19/batch_00000748.tar.gz",
+    "sizeBytes": 13114812
+  },
+  {
+    "path": "2026-11-19/batch_00000749.tar.gz",
+    "sizeBytes": 92203506
+  },
+  {
+    "path": "2026-11-19/batch_00000750.tar.gz",
+    "sizeBytes": 30228552
+  },
+  {
+    "path": "2026-11-19/batch_00000751.tar.gz",
+    "sizeBytes": 96119190
+  },
+  {
+    "path": "2026-11-19/batch_00000752.tar.gz",
+    "sizeBytes": 37365311
+  },
+  {
+    "path": "2026-11-19/batch_00000753.tar.gz",
+    "sizeBytes": 75886529
+  },
+  {
+    "path": "2026-11-19/batch_00000754.tar.gz",
+    "sizeBytes": 90730065
+  },
+  {
+    "path": "2026-11-19/batch_00000755.tar.gz",
+    "sizeBytes": 5416342
+  },
+  {
+    "path": "2026-11-19/batch_00000756.tar.gz",
+    "sizeBytes": 95357966
+  },
+  {
+    "path": "2026-11-19/batch_00000757.tar.gz",
+    "sizeBytes": 94429428
+  },
+  {
+    "path": "2026-11-19/batch_00000758.tar.gz",
+    "sizeBytes": 17095633
+  },
+  {
+    "path": "2026-11-19/batch_00000759.tar.gz",
+    "sizeBytes": 94598467
+  },
+  {
+    "path": "2026-11-19/batch_00000760.tar.gz",
+    "sizeBytes": 39861040
+  },
+  {
+    "path": "2026-11-19/batch_00000761.tar.gz",
+    "sizeBytes": 94809207
+  },
+  {
+    "path": "2026-11-19/batch_00000762.tar.gz",
+    "sizeBytes": 55433912
+  },
+  {
+    "path": "2026-11-19/batch_00000763.tar.gz",
+    "sizeBytes": 74039700
+  },
+  {
+    "path": "2026-11-19/batch_00000764.tar.gz",
+    "sizeBytes": 27979233
+  },
+  {
+    "path": "2026-11-19/batch_00000765.tar.gz",
+    "sizeBytes": 96495165
+  },
+  {
+    "path": "2026-11-19/batch_00000766.tar.gz",
+    "sizeBytes": 77607567
+  },
+  {
+    "path": "2026-11-19/batch_00000767.tar.gz",
+    "sizeBytes": 59304651
+  },
+  {
+    "path": "2026-11-19/batch_00000768.tar.gz",
+    "sizeBytes": 79493316
+  },
+  {
+    "path": "2026-11-19/batch_00000769.tar.gz",
+    "sizeBytes": 48774810
+  },
+  {
+    "path": "2026-11-19/batch_00000770.tar.gz",
+    "sizeBytes": 93392275
+  },
+  {
+    "path": "2026-11-19/batch_00000771.tar.gz",
+    "sizeBytes": 15655815
+  },
+  {
+    "path": "2026-11-19/batch_00000772.tar.gz",
+    "sizeBytes": 90271628
+  },
+  {
+    "path": "2026-11-19/batch_00000773.tar.gz",
+    "sizeBytes": 3722568
+  },
+  {
+    "path": "2026-11-19/batch_00000774.tar.gz",
+    "sizeBytes": 93522048
+  },
+  {
+    "path": "2026-11-19/batch_00000775.tar.gz",
+    "sizeBytes": 444260
+  },
+  {
+    "path": "2026-11-19/batch_00000776.tar.gz",
+    "sizeBytes": 93155177
+  },
+  {
+    "path": "2026-11-19/batch_00000777.tar.gz",
+    "sizeBytes": 90912627
+  },
+  {
+    "path": "2026-11-19/batch_00000778.tar.gz",
+    "sizeBytes": 96628459
+  },
+  {
+    "path": "2026-11-19/batch_00000779.tar.gz",
+    "sizeBytes": 6453396
+  },
+  {
+    "path": "2026-11-19/batch_00000780.tar.gz",
+    "sizeBytes": 87596834
+  },
+  {
+    "path": "2026-11-19/batch_00000781.tar.gz",
+    "sizeBytes": 2064439
+  },
+  {
+    "path": "2026-11-19/batch_00000782.tar.gz",
+    "sizeBytes": 88483583
+  },
+  {
+    "path": "2026-11-19/batch_00000783.tar.gz",
+    "sizeBytes": 64233966
+  },
+  {
+    "path": "2026-11-19/batch_00000784.tar.gz",
+    "sizeBytes": 28505088
+  },
+  {
+    "path": "2026-11-19/batch_00000785.tar.gz",
+    "sizeBytes": 80274918
+  },
+  {
+    "path": "2026-11-19/batch_00000786.tar.gz",
+    "sizeBytes": 54718172
+  },
+  {
+    "path": "2026-11-19/batch_00000787.tar.gz",
+    "sizeBytes": 36638178
+  },
+  {
+    "path": "2026-11-19/batch_00000788.tar.gz",
+    "sizeBytes": 90904588
+  },
+  {
+    "path": "2026-11-19/batch_00000789.tar.gz",
+    "sizeBytes": 73383072
+  },
+  {
+    "path": "2026-11-19/batch_00000790.tar.gz",
+    "sizeBytes": 16862790
+  },
+  {
+    "path": "2026-11-19/batch_00000791.tar.gz",
+    "sizeBytes": 90283729
+  },
+  {
+    "path": "2026-11-19/batch_00000792.tar.gz",
+    "sizeBytes": 7850505
+  },
+  {
+    "path": "2026-11-19/batch_00000793.tar.gz",
+    "sizeBytes": 93121118
+  },
+  {
+    "path": "2026-11-19/batch_00000794.tar.gz",
+    "sizeBytes": 77622899
+  },
+  {
+    "path": "2026-11-19/batch_00000795.tar.gz",
+    "sizeBytes": 59215860
+  },
+  {
+    "path": "2026-11-19/batch_00000796.tar.gz",
+    "sizeBytes": 92945419
+  },
+  {
+    "path": "2026-11-19/batch_00000797.tar.gz",
+    "sizeBytes": 83129406
+  },
+  {
+    "path": "2026-11-19/batch_00000798.tar.gz",
+    "sizeBytes": 24473561
+  },
+  {
+    "path": "2026-11-19/batch_00000799.tar.gz",
+    "sizeBytes": 96035118
+  },
+  {
+    "path": "2026-11-19/batch_00000800.tar.gz",
+    "sizeBytes": 52937162
+  },
+  {
+    "path": "2026-11-19/batch_00000801.tar.gz",
+    "sizeBytes": 55737016
+  },
+  {
+    "path": "2026-11-19/batch_00000802.tar.gz",
+    "sizeBytes": 59453522
+  },
+  {
+    "path": "2026-11-19/batch_00000803.tar.gz",
+    "sizeBytes": 68360781
+  },
+  {
+    "path": "2026-11-19/batch_00000804.tar.gz",
+    "sizeBytes": 86316103
+  },
+  {
+    "path": "2026-11-19/batch_00000805.tar.gz",
+    "sizeBytes": 63663878
+  },
+  {
+    "path": "2026-11-19/batch_00000806.tar.gz",
+    "sizeBytes": 91723540
+  },
+  {
+    "path": "2026-11-19/batch_00000807.tar.gz",
+    "sizeBytes": 7153475
+  },
+  {
+    "path": "2026-11-19/batch_00000808.tar.gz",
+    "sizeBytes": 93227188
+  },
+  {
+    "path": "2026-11-19/batch_00000809.tar.gz",
+    "sizeBytes": 5999944
+  },
+  {
+    "path": "2026-11-19/batch_00000810.tar.gz",
+    "sizeBytes": 88145912
+  },
+  {
+    "path": "2026-11-19/batch_00000811.tar.gz",
+    "sizeBytes": 83952925
+  },
+  {
+    "path": "2026-11-19/batch_00000812.tar.gz",
+    "sizeBytes": 28202046
+  },
+  {
+    "path": "2026-11-19/batch_00000813.tar.gz",
+    "sizeBytes": 91981293
+  },
+  {
+    "path": "2026-11-19/batch_00000814.tar.gz",
+    "sizeBytes": 33010603
+  },
+  {
+    "path": "2026-11-22/batch_00001.tar.gz",
+    "sizeBytes": 71835450
+  },
+  {
+    "path": "2026-11-22/batch_00002.tar.gz",
+    "sizeBytes": 82405126
+  },
+  {
+    "path": "2026-11-22/batch_00003.tar.gz",
+    "sizeBytes": 72203609
+  },
+  {
+    "path": "2026-11-22/batch_00004.tar.gz",
+    "sizeBytes": 94959364
+  },
+  {
+    "path": "2026-11-22/batch_00005.tar.gz",
+    "sizeBytes": 19401936
+  },
+  {
+    "path": "2026-11-22/batch_00006.tar.gz",
+    "sizeBytes": 91962634
+  },
+  {
+    "path": "2026-11-22/batch_00007.tar.gz",
+    "sizeBytes": 69193003
+  },
+  {
+    "path": "2026-11-22/batch_00008.tar.gz",
+    "sizeBytes": 90904300
+  },
+  {
+    "path": "2026-11-22/batch_00009.tar.gz",
+    "sizeBytes": 15986329
+  },
+  {
+    "path": "2026-11-22/batch_00010.tar.gz",
+    "sizeBytes": 90613692
+  },
+  {
+    "path": "2026-11-22/batch_00011.tar.gz",
+    "sizeBytes": 4655317
+  },
+  {
+    "path": "2026-11-22/batch_00012.tar.gz",
+    "sizeBytes": 94118865
+  },
+  {
+    "path": "2026-11-22/batch_00013.tar.gz",
+    "sizeBytes": 77382098
+  },
+  {
+    "path": "2026-11-22/batch_00014.tar.gz",
+    "sizeBytes": 87700062
+  },
+  {
+    "path": "2026-11-22/batch_00015.tar.gz",
+    "sizeBytes": 49933606
+  },
+  {
+    "path": "2026-11-22/batch_00016.tar.gz",
+    "sizeBytes": 95345889
+  },
+  {
+    "path": "2026-11-22/batch_00017.tar.gz",
+    "sizeBytes": 89303577
+  },
+  {
+    "path": "2026-11-22/batch_00018.tar.gz",
+    "sizeBytes": 97112371
+  },
+  {
+    "path": "2026-11-22/batch_00019.tar.gz",
+    "sizeBytes": 10971746
+  },
+  {
+    "path": "2026-11-22/batch_00020.tar.gz",
+    "sizeBytes": 95452079
+  },
+  {
+    "path": "2026-11-22/batch_00021.tar.gz",
+    "sizeBytes": 50939593
+  },
+  {
+    "path": "2026-11-22/batch_00022.tar.gz",
+    "sizeBytes": 97843811
+  },
+  {
+    "path": "2026-11-22/batch_00023.tar.gz",
+    "sizeBytes": 27930740
+  },
+  {
+    "path": "2026-11-22/batch_00024.tar.gz",
+    "sizeBytes": 92408772
+  },
+  {
+    "path": "2026-11-22/batch_00025.tar.gz",
+    "sizeBytes": 16236664
+  },
+  {
+    "path": "2026-11-22/batch_00027.tar.gz",
+    "sizeBytes": 55481373
+  },
+  {
+    "path": "2026-11-22/batch_00030.tar.gz",
+    "sizeBytes": 69298683
+  }
+]

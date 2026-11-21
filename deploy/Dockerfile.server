@@ -12,12 +12,11 @@ COPY delivery-core/pom.xml delivery-core/pom.xml
 COPY delivery-worker/pom.xml delivery-worker/pom.xml
 COPY delivery-server/pom.xml delivery-server/pom.xml
 COPY deploy/maven-settings.xml deploy/maven-settings.xml
-RUN --mount=type=cache,target=/root/.m2,sharing=locked \
-    mvn -q -s deploy/maven-settings.xml -DskipTests dependency:go-offline
+RUN mvn -q -s deploy/maven-settings.xml -DskipTests dependency:go-offline
 COPY . .
-COPY --from=web /workspace/dist ./web/dist
-RUN --mount=type=cache,target=/root/.m2,sharing=locked \
-    mvn -q -s deploy/maven-settings.xml -DskipTests package
+# 前端构建产物随 API jar 发布，避免容器重建后看板静态资源丢失。
+COPY --from=web /workspace/dist ./delivery-server/src/main/resources/static
+RUN mvn -q -s deploy/maven-settings.xml -DskipTests package
 
 FROM maven:3.9-eclipse-temurin-17
 RUN useradd -r -u 10001 -m delivery

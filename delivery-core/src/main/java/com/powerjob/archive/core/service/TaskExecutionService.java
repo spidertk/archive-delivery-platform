@@ -38,13 +38,15 @@ public class TaskExecutionService {
     private final PipelineRepository pipelines;
     private final PipelineEngine engine;
     private final RetryPolicy retries;
+    private final BatchReplanService replans;
     private final ArchiveProperties properties;
     private final ObjectMapper mapper;
 
     public TaskExecutionService(JdbcTemplate jdbc, TransactionTemplate transactions, DeliveryTaskRepository tasks,
                                 SourceDataRepository sources, DeliveryRepository deliveries, DeliveryNodeRepository nodes,
                                 DeliveryEventRepository events, DeliveryProjectionService projections, PipelineRepository pipelines,
-                                PipelineEngine engine, RetryPolicy retries, ArchiveProperties properties, ObjectMapper mapper) {
+                                PipelineEngine engine, RetryPolicy retries, BatchReplanService replans,
+                                ArchiveProperties properties, ObjectMapper mapper) {
         this.jdbc = jdbc;
         this.transactions = transactions;
         this.tasks = tasks;
@@ -56,6 +58,7 @@ public class TaskExecutionService {
         this.pipelines = pipelines;
         this.engine = engine;
         this.retries = retries;
+        this.replans = replans;
         this.properties = properties;
         this.mapper = mapper;
     }
@@ -116,6 +119,28 @@ public class TaskExecutionService {
     }
 
     private void fail(DeliveryTask task, NodeDefinition node, long processId, String workerId, Long sourceDataId, Exception error) {
+        if (error instanceof PackageOverflowException) {
+            try {
+                transactions.executeWithoutResult(status -> {
+                    BatchReplanService.ReplanResult replanned = replans.moveLastSourceToNewPackage(task.taskId(), task.fence(), workerId);
+                    nodes.finish(processId, "FAILED", null, null, "PACKAGE_OVERFLOW_REPLANNED", safeError(error));
+                    var payload = mapper.createObjectNode().put("taskId", task.taskId())
+                            .put("movedSourceCount", replanned.dataIds().size())
+                            .put("newFileName", replanned.newFileName());
+                    payload.set("dataIds", mapper.valueToTree(replanned.dataIds()));
+                    events.append(task.deliveryId(), task.taskId(), processId, task.deliveryEntityId(),
+                            replanned.dataIds().get(0), "TASK_REPLANNED", "WARN", "PACKAGE_TOO_LARGE_AFTER_REPAIR",
+                            "Moved whole source packages to a new batch package", payload, workerId,
+                            "overflow-replan-" + task.taskId() + "-" + processId);
+                    projections.refresh(task.deliveryId());
+                });
+                log.warn("Repair overflow replanned deliveryId={} taskId={} processId={}", task.deliveryId(), task.taskId(), processId);
+                return;
+            } catch (RuntimeException replanError) {
+                log.warn("Repair overflow cannot be replanned deliveryId={} taskId={} reason={}",
+                        task.deliveryId(), task.taskId(), safeError(replanError));
+            }
+        }
         RetryPolicy.Decision decision = retries.onFailure(error, task.retryCount(), 5);
         String detail = safeError(error);
         transactions.executeWithoutResult(status -> {

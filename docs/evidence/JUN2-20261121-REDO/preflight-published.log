@@ -1,0 +1,6 @@
+Picked up JAVA_TOOL_OPTIONS: -Xmx512m
+Picked up JAVA_TOOL_OPTIONS: -Xmx512m
+19:47:34.458 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+19:47:34.645 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+REAL SOURCE CANDIDATES count=343 bytes=6507105830 maxPackageBytes=104857600
+REAL PREFLIGHT PASSED: batch and delivery Pipelines, source/target OSS and FTP are available

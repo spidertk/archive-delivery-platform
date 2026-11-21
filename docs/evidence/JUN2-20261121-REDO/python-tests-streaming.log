@@ -1,0 +1,37 @@
+test_empty_archive_is_not_a_valid_delivery (test_archive_protocol.ArchiveProtocolTest.test_empty_archive_is_not_a_valid_delivery) ... ok
+test_id_date_provider_and_mode_checks_remain_enforced (test_archive_protocol.ArchiveProtocolTest.test_id_date_provider_and_mode_checks_remain_enforced) ... ok
+test_links_and_unsafe_members_are_rejected (test_archive_protocol.ArchiveProtocolTest.test_links_and_unsafe_members_are_rejected) ... ok
+test_required_protocol_files_cannot_be_missing (test_archive_protocol.ArchiveProtocolTest.test_required_protocol_files_cannot_be_missing) ... ok
+test_shuffled_requests_validate_without_random_member_lookup (test_archive_protocol.ArchiveProtocolTest.test_shuffled_requests_validate_without_random_member_lookup) ... ok
+test_duplicate_valid_request_ids_use_reserved_fallback_range (test_archive_repair.ArchiveRepairTest.test_duplicate_valid_request_ids_use_reserved_fallback_range) ... ok
+test_gzip_level_is_bounded_and_changes_only_compression (test_archive_repair.ArchiveRepairTest.test_gzip_level_is_bounded_and_changes_only_compression) ... ok
+test_inspect_and_production_repair_preserve_source_request_ids (test_archive_repair.ArchiveRepairTest.test_inspect_and_production_repair_preserve_source_request_ids) ... ok
+test_merge_namespaces_duplicate_directories_and_legacy_ids_are_renumbered (test_archive_repair.ArchiveRepairTest.test_merge_namespaces_duplicate_directories_and_legacy_ids_are_renumbered) ... ok
+test_missing_protocol_files_do_not_publish_output_or_temp_files (test_archive_repair.ArchiveRepairTest.test_missing_protocol_files_do_not_publish_output_or_temp_files) ... ok
+test_missing_request_id_and_time_use_deterministic_fallback (test_archive_repair.ArchiveRepairTest.test_missing_request_id_and_time_use_deterministic_fallback) ... ok
+test_null_request_mode_uses_request_stream_flag_or_response_file (test_archive_repair.ArchiveRepairTest.test_null_request_mode_uses_request_stream_flag_or_response_file) ... ok
+test_three_sources_merge_into_one_repaired_artifact_without_intermediate_tar (test_archive_repair.ArchiveRepairTest.test_three_sources_merge_into_one_repaired_artifact_without_intermediate_tar) ... ok
+test_unsafe_archive_member_is_rejected (test_archive_repair.ArchiveRepairTest.test_unsafe_archive_member_is_rejected) ... ok
+test_cleanup_preserves_current_date_and_non_date_directories (test_ftp_download_verify.FtpNodeTest.test_cleanup_preserves_current_date_and_non_date_directories) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+FTP_DATE_CLEANUP {"deliveryDate": "2026-11-21", "removedDates": ["2026-11-22", "2026-11-19"]}
+FTP_UPLOAD_VERIFIED remotePath=/2026-11-21/batch_00001.tar.gz size=22 sha256=74e79ddd5e5b690dbfb0995c1af7c4a86feaeff0b5f5b8d667fc2cda3360a489
+ok
+test_disabled_retention_and_read_only_preflight_never_delete (test_ftp_download_verify.FtpNodeTest.test_disabled_retention_and_read_only_preflight_never_delete) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+FTP_UPLOAD_VERIFIED remotePath=/2026-11-21/batch_00001.tar.gz size=22 sha256=74e79ddd5e5b690dbfb0995c1af7c4a86feaeff0b5f5b8d667fc2cda3360a489
+ok
+test_independent_verification_cannot_repair_a_missing_remote_file (test_ftp_download_verify.FtpNodeTest.test_independent_verification_cannot_repair_a_missing_remote_file) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+ok
+test_interrupted_upload_does_not_publish_final_or_leave_partial (test_ftp_download_verify.FtpNodeTest.test_interrupted_upload_does_not_publish_final_or_leave_partial) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+ok
+test_new_date_waits_for_transfer_and_old_retry_cannot_delete_it (test_ftp_download_verify.FtpNodeTest.test_new_date_waits_for_transfer_and_old_retry_cannot_delete_it) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+ok
+test_same_name_different_sha_is_never_overwritten (test_ftp_download_verify.FtpNodeTest.test_same_name_different_sha_is_never_overwritten) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+ok
+test_symlink_aborts_cleanup_without_following_target (test_ftp_download_verify.FtpNodeTest.test_symlink_aborts_cleanup_without_following_target) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+ok
+test_unsafe_date_or_path_cannot_trigger_cleanup (test_ftp_download_verify.FtpNodeTest.test_unsafe_date_or_path_cannot_trigger_cleanup) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 3.441s
+
+OK

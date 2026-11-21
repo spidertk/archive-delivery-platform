@@ -1,0 +1,22 @@
+ delivery_id |   status   | delivered 
+-------------+------------+-----------
+          12 | DELIVERED  | 400
+           9 | PROCESSING | 450
+(2 rows)
+
+ execution_status | count |    sum     
+------------------+-------+------------
+ SUCCEEDED        |    50 | 3717515962
+(1 row)
+
+      node_type      |  status   | count | avg_seconds 
+---------------------+-----------+-------+-------------
+ ftp.download-verify | SUCCEEDED |    50 |       2.069
+ manifest.qualify    | SUCCEEDED |    50 |       0.442
+ oss.download        | SUCCEEDED |    50 |       1.577
+ oss.upload          | SUCCEEDED |    50 |       2.484
+ package.merge       | FAILED    |    50 |       1.000
+ package.merge       | SUCCEEDED |    50 |       3.517
+ python.repair       | SUCCEEDED |    50 |      13.079
+(7 rows)
+

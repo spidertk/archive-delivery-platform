@@ -1,0 +1,30 @@
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[] FTP session opened (connect)
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] USER 'root' logged in.
+FTP_CONNECTED host=127.0.0.1 rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] DELE /tmp/tmpbkky3r_5/ftp/2026-11-19/old.txt 250
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] RMD /tmp/tmpbkky3r_5/ftp/2026-11-19 250
+FTP_DATE_CLEANUP {"deliveryDate": "2026-11-21", "removedDates": ["2026-11-19"]}
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] MKD /tmp/tmpbkky3r_5/ftp/2026-11-21 257
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] STOR /tmp/tmpbkky3r_5/ftp/2026-11-21/batch_00001.tar.gz.partial completed=1 bytes=30 seconds=0.0
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] RETR /tmp/tmpbkky3r_5/ftp/2026-11-21/batch_00001.tar.gz.partial completed=1 bytes=30 seconds=0.0
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] RNFR /tmp/tmpbkky3r_5/ftp/2026-11-21/batch_00001.tar.gz.partial 350
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] RNTO /tmp/tmpbkky3r_5/ftp/2026-11-21/batch_00001.tar.gz 250
+FTP_UPLOAD_VERIFIED remotePath=/2026-11-21/batch_00001.tar.gz size=30 sha256=1acf33fa38dde9caceff7c0b2db01ea3f9153802351a94f52749b4be0fffa7ec
+[I 2026-11-20 20:18:58] 127.0.0.1:44400-[root] FTP session closed (disconnect).
+[I 2026-11-20 20:18:58] 127.0.0.1:44404-[] FTP session opened (connect)
+[I 2026-11-20 20:18:58] 127.0.0.1:44404-[root] USER 'root' logged in.
+FTP_CONNECTED host=127.0.0.1 rootPath=/ remotePath=/2026-11-21/batch_00001.tar.gz
+[I 2026-11-20 20:18:58] 127.0.0.1:44404-[root] DELE /tmp/tmpbkky3r_5/ftp/2026-11-19/late.txt 250
+[I 2026-11-20 20:18:58] 127.0.0.1:44404-[root] RMD /tmp/tmpbkky3r_5/ftp/2026-11-19 250
+FTP_DATE_CLEANUP {"deliveryDate": "2026-11-21", "removedDates": ["2026-11-19"]}
+[I 2026-11-20 20:18:58] 127.0.0.1:44404-[root] RETR /tmp/tmpbkky3r_5/ftp/2026-11-21/batch_00001.tar.gz completed=1 bytes=30 seconds=0.0
+[I 2026-11-20 20:18:58] 127.0.0.1:44404-[root] FTP session closed (disconnect).
+[I 2026-11-20 20:18:58] 127.0.0.1:44420-[] FTP session opened (connect)
+[I 2026-11-20 20:18:58] 127.0.0.1:44420-[root] USER 'root' logged in.
+FTP_CONNECTED host=127.0.0.1 rootPath=/ remotePath=/2026-11-21/missing.tar.gz
+[I 2026-11-20 20:18:58] 127.0.0.1:44420-[root] FTP session closed (disconnect).
+[I 2026-11-20 20:18:58] 127.0.0.1:44430-[] FTP session opened (connect)
+[I 2026-11-20 20:18:58] 127.0.0.1:44430-[root] USER 'root' logged in.
+[I 2026-11-20 20:18:58] 127.0.0.1:44430-[root] DELE /tmp/tmpbkky3r_5/ftp/2026-11-20/link/batch_00001.tar.gz 550 'Retention cannot follow symbolic links or remove the account root.'
+[I 2026-11-20 20:18:58] 127.0.0.1:44430-[root] FTP session closed (disconnect).
+{"result": "PASSED", "checks": ["MLSD_BINARY_MODE", "DATE_CLEANUP", "SAME_DATE_LATE_CLEANUP", "PARTIAL_ATOMIC_RENAME", "IDEMPOTENCY", "READ_ONLY_MISSING_REJECTED", "SYMLINK_DELETE_REJECTED", "NO_PARTIAL"]}

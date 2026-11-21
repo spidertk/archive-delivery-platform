@@ -1,4 +1,4 @@
-import type { DeliveryTask, SubmitDelivery, Summary, Timeline } from './types'
+import type { CreateDeliveryBatch, DeliveryTask, SubmitDelivery, Summary, Timeline } from './types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
@@ -20,3 +20,5 @@ export const pauseDelivery = (deliveryId: number, reason: string) =>
   request(`/deliveries/${deliveryId}/pause`, { method: 'POST', body: JSON.stringify({ reason }) })
 export const submitDelivery = (delivery: SubmitDelivery) =>
   request<{ deliveryId: number }>('/deliveries', { method: 'POST', body: JSON.stringify(delivery) })
+export const createDeliveryBatch = (batch: CreateDeliveryBatch) =>
+  request<{ deliveryId: number }>('/delivery-batches', { method: 'POST', body: JSON.stringify(batch) })

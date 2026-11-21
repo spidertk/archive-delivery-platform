@@ -24,7 +24,8 @@ public class DeliveryRepository {
                 rs.getObject("submitted_at", java.time.OffsetDateTime.class),
                 JdbcJson.read(mapper, rs.getString("target_strategy")), rs.getString("status"),
                 rs.getObject("discovery_completed_at", java.time.OffsetDateTime.class),
-                rs.getObject("completed_at", java.time.OffsetDateTime.class));
+                rs.getObject("completed_at", java.time.OffsetDateTime.class), rs.getString("submission_type"),
+                (Long) rs.getObject("batch_delivery_id"), JdbcJson.read(mapper, rs.getString("batch_extension")));
         this.entityMapper = (rs, n) -> new DeliveryEntity(
                 rs.getLong("delivery_entity_id"), rs.getString("vendor_code"), rs.getString("entity_code"),
                 rs.getString("entity_name"), rs.getString("protocol"), rs.getString("account_name"), rs.getString("worker_group"),
@@ -35,12 +36,14 @@ public class DeliveryRepository {
         return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_id=?", submitMapper, deliveryId).stream().findFirst();
     }
 
-    public Optional<DeliverySubmit> findByDeliveryBatch(String deliveryBatch) {
-        return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_batch=?", submitMapper, deliveryBatch).stream().findFirst();
+    public Optional<DeliverySubmit> findBatchCreation(String deliveryBatch) {
+        return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_batch=? AND submission_type='BATCH_CREATE'",
+                submitMapper, deliveryBatch).stream().findFirst();
     }
 
-    public Optional<DeliverySubmit> findByDeliveryBatchForUpdate(String deliveryBatch) {
-        return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_batch=? FOR UPDATE", submitMapper, deliveryBatch).stream().findFirst();
+    public Optional<DeliverySubmit> findBatchCreationForUpdate(String deliveryBatch) {
+        return jdbc.query("SELECT * FROM delivery_submit WHERE delivery_batch=? AND submission_type='BATCH_CREATE' FOR UPDATE",
+                submitMapper, deliveryBatch).stream().findFirst();
     }
 
     public DeliveryEntity entity(long entityId) {

@@ -1,0 +1,115 @@
+ version | success |        installed_on        
+---------+---------+----------------------------
+ 25      | t       | 2026-11-20 18:03:26.31392
+         | t       | 2026-11-20 18:03:26.110362
+(2 rows)
+
+ delivery_id |   delivery_batch   | submission_type | batch_delivery_id |  status   |                                                                                            batch_extension                                                                                             
+-------------+--------------------+-----------------+-------------------+-----------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           3 | JUN2-20261121-REDO | BATCH_CREATE    |                   | DELIVERED | {"allocations": [{"entityWorker": "jun-2/group1", "packageCount": 89}], "sourceCount": 343, "packageCount": 89, "maxPackageBytes": 104857600, "distinctSourceCount": 343, "filteredOversizedCount": 0}
+           4 | JUN2-20261121-REDO | BATCH_SUBMIT    |                 3 | DELIVERED | {"allocations": [{"entityWorker": "jun-2/group1", "packageCount": 89}], "sourceCount": 343, "packageCount": 0, "maxPackageBytes": 104857600, "distinctSourceCount": 343, "filteredOversizedCount": 0}
+(2 rows)
+
+ delivery_id | tasks | succeeded |        min         |        max         
+-------------+-------+-----------+--------------------+--------------------
+           4 |    89 |        89 | batch_00001.tar.gz | batch_00089.tar.gz
+(1 row)
+
+  status   | packages | original_files 
+-----------+----------+----------------
+ DELIVERED |       89 |            343
+(1 row)
+
+   new_file_name    | entity_code | worker_group |  status   | delivery_id | original_files 
+--------------------+-------------+--------------+-----------+-------------+----------------
+ batch_00001.tar.gz | jun-2       | group1       | DELIVERED |           4 |             22
+ batch_00002.tar.gz | jun-2       | group1       | DELIVERED |           4 |             18
+ batch_00003.tar.gz | jun-2       | group1       | DELIVERED |           4 |             14
+ batch_00004.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00005.tar.gz | jun-2       | group1       | DELIVERED |           4 |              6
+ batch_00006.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00007.tar.gz | jun-2       | group1       | DELIVERED |           4 |              9
+ batch_00008.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00009.tar.gz | jun-2       | group1       | DELIVERED |           4 |              3
+ batch_00010.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00011.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00012.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00013.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00014.tar.gz | jun-2       | group1       | DELIVERED |           4 |              7
+ batch_00015.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00016.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00017.tar.gz | jun-2       | group1       | DELIVERED |           4 |              6
+ batch_00018.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00019.tar.gz | jun-2       | group1       | DELIVERED |           4 |              2
+ batch_00020.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00021.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00022.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00023.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00024.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00025.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00026.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00027.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00028.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00029.tar.gz | jun-2       | group1       | DELIVERED |           4 |             10
+ batch_00030.tar.gz | jun-2       | group1       | DELIVERED |           4 |              7
+ batch_00031.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00032.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00033.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00034.tar.gz | jun-2       | group1       | DELIVERED |           4 |              6
+ batch_00035.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00036.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00037.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00038.tar.gz | jun-2       | group1       | DELIVERED |           4 |              5
+ batch_00039.tar.gz | jun-2       | group1       | DELIVERED |           4 |              2
+ batch_00040.tar.gz | jun-2       | group1       | DELIVERED |           4 |              8
+ batch_00041.tar.gz | jun-2       | group1       | DELIVERED |           4 |              7
+ batch_00042.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00043.tar.gz | jun-2       | group1       | DELIVERED |           4 |             10
+ batch_00044.tar.gz | jun-2       | group1       | DELIVERED |           4 |              3
+ batch_00045.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00046.tar.gz | jun-2       | group1       | DELIVERED |           4 |              7
+ batch_00047.tar.gz | jun-2       | group1       | DELIVERED |           4 |              7
+ batch_00048.tar.gz | jun-2       | group1       | DELIVERED |           4 |              2
+ batch_00049.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00050.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00051.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00052.tar.gz | jun-2       | group1       | DELIVERED |           4 |              5
+ batch_00053.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00054.tar.gz | jun-2       | group1       | DELIVERED |           4 |              3
+ batch_00055.tar.gz | jun-2       | group1       | DELIVERED |           4 |              2
+ batch_00056.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00057.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00058.tar.gz | jun-2       | group1       | DELIVERED |           4 |              3
+ batch_00059.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00060.tar.gz | jun-2       | group1       | DELIVERED |           4 |              2
+ batch_00061.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00062.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00063.tar.gz | jun-2       | group1       | DELIVERED |           4 |              9
+ batch_00064.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00065.tar.gz | jun-2       | group1       | DELIVERED |           4 |              2
+ batch_00066.tar.gz | jun-2       | group1       | DELIVERED |           4 |              5
+ batch_00067.tar.gz | jun-2       | group1       | DELIVERED |           4 |              3
+ batch_00068.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00069.tar.gz | jun-2       | group1       | DELIVERED |           4 |              8
+ batch_00070.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00071.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00072.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00073.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00074.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00075.tar.gz | jun-2       | group1       | DELIVERED |           4 |             10
+ batch_00076.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00077.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00078.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00079.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00080.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00081.tar.gz | jun-2       | group1       | DELIVERED |           4 |             10
+ batch_00082.tar.gz | jun-2       | group1       | DELIVERED |           4 |              2
+ batch_00083.tar.gz | jun-2       | group1       | DELIVERED |           4 |              7
+ batch_00084.tar.gz | jun-2       | group1       | DELIVERED |           4 |              3
+ batch_00085.tar.gz | jun-2       | group1       | DELIVERED |           4 |              8
+ batch_00086.tar.gz | jun-2       | group1       | DELIVERED |           4 |              9
+ batch_00087.tar.gz | jun-2       | group1       | DELIVERED |           4 |              4
+ batch_00088.tar.gz | jun-2       | group1       | DELIVERED |           4 |              1
+ batch_00089.tar.gz | jun-2       | group1       | DELIVERED |           4 |              5
+(89 rows)
+

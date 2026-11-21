@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-20T20:11:51.157847+00:00",
+  "activeTasksBeforeRelease": 0,
+  "image": "sha256:32cbfba7190d6de0a14fae9da796f6a4c239a4c39ec1edb7830225bbd2290c93",
+  "services": [
+    "worker-1",
+    "worker-2",
+    "worker-3",
+    "worker-4"
+  ]
+}

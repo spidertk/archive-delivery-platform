@@ -5,9 +5,10 @@ import json
 import os
 import sys
 from pathlib import Path, PurePosixPath
+from ftp_retention import retain_delivery_date
 
 REQUIRED = {"host", "port", "username", "password", "rootPath", "remotePath", "sourcePath",
-            "downloadPath", "expectedSize", "expectedSha256"}
+            "downloadPath", "expectedSize", "expectedSha256", "cleanupOtherDeliveryDates", "deliveryDate", "retentionRoot"}
 
 
 def sha256(path):
@@ -42,17 +43,23 @@ def remote_matches(ftp, remote, expected_size, expected_sha):
         raise
 
 
-def transfer(request):
+def transfer(request, verify_only=False):
     """FTP 同名不同 SHA 永不覆盖；下载核验通过后才从 .partial 原子封存最终文件。"""
     if set(request) != REQUIRED:
         raise ValueError("FTP request fields do not match the fixed contract")
+    if verify_only and request["cleanupOtherDeliveryDates"]:
+        raise ValueError("Read-only FTP verification cannot enable retention cleanup")
     source = Path(request["sourcePath"]).resolve(strict=True)
     if not source.is_file() or source.stat().st_size != request["expectedSize"] or sha256(source) != request["expectedSha256"]:
         raise ValueError("Verified OSS copy does not match expected size/SHA")
     remote = PurePosixPath(request["remotePath"])
-    if remote.is_absolute() or ".." in remote.parts or "\\" in str(remote):
+    if remote.is_absolute() or ".." in remote.parts or any(c in str(remote) for c in "\\\r\n") or len(remote.parts) < 2:
         raise ValueError("Unsafe FTP remote path")
     root = PurePosixPath(request["rootPath"])
+    if not root.is_absolute() or ".." in root.parts or any(c in str(root) for c in "\\\r\n"):
+        raise ValueError("Unsafe FTP root path")
+    if not isinstance(request["cleanupOtherDeliveryDates"], bool):
+        raise ValueError("FTP cleanup policy must be boolean")
     remote_full = str(root / remote).replace("//", "/")
     download = Path(request["downloadPath"]).resolve()
     if download.name != remote.name:
@@ -65,41 +72,72 @@ def transfer(request):
         ftp.login(request["username"], request["password"])
         ftp.voidcmd("TYPE I")
         print(f"FTP_CONNECTED host={request['host']} rootPath={root} remotePath={remote_full}", flush=True)
-        existing = remote_matches(ftp, remote_full, request["expectedSize"], request["expectedSha256"])
-        if existing is False:
-            raise ValueError("FTP remote exists with different size or SHA")
-        if existing is None:
-            make_remote_directories(ftp, str(root), remote)
-            with source.open("rb") as stream:
-                ftp.storbinary("STOR " + remote_full, stream)
-            if remote_matches(ftp, remote_full, request["expectedSize"], request["expectedSha256"]) is not True:
-                raise ValueError("FTP upload verification failed")
-            print(f"FTP_UPLOAD_VERIFIED remotePath={remote_full} size={request['expectedSize']} sha256={request['expectedSha256']}", flush=True)
-        try:
-            with partial.open("wb") as stream:
-                ftp.retrbinary("RETR " + remote_full, stream.write)
-            if partial.stat().st_size != request["expectedSize"] or sha256(partial) != request["expectedSha256"]:
-                raise ValueError("FTP download size/SHA mismatch")
-            if download.exists():
-                if download.stat().st_size != request["expectedSize"] or sha256(download) != request["expectedSha256"]:
-                    raise ValueError("Local FTP verification target exists with different size or SHA")
-                partial.unlink()
-            else:
-                os.replace(partial, download)
-        except Exception:
-            partial.unlink(missing_ok=True)
-            raise
-        return {
-            "uri": "ftp://" + request["host"] + remote_full,
-            "downloadPath": str(download),
-            "sizeBytes": download.stat().st_size,
-            "sha256": sha256(download)
-        }
+        with retain_delivery_date(ftp, request) as removed:
+            if removed:
+                print("FTP_DATE_CLEANUP " + json.dumps({"deliveryDate": request["deliveryDate"], "removedDates": removed}), flush=True)
+            return transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed, verify_only)
     finally:
         try:
             ftp.quit()
         except Exception:
             ftp.close()
+
+
+def transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed, verify_only):
+    """一次 RETR 同时完成远端 SHA 与本地回验，只有完整文件才原子发布。"""
+    try:
+        existing_size = ftp.size(remote_full)
+    except ftplib.error_perm as error:
+        if not str(error).startswith("550"):
+            raise
+        existing_size = None
+    if verify_only and existing_size is None:
+        raise ValueError("FTP artifact is missing during read-only verification")
+    if existing_size is not None and existing_size != request["expectedSize"]:
+        raise ValueError("FTP remote exists with different size or SHA")
+    remote_partial = remote_full + ".partial"
+    retrieval_path = remote_full
+    try:
+        if existing_size is None:
+            make_remote_directories(ftp, str(root), remote)
+            with source.open("rb") as stream:
+                ftp.storbinary("STOR " + remote_partial, stream)
+            retrieval_path = remote_partial
+        with partial.open("wb") as stream:
+            ftp.retrbinary("RETR " + retrieval_path, stream.write)
+        if partial.stat().st_size != request["expectedSize"] or sha256(partial) != request["expectedSha256"]:
+            raise ValueError("FTP download size/SHA mismatch")
+        if existing_size is None:
+            # 重试竞争时也不覆盖已存在的不同内容；正常路径仅一次 RETR。
+            concurrent = remote_matches(ftp, remote_full, request["expectedSize"], request["expectedSha256"])
+            if concurrent is False:
+                raise ValueError("FTP remote exists with different size or SHA")
+            if concurrent is None:
+                ftp.rename(remote_partial, remote_full)
+            else:
+                ftp.delete(remote_partial)
+            print(f"FTP_UPLOAD_VERIFIED remotePath={remote_full} size={request['expectedSize']} sha256={request['expectedSha256']}", flush=True)
+        if download.exists():
+            if download.stat().st_size != request["expectedSize"] or sha256(download) != request["expectedSha256"]:
+                raise ValueError("Local FTP verification target exists with different size or SHA")
+            partial.unlink()
+        else:
+            os.replace(partial, download)
+    except Exception:
+        partial.unlink(missing_ok=True)
+        if existing_size is None:
+            try:
+                ftp.delete(remote_partial)
+            except ftplib.all_errors:
+                pass
+        raise
+    return {
+        "uri": "ftp://" + request["host"] + remote_full,
+        "downloadPath": str(download),
+        "sizeBytes": download.stat().st_size,
+        "sha256": sha256(download),
+        "removedDates": removed
+    }
 
 
 def preflight(request):
@@ -126,7 +164,9 @@ def main():
             result = preflight(json.load(sys.stdin))
             print(json.dumps(result, ensure_ascii=False))
         else:
-            result = transfer(json.load(sys.stdin))
+            if sys.argv[1:] not in ([], ["--verify-only"]):
+                raise ValueError("Unsupported FTP node mode")
+            result = transfer(json.load(sys.stdin), verify_only=sys.argv[1:] == ["--verify-only"])
             print("FTP_RESULT " + json.dumps(result, ensure_ascii=False))
     except Exception as error:
         print(type(error).__name__ + ": " + str(error), file=sys.stderr)

@@ -1,0 +1,731 @@
+ version | success |        installed_on        
+---------+---------+----------------------------
+ 25      | t       | 2026-11-15 04:44:57.93044
+ 24      | t       | 2026-11-13 18:10:31.797915
+ 23      | t       | 2026-11-11 09:54:46.197057
+ 22      | t       | 2026-11-11 09:54:46.161984
+ 21      | t       | 2026-11-11 09:54:46.117942
+(5 rows)
+
+ delivery_id | delivery_batch | submission_type | batch_delivery_id |   status   |                                                                                              batch_extension                                                                                               
+-------------+----------------+-----------------+-------------------+------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+           9 | 20261115_v3    | BATCH_CREATE    |                   | PROCESSING | {"allocations": [{"entityWorker": "jun/group1", "packageCount": 699}], "sourceCount": 23000, "packageCount": 400, "maxPackageBytes": 104857600, "distinctSourceCount": 23000, "filteredOversizedCount": 0}
+          10 | 20261115_v3    | BATCH_SUBMIT    |                 9 | DELIVERED  | {"allocations": [{"entityWorker": "jun/group1", "packageCount": 699}], "sourceCount": 23000, "packageCount": 0, "maxPackageBytes": 104857600, "distinctSourceCount": 23000, "filteredOversizedCount": 0}
+          11 | 20261115_v3    | BATCH_SUBMIT    |                 9 | DELIVERED  | {"allocations": [{"entityWorker": "jun/group1", "packageCount": 699}], "sourceCount": 23000, "packageCount": 200, "maxPackageBytes": 104857600, "distinctSourceCount": 23000, "filteredOversizedCount": 0}
+(3 rows)
+
+ delivery_id | tasks | succeeded |        min         |        max         
+-------------+-------+-----------+--------------------+--------------------
+          10 |   200 |       200 | batch_00001.tar.gz | batch_00200.tar.gz
+          11 |   200 |       200 | batch_00201.tar.gz | batch_00400.tar.gz
+(2 rows)
+
+  status   | packages | original_files 
+-----------+----------+----------------
+ DELIVERED |      400 |          13485
+ PLANNED   |      299 |           9515
+(2 rows)
+
+   new_file_name    | entity_code | worker_group |  status   | delivery_id | original_files 
+--------------------+-------------+--------------+-----------+-------------+----------------
+ batch_00001.tar.gz | jun         | group1       | DELIVERED |          10 |             37
+ batch_00002.tar.gz | jun         | group1       | DELIVERED |          10 |             10
+ batch_00003.tar.gz | jun         | group1       | DELIVERED |          10 |             91
+ batch_00004.tar.gz | jun         | group1       | DELIVERED |          10 |             71
+ batch_00005.tar.gz | jun         | group1       | DELIVERED |          10 |             79
+ batch_00006.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00007.tar.gz | jun         | group1       | DELIVERED |          10 |             32
+ batch_00008.tar.gz | jun         | group1       | DELIVERED |          10 |             96
+ batch_00009.tar.gz | jun         | group1       | DELIVERED |          10 |             34
+ batch_00010.tar.gz | jun         | group1       | DELIVERED |          10 |             45
+ batch_00011.tar.gz | jun         | group1       | DELIVERED |          10 |              8
+ batch_00012.tar.gz | jun         | group1       | DELIVERED |          10 |             26
+ batch_00013.tar.gz | jun         | group1       | DELIVERED |          10 |             16
+ batch_00014.tar.gz | jun         | group1       | DELIVERED |          10 |             47
+ batch_00015.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00016.tar.gz | jun         | group1       | DELIVERED |          10 |            115
+ batch_00017.tar.gz | jun         | group1       | DELIVERED |          10 |             29
+ batch_00018.tar.gz | jun         | group1       | DELIVERED |          10 |             44
+ batch_00019.tar.gz | jun         | group1       | DELIVERED |          10 |             83
+ batch_00020.tar.gz | jun         | group1       | DELIVERED |          10 |             56
+ batch_00021.tar.gz | jun         | group1       | DELIVERED |          10 |             40
+ batch_00022.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00023.tar.gz | jun         | group1       | DELIVERED |          10 |              9
+ batch_00024.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00025.tar.gz | jun         | group1       | DELIVERED |          10 |             20
+ batch_00026.tar.gz | jun         | group1       | DELIVERED |          10 |              6
+ batch_00027.tar.gz | jun         | group1       | DELIVERED |          10 |             37
+ batch_00028.tar.gz | jun         | group1       | DELIVERED |          10 |             58
+ batch_00029.tar.gz | jun         | group1       | DELIVERED |          10 |             42
+ batch_00030.tar.gz | jun         | group1       | DELIVERED |          10 |             69
+ batch_00031.tar.gz | jun         | group1       | DELIVERED |          10 |             17
+ batch_00032.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00033.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00034.tar.gz | jun         | group1       | DELIVERED |          10 |            108
+ batch_00035.tar.gz | jun         | group1       | DELIVERED |          10 |             29
+ batch_00036.tar.gz | jun         | group1       | DELIVERED |          10 |             17
+ batch_00037.tar.gz | jun         | group1       | DELIVERED |          10 |             91
+ batch_00038.tar.gz | jun         | group1       | DELIVERED |          10 |             50
+ batch_00039.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00040.tar.gz | jun         | group1       | DELIVERED |          10 |             24
+ batch_00041.tar.gz | jun         | group1       | DELIVERED |          10 |             24
+ batch_00042.tar.gz | jun         | group1       | DELIVERED |          10 |              3
+ batch_00043.tar.gz | jun         | group1       | DELIVERED |          10 |             78
+ batch_00044.tar.gz | jun         | group1       | DELIVERED |          10 |             62
+ batch_00045.tar.gz | jun         | group1       | DELIVERED |          10 |             18
+ batch_00046.tar.gz | jun         | group1       | DELIVERED |          10 |              2
+ batch_00047.tar.gz | jun         | group1       | DELIVERED |          10 |              5
+ batch_00048.tar.gz | jun         | group1       | DELIVERED |          10 |             29
+ batch_00049.tar.gz | jun         | group1       | DELIVERED |          10 |             14
+ batch_00050.tar.gz | jun         | group1       | DELIVERED |          10 |             33
+ batch_00051.tar.gz | jun         | group1       | DELIVERED |          10 |             73
+ batch_00052.tar.gz | jun         | group1       | DELIVERED |          10 |             29
+ batch_00053.tar.gz | jun         | group1       | DELIVERED |          10 |             13
+ batch_00054.tar.gz | jun         | group1       | DELIVERED |          10 |             40
+ batch_00055.tar.gz | jun         | group1       | DELIVERED |          10 |             42
+ batch_00056.tar.gz | jun         | group1       | DELIVERED |          10 |             59
+ batch_00057.tar.gz | jun         | group1       | DELIVERED |          10 |             42
+ batch_00058.tar.gz | jun         | group1       | DELIVERED |          10 |             34
+ batch_00059.tar.gz | jun         | group1       | DELIVERED |          10 |             44
+ batch_00060.tar.gz | jun         | group1       | DELIVERED |          10 |             23
+ batch_00061.tar.gz | jun         | group1       | DELIVERED |          10 |              9
+ batch_00062.tar.gz | jun         | group1       | DELIVERED |          10 |             12
+ batch_00063.tar.gz | jun         | group1       | DELIVERED |          10 |              3
+ batch_00064.tar.gz | jun         | group1       | DELIVERED |          10 |              3
+ batch_00065.tar.gz | jun         | group1       | DELIVERED |          10 |             12
+ batch_00066.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00067.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00068.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00069.tar.gz | jun         | group1       | DELIVERED |          10 |             13
+ batch_00070.tar.gz | jun         | group1       | DELIVERED |          10 |            100
+ batch_00071.tar.gz | jun         | group1       | DELIVERED |          10 |             88
+ batch_00072.tar.gz | jun         | group1       | DELIVERED |          10 |             11
+ batch_00073.tar.gz | jun         | group1       | DELIVERED |          10 |             23
+ batch_00074.tar.gz | jun         | group1       | DELIVERED |          10 |             77
+ batch_00075.tar.gz | jun         | group1       | DELIVERED |          10 |              3
+ batch_00076.tar.gz | jun         | group1       | DELIVERED |          10 |             32
+ batch_00077.tar.gz | jun         | group1       | DELIVERED |          10 |             16
+ batch_00078.tar.gz | jun         | group1       | DELIVERED |          10 |             38
+ batch_00079.tar.gz | jun         | group1       | DELIVERED |          10 |             59
+ batch_00080.tar.gz | jun         | group1       | DELIVERED |          10 |             23
+ batch_00081.tar.gz | jun         | group1       | DELIVERED |          10 |             60
+ batch_00082.tar.gz | jun         | group1       | DELIVERED |          10 |             13
+ batch_00083.tar.gz | jun         | group1       | DELIVERED |          10 |             29
+ batch_00084.tar.gz | jun         | group1       | DELIVERED |          10 |             15
+ batch_00085.tar.gz | jun         | group1       | DELIVERED |          10 |             40
+ batch_00086.tar.gz | jun         | group1       | DELIVERED |          10 |             67
+ batch_00087.tar.gz | jun         | group1       | DELIVERED |          10 |              9
+ batch_00088.tar.gz | jun         | group1       | DELIVERED |          10 |             20
+ batch_00089.tar.gz | jun         | group1       | DELIVERED |          10 |             31
+ batch_00090.tar.gz | jun         | group1       | DELIVERED |          10 |             17
+ batch_00091.tar.gz | jun         | group1       | DELIVERED |          10 |            130
+ batch_00092.tar.gz | jun         | group1       | DELIVERED |          10 |             83
+ batch_00093.tar.gz | jun         | group1       | DELIVERED |          10 |             14
+ batch_00094.tar.gz | jun         | group1       | DELIVERED |          10 |             67
+ batch_00095.tar.gz | jun         | group1       | DELIVERED |          10 |             20
+ batch_00096.tar.gz | jun         | group1       | DELIVERED |          10 |              2
+ batch_00097.tar.gz | jun         | group1       | DELIVERED |          10 |             35
+ batch_00098.tar.gz | jun         | group1       | DELIVERED |          10 |             12
+ batch_00099.tar.gz | jun         | group1       | DELIVERED |          10 |             65
+ batch_00100.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00101.tar.gz | jun         | group1       | DELIVERED |          10 |             22
+ batch_00102.tar.gz | jun         | group1       | DELIVERED |          10 |              9
+ batch_00103.tar.gz | jun         | group1       | DELIVERED |          10 |             51
+ batch_00104.tar.gz | jun         | group1       | DELIVERED |          10 |             99
+ batch_00105.tar.gz | jun         | group1       | DELIVERED |          10 |              5
+ batch_00106.tar.gz | jun         | group1       | DELIVERED |          10 |             22
+ batch_00107.tar.gz | jun         | group1       | DELIVERED |          10 |             32
+ batch_00108.tar.gz | jun         | group1       | DELIVERED |          10 |             12
+ batch_00109.tar.gz | jun         | group1       | DELIVERED |          10 |              4
+ batch_00110.tar.gz | jun         | group1       | DELIVERED |          10 |             77
+ batch_00111.tar.gz | jun         | group1       | DELIVERED |          10 |             21
+ batch_00112.tar.gz | jun         | group1       | DELIVERED |          10 |             61
+ batch_00113.tar.gz | jun         | group1       | DELIVERED |          10 |             40
+ batch_00114.tar.gz | jun         | group1       | DELIVERED |          10 |             24
+ batch_00115.tar.gz | jun         | group1       | DELIVERED |          10 |              8
+ batch_00116.tar.gz | jun         | group1       | DELIVERED |          10 |             31
+ batch_00117.tar.gz | jun         | group1       | DELIVERED |          10 |              3
+ batch_00118.tar.gz | jun         | group1       | DELIVERED |          10 |             75
+ batch_00119.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00120.tar.gz | jun         | group1       | DELIVERED |          10 |              2
+ batch_00121.tar.gz | jun         | group1       | DELIVERED |          10 |             48
+ batch_00122.tar.gz | jun         | group1       | DELIVERED |          10 |             37
+ batch_00123.tar.gz | jun         | group1       | DELIVERED |          10 |              4
+ batch_00124.tar.gz | jun         | group1       | DELIVERED |          10 |             79
+ batch_00125.tar.gz | jun         | group1       | DELIVERED |          10 |              4
+ batch_00126.tar.gz | jun         | group1       | DELIVERED |          10 |             18
+ batch_00127.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00128.tar.gz | jun         | group1       | DELIVERED |          10 |             64
+ batch_00129.tar.gz | jun         | group1       | DELIVERED |          10 |              4
+ batch_00130.tar.gz | jun         | group1       | DELIVERED |          10 |              6
+ batch_00131.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00132.tar.gz | jun         | group1       | DELIVERED |          10 |             13
+ batch_00133.tar.gz | jun         | group1       | DELIVERED |          10 |             61
+ batch_00134.tar.gz | jun         | group1       | DELIVERED |          10 |             15
+ batch_00135.tar.gz | jun         | group1       | DELIVERED |          10 |             54
+ batch_00136.tar.gz | jun         | group1       | DELIVERED |          10 |            102
+ batch_00137.tar.gz | jun         | group1       | DELIVERED |          10 |             30
+ batch_00138.tar.gz | jun         | group1       | DELIVERED |          10 |              2
+ batch_00139.tar.gz | jun         | group1       | DELIVERED |          10 |             35
+ batch_00140.tar.gz | jun         | group1       | DELIVERED |          10 |             26
+ batch_00141.tar.gz | jun         | group1       | DELIVERED |          10 |             75
+ batch_00142.tar.gz | jun         | group1       | DELIVERED |          10 |             19
+ batch_00143.tar.gz | jun         | group1       | DELIVERED |          10 |             64
+ batch_00144.tar.gz | jun         | group1       | DELIVERED |          10 |             53
+ batch_00145.tar.gz | jun         | group1       | DELIVERED |          10 |             22
+ batch_00146.tar.gz | jun         | group1       | DELIVERED |          10 |             20
+ batch_00147.tar.gz | jun         | group1       | DELIVERED |          10 |              9
+ batch_00148.tar.gz | jun         | group1       | DELIVERED |          10 |             14
+ batch_00149.tar.gz | jun         | group1       | DELIVERED |          10 |              6
+ batch_00150.tar.gz | jun         | group1       | DELIVERED |          10 |             34
+ batch_00151.tar.gz | jun         | group1       | DELIVERED |          10 |             51
+ batch_00152.tar.gz | jun         | group1       | DELIVERED |          10 |             66
+ batch_00153.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00154.tar.gz | jun         | group1       | DELIVERED |          10 |              5
+ batch_00155.tar.gz | jun         | group1       | DELIVERED |          10 |            110
+ batch_00156.tar.gz | jun         | group1       | DELIVERED |          10 |             26
+ batch_00157.tar.gz | jun         | group1       | DELIVERED |          10 |             34
+ batch_00158.tar.gz | jun         | group1       | DELIVERED |          10 |             36
+ batch_00159.tar.gz | jun         | group1       | DELIVERED |          10 |             55
+ batch_00160.tar.gz | jun         | group1       | DELIVERED |          10 |              2
+ batch_00161.tar.gz | jun         | group1       | DELIVERED |          10 |             37
+ batch_00162.tar.gz | jun         | group1       | DELIVERED |          10 |             40
+ batch_00163.tar.gz | jun         | group1       | DELIVERED |          10 |             72
+ batch_00164.tar.gz | jun         | group1       | DELIVERED |          10 |             94
+ batch_00165.tar.gz | jun         | group1       | DELIVERED |          10 |             23
+ batch_00166.tar.gz | jun         | group1       | DELIVERED |          10 |              6
+ batch_00167.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00168.tar.gz | jun         | group1       | DELIVERED |          10 |            107
+ batch_00169.tar.gz | jun         | group1       | DELIVERED |          10 |             15
+ batch_00170.tar.gz | jun         | group1       | DELIVERED |          10 |             46
+ batch_00171.tar.gz | jun         | group1       | DELIVERED |          10 |             25
+ batch_00172.tar.gz | jun         | group1       | DELIVERED |          10 |             28
+ batch_00173.tar.gz | jun         | group1       | DELIVERED |          10 |             12
+ batch_00174.tar.gz | jun         | group1       | DELIVERED |          10 |             59
+ batch_00175.tar.gz | jun         | group1       | DELIVERED |          10 |             27
+ batch_00176.tar.gz | jun         | group1       | DELIVERED |          10 |             78
+ batch_00177.tar.gz | jun         | group1       | DELIVERED |          10 |             49
+ batch_00178.tar.gz | jun         | group1       | DELIVERED |          10 |             23
+ batch_00179.tar.gz | jun         | group1       | DELIVERED |          10 |             43
+ batch_00180.tar.gz | jun         | group1       | DELIVERED |          10 |              4
+ batch_00181.tar.gz | jun         | group1       | DELIVERED |          10 |             47
+ batch_00182.tar.gz | jun         | group1       | DELIVERED |          10 |             82
+ batch_00183.tar.gz | jun         | group1       | DELIVERED |          10 |             64
+ batch_00184.tar.gz | jun         | group1       | DELIVERED |          10 |             72
+ batch_00185.tar.gz | jun         | group1       | DELIVERED |          10 |             18
+ batch_00186.tar.gz | jun         | group1       | DELIVERED |          10 |             80
+ batch_00187.tar.gz | jun         | group1       | DELIVERED |          10 |             24
+ batch_00188.tar.gz | jun         | group1       | DELIVERED |          10 |             11
+ batch_00189.tar.gz | jun         | group1       | DELIVERED |          10 |             19
+ batch_00190.tar.gz | jun         | group1       | DELIVERED |          10 |              1
+ batch_00191.tar.gz | jun         | group1       | DELIVERED |          10 |              7
+ batch_00192.tar.gz | jun         | group1       | DELIVERED |          10 |             43
+ batch_00193.tar.gz | jun         | group1       | DELIVERED |          10 |             10
+ batch_00194.tar.gz | jun         | group1       | DELIVERED |          10 |             14
+ batch_00195.tar.gz | jun         | group1       | DELIVERED |          10 |             11
+ batch_00196.tar.gz | jun         | group1       | DELIVERED |          10 |             35
+ batch_00197.tar.gz | jun         | group1       | DELIVERED |          10 |             60
+ batch_00198.tar.gz | jun         | group1       | DELIVERED |          10 |             12
+ batch_00199.tar.gz | jun         | group1       | DELIVERED |          10 |             37
+ batch_00200.tar.gz | jun         | group1       | DELIVERED |          10 |             62
+ batch_00201.tar.gz | jun         | group1       | DELIVERED |          11 |             50
+ batch_00202.tar.gz | jun         | group1       | DELIVERED |          11 |             26
+ batch_00203.tar.gz | jun         | group1       | DELIVERED |          11 |             47
+ batch_00204.tar.gz | jun         | group1       | DELIVERED |          11 |              7
+ batch_00205.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00206.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00207.tar.gz | jun         | group1       | DELIVERED |          11 |             66
+ batch_00208.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00209.tar.gz | jun         | group1       | DELIVERED |          11 |             15
+ batch_00210.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00211.tar.gz | jun         | group1       | DELIVERED |          11 |              6
+ batch_00212.tar.gz | jun         | group1       | DELIVERED |          11 |             16
+ batch_00213.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00214.tar.gz | jun         | group1       | DELIVERED |          11 |             33
+ batch_00215.tar.gz | jun         | group1       | DELIVERED |          11 |             19
+ batch_00216.tar.gz | jun         | group1       | DELIVERED |          11 |             34
+ batch_00217.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00218.tar.gz | jun         | group1       | DELIVERED |          11 |              7
+ batch_00219.tar.gz | jun         | group1       | DELIVERED |          11 |              9
+ batch_00220.tar.gz | jun         | group1       | DELIVERED |          11 |             38
+ batch_00221.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00222.tar.gz | jun         | group1       | DELIVERED |          11 |             31
+ batch_00223.tar.gz | jun         | group1       | DELIVERED |          11 |             54
+ batch_00224.tar.gz | jun         | group1       | DELIVERED |          11 |             11
+ batch_00225.tar.gz | jun         | group1       | DELIVERED |          11 |            108
+ batch_00226.tar.gz | jun         | group1       | DELIVERED |          11 |             74
+ batch_00227.tar.gz | jun         | group1       | DELIVERED |          11 |            121
+ batch_00228.tar.gz | jun         | group1       | DELIVERED |          11 |              4
+ batch_00229.tar.gz | jun         | group1       | DELIVERED |          11 |             81
+ batch_00230.tar.gz | jun         | group1       | DELIVERED |          11 |             55
+ batch_00231.tar.gz | jun         | group1       | DELIVERED |          11 |             27
+ batch_00232.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00233.tar.gz | jun         | group1       | DELIVERED |          11 |             24
+ batch_00234.tar.gz | jun         | group1       | DELIVERED |          11 |              3
+ batch_00235.tar.gz | jun         | group1       | DELIVERED |          11 |             30
+ batch_00236.tar.gz | jun         | group1       | DELIVERED |          11 |             14
+ batch_00237.tar.gz | jun         | group1       | DELIVERED |          11 |             28
+ batch_00238.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00239.tar.gz | jun         | group1       | DELIVERED |          11 |             14
+ batch_00240.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00241.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00242.tar.gz | jun         | group1       | DELIVERED |          11 |             61
+ batch_00243.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00244.tar.gz | jun         | group1       | DELIVERED |          11 |             15
+ batch_00245.tar.gz | jun         | group1       | DELIVERED |          11 |             47
+ batch_00246.tar.gz | jun         | group1       | DELIVERED |          11 |             34
+ batch_00247.tar.gz | jun         | group1       | DELIVERED |          11 |              4
+ batch_00248.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00249.tar.gz | jun         | group1       | DELIVERED |          11 |             30
+ batch_00250.tar.gz | jun         | group1       | DELIVERED |          11 |             69
+ batch_00251.tar.gz | jun         | group1       | DELIVERED |          11 |             63
+ batch_00252.tar.gz | jun         | group1       | DELIVERED |          11 |             66
+ batch_00253.tar.gz | jun         | group1       | DELIVERED |          11 |             34
+ batch_00254.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00255.tar.gz | jun         | group1       | DELIVERED |          11 |             49
+ batch_00256.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00257.tar.gz | jun         | group1       | DELIVERED |          11 |              4
+ batch_00258.tar.gz | jun         | group1       | DELIVERED |          11 |             28
+ batch_00259.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00260.tar.gz | jun         | group1       | DELIVERED |          11 |             65
+ batch_00261.tar.gz | jun         | group1       | DELIVERED |          11 |             11
+ batch_00262.tar.gz | jun         | group1       | DELIVERED |          11 |              9
+ batch_00263.tar.gz | jun         | group1       | DELIVERED |          11 |             35
+ batch_00264.tar.gz | jun         | group1       | DELIVERED |          11 |             12
+ batch_00265.tar.gz | jun         | group1       | DELIVERED |          11 |             97
+ batch_00266.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00267.tar.gz | jun         | group1       | DELIVERED |          11 |             58
+ batch_00268.tar.gz | jun         | group1       | DELIVERED |          11 |             24
+ batch_00269.tar.gz | jun         | group1       | DELIVERED |          11 |             63
+ batch_00270.tar.gz | jun         | group1       | DELIVERED |          11 |             44
+ batch_00271.tar.gz | jun         | group1       | DELIVERED |          11 |             11
+ batch_00272.tar.gz | jun         | group1       | DELIVERED |          11 |             73
+ batch_00273.tar.gz | jun         | group1       | DELIVERED |          11 |             14
+ batch_00274.tar.gz | jun         | group1       | DELIVERED |          11 |             15
+ batch_00275.tar.gz | jun         | group1       | DELIVERED |          11 |             79
+ batch_00276.tar.gz | jun         | group1       | DELIVERED |          11 |             10
+ batch_00277.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00278.tar.gz | jun         | group1       | DELIVERED |          11 |             96
+ batch_00279.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00280.tar.gz | jun         | group1       | DELIVERED |          11 |             24
+ batch_00281.tar.gz | jun         | group1       | DELIVERED |          11 |             44
+ batch_00282.tar.gz | jun         | group1       | DELIVERED |          11 |             72
+ batch_00283.tar.gz | jun         | group1       | DELIVERED |          11 |            120
+ batch_00284.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00285.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00286.tar.gz | jun         | group1       | DELIVERED |          11 |             25
+ batch_00287.tar.gz | jun         | group1       | DELIVERED |          11 |             37
+ batch_00288.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00289.tar.gz | jun         | group1       | DELIVERED |          11 |             39
+ batch_00290.tar.gz | jun         | group1       | DELIVERED |          11 |              6
+ batch_00291.tar.gz | jun         | group1       | DELIVERED |          11 |             44
+ batch_00292.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00293.tar.gz | jun         | group1       | DELIVERED |          11 |             78
+ batch_00294.tar.gz | jun         | group1       | DELIVERED |          11 |             59
+ batch_00295.tar.gz | jun         | group1       | DELIVERED |          11 |             92
+ batch_00296.tar.gz | jun         | group1       | DELIVERED |          11 |             30
+ batch_00297.tar.gz | jun         | group1       | DELIVERED |          11 |            115
+ batch_00298.tar.gz | jun         | group1       | DELIVERED |          11 |             22
+ batch_00299.tar.gz | jun         | group1       | DELIVERED |          11 |              3
+ batch_00300.tar.gz | jun         | group1       | DELIVERED |          11 |             58
+ batch_00301.tar.gz | jun         | group1       | DELIVERED |          11 |             25
+ batch_00302.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00303.tar.gz | jun         | group1       | DELIVERED |          11 |              4
+ batch_00304.tar.gz | jun         | group1       | DELIVERED |          11 |              7
+ batch_00305.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00306.tar.gz | jun         | group1       | DELIVERED |          11 |             42
+ batch_00307.tar.gz | jun         | group1       | DELIVERED |          11 |              4
+ batch_00308.tar.gz | jun         | group1       | DELIVERED |          11 |             44
+ batch_00309.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00310.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00311.tar.gz | jun         | group1       | DELIVERED |          11 |              5
+ batch_00312.tar.gz | jun         | group1       | DELIVERED |          11 |              7
+ batch_00313.tar.gz | jun         | group1       | DELIVERED |          11 |            109
+ batch_00314.tar.gz | jun         | group1       | DELIVERED |          11 |             36
+ batch_00315.tar.gz | jun         | group1       | DELIVERED |          11 |             40
+ batch_00316.tar.gz | jun         | group1       | DELIVERED |          11 |             11
+ batch_00317.tar.gz | jun         | group1       | DELIVERED |          11 |             22
+ batch_00318.tar.gz | jun         | group1       | DELIVERED |          11 |             20
+ batch_00319.tar.gz | jun         | group1       | DELIVERED |          11 |             48
+ batch_00320.tar.gz | jun         | group1       | DELIVERED |          11 |             30
+ batch_00321.tar.gz | jun         | group1       | DELIVERED |          11 |              7
+ batch_00322.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00323.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00324.tar.gz | jun         | group1       | DELIVERED |          11 |             21
+ batch_00325.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00326.tar.gz | jun         | group1       | DELIVERED |          11 |             11
+ batch_00327.tar.gz | jun         | group1       | DELIVERED |          11 |             69
+ batch_00328.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00329.tar.gz | jun         | group1       | DELIVERED |          11 |             53
+ batch_00330.tar.gz | jun         | group1       | DELIVERED |          11 |             50
+ batch_00331.tar.gz | jun         | group1       | DELIVERED |          11 |              9
+ batch_00332.tar.gz | jun         | group1       | DELIVERED |          11 |             38
+ batch_00333.tar.gz | jun         | group1       | DELIVERED |          11 |             38
+ batch_00334.tar.gz | jun         | group1       | DELIVERED |          11 |             61
+ batch_00335.tar.gz | jun         | group1       | DELIVERED |          11 |             19
+ batch_00336.tar.gz | jun         | group1       | DELIVERED |          11 |             57
+ batch_00337.tar.gz | jun         | group1       | DELIVERED |          11 |              5
+ batch_00338.tar.gz | jun         | group1       | DELIVERED |          11 |             53
+ batch_00339.tar.gz | jun         | group1       | DELIVERED |          11 |              3
+ batch_00340.tar.gz | jun         | group1       | DELIVERED |          11 |             70
+ batch_00341.tar.gz | jun         | group1       | DELIVERED |          11 |             34
+ batch_00342.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00343.tar.gz | jun         | group1       | DELIVERED |          11 |             76
+ batch_00344.tar.gz | jun         | group1       | DELIVERED |          11 |            112
+ batch_00345.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00346.tar.gz | jun         | group1       | DELIVERED |          11 |            139
+ batch_00347.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00348.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00349.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00350.tar.gz | jun         | group1       | DELIVERED |          11 |             69
+ batch_00351.tar.gz | jun         | group1       | DELIVERED |          11 |             53
+ batch_00352.tar.gz | jun         | group1       | DELIVERED |          11 |             31
+ batch_00353.tar.gz | jun         | group1       | DELIVERED |          11 |             56
+ batch_00354.tar.gz | jun         | group1       | DELIVERED |          11 |             52
+ batch_00355.tar.gz | jun         | group1       | DELIVERED |          11 |             29
+ batch_00356.tar.gz | jun         | group1       | DELIVERED |          11 |             14
+ batch_00357.tar.gz | jun         | group1       | DELIVERED |          11 |            131
+ batch_00358.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00359.tar.gz | jun         | group1       | DELIVERED |          11 |              1
+ batch_00360.tar.gz | jun         | group1       | DELIVERED |          11 |              9
+ batch_00361.tar.gz | jun         | group1       | DELIVERED |          11 |              9
+ batch_00362.tar.gz | jun         | group1       | DELIVERED |          11 |              9
+ batch_00363.tar.gz | jun         | group1       | DELIVERED |          11 |             17
+ batch_00364.tar.gz | jun         | group1       | DELIVERED |          11 |             60
+ batch_00365.tar.gz | jun         | group1       | DELIVERED |          11 |             49
+ batch_00366.tar.gz | jun         | group1       | DELIVERED |          11 |             58
+ batch_00367.tar.gz | jun         | group1       | DELIVERED |          11 |             42
+ batch_00368.tar.gz | jun         | group1       | DELIVERED |          11 |             53
+ batch_00369.tar.gz | jun         | group1       | DELIVERED |          11 |              3
+ batch_00370.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00371.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00372.tar.gz | jun         | group1       | DELIVERED |          11 |              8
+ batch_00373.tar.gz | jun         | group1       | DELIVERED |          11 |             40
+ batch_00374.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00375.tar.gz | jun         | group1       | DELIVERED |          11 |             49
+ batch_00376.tar.gz | jun         | group1       | DELIVERED |          11 |              9
+ batch_00377.tar.gz | jun         | group1       | DELIVERED |          11 |             24
+ batch_00378.tar.gz | jun         | group1       | DELIVERED |          11 |             21
+ batch_00379.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00380.tar.gz | jun         | group1       | DELIVERED |          11 |             21
+ batch_00381.tar.gz | jun         | group1       | DELIVERED |          11 |              4
+ batch_00382.tar.gz | jun         | group1       | DELIVERED |          11 |             52
+ batch_00383.tar.gz | jun         | group1       | DELIVERED |          11 |             76
+ batch_00384.tar.gz | jun         | group1       | DELIVERED |          11 |             19
+ batch_00385.tar.gz | jun         | group1       | DELIVERED |          11 |             74
+ batch_00386.tar.gz | jun         | group1       | DELIVERED |          11 |             11
+ batch_00387.tar.gz | jun         | group1       | DELIVERED |          11 |             28
+ batch_00388.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00389.tar.gz | jun         | group1       | DELIVERED |          11 |             10
+ batch_00390.tar.gz | jun         | group1       | DELIVERED |          11 |             86
+ batch_00391.tar.gz | jun         | group1       | DELIVERED |          11 |            104
+ batch_00392.tar.gz | jun         | group1       | DELIVERED |          11 |             40
+ batch_00393.tar.gz | jun         | group1       | DELIVERED |          11 |              2
+ batch_00394.tar.gz | jun         | group1       | DELIVERED |          11 |             78
+ batch_00395.tar.gz | jun         | group1       | DELIVERED |          11 |             49
+ batch_00396.tar.gz | jun         | group1       | DELIVERED |          11 |             13
+ batch_00397.tar.gz | jun         | group1       | DELIVERED |          11 |             17
+ batch_00398.tar.gz | jun         | group1       | DELIVERED |          11 |             11
+ batch_00399.tar.gz | jun         | group1       | DELIVERED |          11 |            115
+ batch_00400.tar.gz | jun         | group1       | DELIVERED |          11 |             18
+ batch_00401.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00402.tar.gz | jun         | group1       | PLANNED   |             |              7
+ batch_00403.tar.gz | jun         | group1       | PLANNED   |             |             55
+ batch_00404.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00405.tar.gz | jun         | group1       | PLANNED   |             |             81
+ batch_00406.tar.gz | jun         | group1       | PLANNED   |             |             69
+ batch_00407.tar.gz | jun         | group1       | PLANNED   |             |             56
+ batch_00408.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00409.tar.gz | jun         | group1       | PLANNED   |             |             15
+ batch_00410.tar.gz | jun         | group1       | PLANNED   |             |              6
+ batch_00411.tar.gz | jun         | group1       | PLANNED   |             |             13
+ batch_00412.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00413.tar.gz | jun         | group1       | PLANNED   |             |             66
+ batch_00414.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00415.tar.gz | jun         | group1       | PLANNED   |             |             32
+ batch_00416.tar.gz | jun         | group1       | PLANNED   |             |             73
+ batch_00417.tar.gz | jun         | group1       | PLANNED   |             |              6
+ batch_00418.tar.gz | jun         | group1       | PLANNED   |             |              5
+ batch_00419.tar.gz | jun         | group1       | PLANNED   |             |             14
+ batch_00420.tar.gz | jun         | group1       | PLANNED   |             |             21
+ batch_00421.tar.gz | jun         | group1       | PLANNED   |             |             28
+ batch_00422.tar.gz | jun         | group1       | PLANNED   |             |             18
+ batch_00423.tar.gz | jun         | group1       | PLANNED   |             |             35
+ batch_00424.tar.gz | jun         | group1       | PLANNED   |             |              5
+ batch_00425.tar.gz | jun         | group1       | PLANNED   |             |             42
+ batch_00426.tar.gz | jun         | group1       | PLANNED   |             |             31
+ batch_00427.tar.gz | jun         | group1       | PLANNED   |             |              5
+ batch_00428.tar.gz | jun         | group1       | PLANNED   |             |             27
+ batch_00429.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00430.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00431.tar.gz | jun         | group1       | PLANNED   |             |             37
+ batch_00432.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00433.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00434.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00435.tar.gz | jun         | group1       | PLANNED   |             |             49
+ batch_00436.tar.gz | jun         | group1       | PLANNED   |             |             52
+ batch_00437.tar.gz | jun         | group1       | PLANNED   |             |             37
+ batch_00438.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00439.tar.gz | jun         | group1       | PLANNED   |             |             45
+ batch_00440.tar.gz | jun         | group1       | PLANNED   |             |             74
+ batch_00441.tar.gz | jun         | group1       | PLANNED   |             |             65
+ batch_00442.tar.gz | jun         | group1       | PLANNED   |             |             52
+ batch_00443.tar.gz | jun         | group1       | PLANNED   |             |             29
+ batch_00444.tar.gz | jun         | group1       | PLANNED   |             |             41
+ batch_00445.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00446.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00447.tar.gz | jun         | group1       | PLANNED   |             |             46
+ batch_00448.tar.gz | jun         | group1       | PLANNED   |             |             30
+ batch_00449.tar.gz | jun         | group1       | PLANNED   |             |             39
+ batch_00450.tar.gz | jun         | group1       | PLANNED   |             |             67
+ batch_00451.tar.gz | jun         | group1       | PLANNED   |             |              5
+ batch_00452.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00453.tar.gz | jun         | group1       | PLANNED   |             |             35
+ batch_00454.tar.gz | jun         | group1       | PLANNED   |             |            119
+ batch_00455.tar.gz | jun         | group1       | PLANNED   |             |             31
+ batch_00456.tar.gz | jun         | group1       | PLANNED   |             |              7
+ batch_00457.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00458.tar.gz | jun         | group1       | PLANNED   |             |            111
+ batch_00459.tar.gz | jun         | group1       | PLANNED   |             |             31
+ batch_00460.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00461.tar.gz | jun         | group1       | PLANNED   |             |             43
+ batch_00462.tar.gz | jun         | group1       | PLANNED   |             |             16
+ batch_00463.tar.gz | jun         | group1       | PLANNED   |             |             45
+ batch_00464.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00465.tar.gz | jun         | group1       | PLANNED   |             |             77
+ batch_00466.tar.gz | jun         | group1       | PLANNED   |             |             75
+ batch_00467.tar.gz | jun         | group1       | PLANNED   |             |             86
+ batch_00468.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00469.tar.gz | jun         | group1       | PLANNED   |             |            105
+ batch_00470.tar.gz | jun         | group1       | PLANNED   |             |             20
+ batch_00471.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00472.tar.gz | jun         | group1       | PLANNED   |             |             91
+ batch_00473.tar.gz | jun         | group1       | PLANNED   |             |             14
+ batch_00474.tar.gz | jun         | group1       | PLANNED   |             |             19
+ batch_00475.tar.gz | jun         | group1       | PLANNED   |             |             19
+ batch_00476.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00477.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00478.tar.gz | jun         | group1       | PLANNED   |             |             17
+ batch_00479.tar.gz | jun         | group1       | PLANNED   |             |             31
+ batch_00480.tar.gz | jun         | group1       | PLANNED   |             |             42
+ batch_00481.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00482.tar.gz | jun         | group1       | PLANNED   |             |             95
+ batch_00483.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00484.tar.gz | jun         | group1       | PLANNED   |             |             33
+ batch_00485.tar.gz | jun         | group1       | PLANNED   |             |             29
+ batch_00486.tar.gz | jun         | group1       | PLANNED   |             |             40
+ batch_00487.tar.gz | jun         | group1       | PLANNED   |             |             34
+ batch_00488.tar.gz | jun         | group1       | PLANNED   |             |             23
+ batch_00489.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00490.tar.gz | jun         | group1       | PLANNED   |             |             15
+ batch_00491.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00492.tar.gz | jun         | group1       | PLANNED   |             |             22
+ batch_00493.tar.gz | jun         | group1       | PLANNED   |             |             10
+ batch_00494.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00495.tar.gz | jun         | group1       | PLANNED   |             |             35
+ batch_00496.tar.gz | jun         | group1       | PLANNED   |             |             49
+ batch_00497.tar.gz | jun         | group1       | PLANNED   |             |             51
+ batch_00498.tar.gz | jun         | group1       | PLANNED   |             |             20
+ batch_00499.tar.gz | jun         | group1       | PLANNED   |             |             23
+ batch_00500.tar.gz | jun         | group1       | PLANNED   |             |             65
+ batch_00501.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00502.tar.gz | jun         | group1       | PLANNED   |             |             58
+ batch_00503.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00504.tar.gz | jun         | group1       | PLANNED   |             |             66
+ batch_00505.tar.gz | jun         | group1       | PLANNED   |             |             45
+ batch_00506.tar.gz | jun         | group1       | PLANNED   |             |             45
+ batch_00507.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00508.tar.gz | jun         | group1       | PLANNED   |             |             24
+ batch_00509.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00510.tar.gz | jun         | group1       | PLANNED   |             |             36
+ batch_00511.tar.gz | jun         | group1       | PLANNED   |             |             10
+ batch_00512.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00513.tar.gz | jun         | group1       | PLANNED   |             |             30
+ batch_00514.tar.gz | jun         | group1       | PLANNED   |             |             26
+ batch_00515.tar.gz | jun         | group1       | PLANNED   |             |             13
+ batch_00516.tar.gz | jun         | group1       | PLANNED   |             |             25
+ batch_00517.tar.gz | jun         | group1       | PLANNED   |             |             56
+ batch_00518.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00519.tar.gz | jun         | group1       | PLANNED   |             |             63
+ batch_00520.tar.gz | jun         | group1       | PLANNED   |             |             46
+ batch_00521.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00522.tar.gz | jun         | group1       | PLANNED   |             |             83
+ batch_00523.tar.gz | jun         | group1       | PLANNED   |             |             27
+ batch_00524.tar.gz | jun         | group1       | PLANNED   |             |              6
+ batch_00525.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00526.tar.gz | jun         | group1       | PLANNED   |             |             41
+ batch_00527.tar.gz | jun         | group1       | PLANNED   |             |             21
+ batch_00528.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00529.tar.gz | jun         | group1       | PLANNED   |             |              5
+ batch_00530.tar.gz | jun         | group1       | PLANNED   |             |             20
+ batch_00531.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00532.tar.gz | jun         | group1       | PLANNED   |             |             43
+ batch_00533.tar.gz | jun         | group1       | PLANNED   |             |             30
+ batch_00534.tar.gz | jun         | group1       | PLANNED   |             |             73
+ batch_00535.tar.gz | jun         | group1       | PLANNED   |             |             42
+ batch_00536.tar.gz | jun         | group1       | PLANNED   |             |             26
+ batch_00537.tar.gz | jun         | group1       | PLANNED   |             |             15
+ batch_00538.tar.gz | jun         | group1       | PLANNED   |             |             86
+ batch_00539.tar.gz | jun         | group1       | PLANNED   |             |             79
+ batch_00540.tar.gz | jun         | group1       | PLANNED   |             |             28
+ batch_00541.tar.gz | jun         | group1       | PLANNED   |             |             13
+ batch_00542.tar.gz | jun         | group1       | PLANNED   |             |             35
+ batch_00543.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00544.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00545.tar.gz | jun         | group1       | PLANNED   |             |             54
+ batch_00546.tar.gz | jun         | group1       | PLANNED   |             |             58
+ batch_00547.tar.gz | jun         | group1       | PLANNED   |             |             68
+ batch_00548.tar.gz | jun         | group1       | PLANNED   |             |             33
+ batch_00549.tar.gz | jun         | group1       | PLANNED   |             |             22
+ batch_00550.tar.gz | jun         | group1       | PLANNED   |             |             10
+ batch_00551.tar.gz | jun         | group1       | PLANNED   |             |             60
+ batch_00552.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00553.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00554.tar.gz | jun         | group1       | PLANNED   |             |             54
+ batch_00555.tar.gz | jun         | group1       | PLANNED   |             |             59
+ batch_00556.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00557.tar.gz | jun         | group1       | PLANNED   |             |             95
+ batch_00558.tar.gz | jun         | group1       | PLANNED   |             |             96
+ batch_00559.tar.gz | jun         | group1       | PLANNED   |             |             28
+ batch_00560.tar.gz | jun         | group1       | PLANNED   |             |              7
+ batch_00561.tar.gz | jun         | group1       | PLANNED   |             |             88
+ batch_00562.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00563.tar.gz | jun         | group1       | PLANNED   |             |             19
+ batch_00564.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00565.tar.gz | jun         | group1       | PLANNED   |             |             47
+ batch_00566.tar.gz | jun         | group1       | PLANNED   |             |             52
+ batch_00567.tar.gz | jun         | group1       | PLANNED   |             |             42
+ batch_00568.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00569.tar.gz | jun         | group1       | PLANNED   |             |             19
+ batch_00570.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00571.tar.gz | jun         | group1       | PLANNED   |             |             37
+ batch_00572.tar.gz | jun         | group1       | PLANNED   |             |             46
+ batch_00573.tar.gz | jun         | group1       | PLANNED   |             |             49
+ batch_00574.tar.gz | jun         | group1       | PLANNED   |             |             98
+ batch_00575.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00576.tar.gz | jun         | group1       | PLANNED   |             |             31
+ batch_00577.tar.gz | jun         | group1       | PLANNED   |             |             25
+ batch_00578.tar.gz | jun         | group1       | PLANNED   |             |             28
+ batch_00579.tar.gz | jun         | group1       | PLANNED   |             |             74
+ batch_00580.tar.gz | jun         | group1       | PLANNED   |             |             23
+ batch_00581.tar.gz | jun         | group1       | PLANNED   |             |             42
+ batch_00582.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00583.tar.gz | jun         | group1       | PLANNED   |             |             21
+ batch_00584.tar.gz | jun         | group1       | PLANNED   |             |             33
+ batch_00585.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00586.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00587.tar.gz | jun         | group1       | PLANNED   |             |             10
+ batch_00588.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00589.tar.gz | jun         | group1       | PLANNED   |             |             56
+ batch_00590.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00591.tar.gz | jun         | group1       | PLANNED   |             |             15
+ batch_00592.tar.gz | jun         | group1       | PLANNED   |             |             39
+ batch_00593.tar.gz | jun         | group1       | PLANNED   |             |             53
+ batch_00594.tar.gz | jun         | group1       | PLANNED   |             |             63
+ batch_00595.tar.gz | jun         | group1       | PLANNED   |             |             58
+ batch_00596.tar.gz | jun         | group1       | PLANNED   |             |             20
+ batch_00597.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00598.tar.gz | jun         | group1       | PLANNED   |             |             16
+ batch_00599.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00600.tar.gz | jun         | group1       | PLANNED   |             |             22
+ batch_00601.tar.gz | jun         | group1       | PLANNED   |             |             20
+ batch_00602.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00603.tar.gz | jun         | group1       | PLANNED   |             |            105
+ batch_00604.tar.gz | jun         | group1       | PLANNED   |             |             46
+ batch_00605.tar.gz | jun         | group1       | PLANNED   |             |             92
+ batch_00606.tar.gz | jun         | group1       | PLANNED   |             |             12
+ batch_00607.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00608.tar.gz | jun         | group1       | PLANNED   |             |             17
+ batch_00609.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00610.tar.gz | jun         | group1       | PLANNED   |             |             29
+ batch_00611.tar.gz | jun         | group1       | PLANNED   |             |             51
+ batch_00612.tar.gz | jun         | group1       | PLANNED   |             |             51
+ batch_00613.tar.gz | jun         | group1       | PLANNED   |             |             76
+ batch_00614.tar.gz | jun         | group1       | PLANNED   |             |             65
+ batch_00615.tar.gz | jun         | group1       | PLANNED   |             |             58
+ batch_00616.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00617.tar.gz | jun         | group1       | PLANNED   |             |             27
+ batch_00618.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00619.tar.gz | jun         | group1       | PLANNED   |             |             19
+ batch_00620.tar.gz | jun         | group1       | PLANNED   |             |             49
+ batch_00621.tar.gz | jun         | group1       | PLANNED   |             |              5
+ batch_00622.tar.gz | jun         | group1       | PLANNED   |             |             52
+ batch_00623.tar.gz | jun         | group1       | PLANNED   |             |             98
+ batch_00624.tar.gz | jun         | group1       | PLANNED   |             |             17
+ batch_00625.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00626.tar.gz | jun         | group1       | PLANNED   |             |             11
+ batch_00627.tar.gz | jun         | group1       | PLANNED   |             |             22
+ batch_00628.tar.gz | jun         | group1       | PLANNED   |             |             63
+ batch_00629.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00630.tar.gz | jun         | group1       | PLANNED   |             |             36
+ batch_00631.tar.gz | jun         | group1       | PLANNED   |             |             18
+ batch_00632.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00633.tar.gz | jun         | group1       | PLANNED   |             |             24
+ batch_00634.tar.gz | jun         | group1       | PLANNED   |             |             60
+ batch_00635.tar.gz | jun         | group1       | PLANNED   |             |             60
+ batch_00636.tar.gz | jun         | group1       | PLANNED   |             |             27
+ batch_00637.tar.gz | jun         | group1       | PLANNED   |             |             68
+ batch_00638.tar.gz | jun         | group1       | PLANNED   |             |             30
+ batch_00639.tar.gz | jun         | group1       | PLANNED   |             |              7
+ batch_00640.tar.gz | jun         | group1       | PLANNED   |             |             24
+ batch_00641.tar.gz | jun         | group1       | PLANNED   |             |             43
+ batch_00642.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00643.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00644.tar.gz | jun         | group1       | PLANNED   |             |             69
+ batch_00645.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00646.tar.gz | jun         | group1       | PLANNED   |             |             47
+ batch_00647.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00648.tar.gz | jun         | group1       | PLANNED   |             |             79
+ batch_00649.tar.gz | jun         | group1       | PLANNED   |             |             16
+ batch_00650.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00651.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00652.tar.gz | jun         | group1       | PLANNED   |             |              3
+ batch_00653.tar.gz | jun         | group1       | PLANNED   |             |            119
+ batch_00654.tar.gz | jun         | group1       | PLANNED   |             |             21
+ batch_00655.tar.gz | jun         | group1       | PLANNED   |             |              9
+ batch_00656.tar.gz | jun         | group1       | PLANNED   |             |            100
+ batch_00657.tar.gz | jun         | group1       | PLANNED   |             |             18
+ batch_00658.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00659.tar.gz | jun         | group1       | PLANNED   |             |              6
+ batch_00660.tar.gz | jun         | group1       | PLANNED   |             |             23
+ batch_00661.tar.gz | jun         | group1       | PLANNED   |             |             56
+ batch_00662.tar.gz | jun         | group1       | PLANNED   |             |             87
+ batch_00663.tar.gz | jun         | group1       | PLANNED   |             |             19
+ batch_00664.tar.gz | jun         | group1       | PLANNED   |             |             56
+ batch_00665.tar.gz | jun         | group1       | PLANNED   |             |             54
+ batch_00666.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00667.tar.gz | jun         | group1       | PLANNED   |             |            106
+ batch_00668.tar.gz | jun         | group1       | PLANNED   |             |             63
+ batch_00669.tar.gz | jun         | group1       | PLANNED   |             |             30
+ batch_00670.tar.gz | jun         | group1       | PLANNED   |             |             18
+ batch_00671.tar.gz | jun         | group1       | PLANNED   |             |              8
+ batch_00672.tar.gz | jun         | group1       | PLANNED   |             |             19
+ batch_00673.tar.gz | jun         | group1       | PLANNED   |             |             78
+ batch_00674.tar.gz | jun         | group1       | PLANNED   |             |             17
+ batch_00675.tar.gz | jun         | group1       | PLANNED   |             |              7
+ batch_00676.tar.gz | jun         | group1       | PLANNED   |             |             60
+ batch_00677.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00678.tar.gz | jun         | group1       | PLANNED   |             |              2
+ batch_00679.tar.gz | jun         | group1       | PLANNED   |             |             34
+ batch_00680.tar.gz | jun         | group1       | PLANNED   |             |             35
+ batch_00681.tar.gz | jun         | group1       | PLANNED   |             |             89
+ batch_00682.tar.gz | jun         | group1       | PLANNED   |             |             25
+ batch_00683.tar.gz | jun         | group1       | PLANNED   |             |             25
+ batch_00684.tar.gz | jun         | group1       | PLANNED   |             |              7
+ batch_00685.tar.gz | jun         | group1       | PLANNED   |             |             74
+ batch_00686.tar.gz | jun         | group1       | PLANNED   |             |             33
+ batch_00687.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00688.tar.gz | jun         | group1       | PLANNED   |             |              1
+ batch_00689.tar.gz | jun         | group1       | PLANNED   |             |              6
+ batch_00690.tar.gz | jun         | group1       | PLANNED   |             |             53
+ batch_00691.tar.gz | jun         | group1       | PLANNED   |             |             18
+ batch_00692.tar.gz | jun         | group1       | PLANNED   |             |             42
+ batch_00693.tar.gz | jun         | group1       | PLANNED   |             |             31
+ batch_00694.tar.gz | jun         | group1       | PLANNED   |             |             10
+ batch_00695.tar.gz | jun         | group1       | PLANNED   |             |              7
+ batch_00696.tar.gz | jun         | group1       | PLANNED   |             |             48
+ batch_00697.tar.gz | jun         | group1       | PLANNED   |             |             46
+ batch_00698.tar.gz | jun         | group1       | PLANNED   |             |              4
+ batch_00699.tar.gz | jun         | group1       | PLANNED   |             |             15
+(699 rows)
+

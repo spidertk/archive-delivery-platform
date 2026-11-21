@@ -22,8 +22,16 @@ public class PipelineNodeConfig {
     }
 
     public FtpNodeConfig ftp(NodeDefinition node) {
+        // 删除策略必须显式为布尔值，且日期必须是直属目录，发布时阻止宽泛路径清理。
+        Object cleanup = node.config().get("cleanupOtherDeliveryDates");
+        if (cleanup != null && !(cleanup instanceof Boolean)) {
+            throw new IllegalArgumentException("FTP cleanupOtherDeliveryDates must be boolean");
+        }
         FtpNodeConfig config = mapper.convertValue(node.config(), FtpNodeConfig.class);
         config.validate();
+        if (config.cleanupOtherDeliveryDates() && !"{deliveryDate}".equals(node.config().get("remotePathTemplate"))) {
+            throw new IllegalArgumentException("FTP date cleanup requires the direct {deliveryDate} path template");
+        }
         return config;
     }
 

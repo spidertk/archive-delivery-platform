@@ -36,11 +36,18 @@ def load_case(path):
         if script and (Path(script).is_absolute() or ".." in Path(script).parts or not script.endswith(".py")):
             raise ValueError(f"{path}: unsafe scriptPath {script}")
     assignment = definition.get("config", {}).get("assignment", {})
-    minimum, maximum = assignment.get("minPackageBytes"), assignment.get("maxPackageBytes")
-    if assignment.get("strategySource") != "SUBMIT_TARGETS" or not isinstance(minimum, int) or not isinstance(maximum, int):
-        raise ValueError(f"{path}: invalid assignment configuration")
-    if minimum <= 0 or minimum > maximum:
-        raise ValueError(f"{path}: minPackageBytes must be positive and no greater than maxPackageBytes")
+    pipeline_code = definition["pipelineCode"]
+    expected_strategy = "BATCH_PLANNING" if pipeline_code == "archive-batch" else "SUBMIT_TARGETS"
+    if assignment.get("strategySource") != expected_strategy:
+        raise ValueError(f"{path}: assignment.strategySource must be {expected_strategy}")
+    if pipeline_code == "archive-batch":
+        maximum = assignment.get("maxPackageBytes")
+        if not isinstance(maximum, int) or maximum <= 0 or "minPackageBytes" in assignment:
+            raise ValueError(f"{path}: archive-batch requires only a positive maxPackageBytes limit")
+        if not assignment.get("entityWorkers"):
+            raise ValueError(f"{path}: archive-batch requires entityWorkers capacity mappings")
+    elif "minPackageBytes" in assignment or "maxPackageBytes" in assignment:
+        raise ValueError(f"{path}: package byte bounds belong only to archive-batch")
     targets = golden.get("targets", [])
     if not targets:
         raise ValueError(f"{path}: at least one target is required")

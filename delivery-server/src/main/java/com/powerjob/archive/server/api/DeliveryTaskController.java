@@ -1,7 +1,6 @@
 package com.powerjob.archive.server.api;
 
 import com.powerjob.archive.core.service.ResumeConflictException;
-import com.powerjob.archive.core.service.DeliveryPreparationService;
 import com.powerjob.archive.core.service.TaskOperationService;
 import com.powerjob.archive.server.service.DashboardQueryService;
 import org.springframework.http.HttpStatus;
@@ -14,21 +13,19 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import java.util.Map;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/tasks")
 public class DeliveryTaskController {
     private final TaskOperationService operations;
-    private final DeliveryPreparationService preparation;
     private final DashboardQueryService dashboard;
 
-    public DeliveryTaskController(TaskOperationService operations, DeliveryPreparationService preparation, DashboardQueryService dashboard) {
+    public DeliveryTaskController(TaskOperationService operations, DashboardQueryService dashboard) {
         this.operations = operations;
-        this.preparation = preparation;
         this.dashboard = dashboard;
     }
 
@@ -43,13 +40,6 @@ public class DeliveryTaskController {
     public Map<String, Object> retry(@PathVariable long taskId, @Valid @RequestBody RetryRequest request) {
         operations.retry(taskId, request.expectedFence(), request.reason(), "api");
         return Map.of("taskId", taskId, "executionStatus", "READY");
-    }
-
-    @PostMapping("/{taskId}/replan-underfilled")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public Map<String, Object> replanUnderfilled(@PathVariable long taskId, @Valid @RequestBody RetryRequest request) {
-        List<Long> added = preparation.replanUnderfilled(taskId, request.expectedFence(), request.reason());
-        return Map.of("taskId", taskId, "executionStatus", "READY", "addedDataIds", added);
     }
 
     @ExceptionHandler(ResumeConflictException.class)

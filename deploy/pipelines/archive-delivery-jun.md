@@ -47,7 +47,7 @@
     },
     "ftp.download-verify": {
       "enabled": true,
-      "configSchema": {"type": "object", "required": ["scriptPath", "deliveryEntityFrom", "ftpCredential"]},
+      "configSchema": {"type": "object", "required": ["scriptPath", "deliveryEntityFrom", "ftpCredential"], "properties": {"cleanupOtherDeliveryDates": {"type": "boolean", "description": "仅保留直属 FTP 根下本次任务交付日期目录"}}},
       "inputContract": {"type": "object"},
       "outputContract": {"type": "object"}
     }
@@ -57,9 +57,7 @@
     "deliveryCutoffTime": "02:00:00",
     "rolloverStartNode": "targetUpload",
     "assignment": {
-      "strategySource": "SUBMIT_TARGETS",
-      "minPackageBytes": 8388608,
-      "maxPackageBytes": 104857600
+      "strategySource": "SUBMIT_TARGETS"
     },
     "concurrency": {"maxRunningTasks": 4},
     "retry": {"maxAttempts": 5}
@@ -81,7 +79,7 @@
       "id": "mergePackages",
       "type": "package.merge",
       "stageCode": "MERGE",
-      "displayName": "按 8–100 MiB 合并来源包",
+      "displayName": "按批次规划合并来源包",
       "next": "repair",
       "config": {"scriptPath": "archive_merge.py"}
     },
@@ -124,7 +122,8 @@
       "config": {
         "scriptPath": "ftp_download_verify.py",
         "deliveryEntityFrom": "TASK",
-        "remotePathTemplate": "{deliveryDate}/{deliveryBatch}",
+        "remotePathTemplate": "{deliveryDate}",
+        "cleanupOtherDeliveryDates": true,
         "ftpCredential": {
           "june": "replace-ftp-password",
           "june-1": "replace-ftp-password",
@@ -142,17 +141,17 @@
 {
   "caseId": "archive-delivery-jun",
   "pipelineCode": "archive-delivery",
-  "ossUri": "oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-raw-20261113-v1/daily-accepted-20261113-v2/products/",
-  "description": "从提交 ossUri 指定的真实源前缀交付 alibaba/jun 合并包，独立核对源、目标 OSS 和 FTP 文件事实。",
+  "ossUri": "oss://sg-storage-20261013-6vmlk/internal/gpt-sse-wire-fix-20261112-v1/products/",
+  "description": "从 archive-batch 已规划的同名单元消费真实来源包，独立核对源、目标 OSS 和 FTP 文件事实。",
   "targets": [
     {
-      "targetCount": 1,
+      "targetCount": 100,
       "vendorCode": "alibaba",
-      "entityCode": "jun",
-      "accountName": "june",
+      "entityCode": "jun-2",
+      "accountName": "root",
       "workerGroup": "group1",
       "host": "ftp-june",
-      "hostRoot": "/srv/maas-sftp/maasData/archive/june",
+      "hostRoot": "/srv/maas-sftp/maasData/archive/june-2",
       "port": 21,
       "rootPath": "/"
     }
@@ -160,7 +159,7 @@
   "expected": {
     "deliveryStatus": "DELIVERED",
     "taskStatus": "SUCCEEDED",
-    "taskCount": 1,
+    "taskCount": 100,
     "nodeTypes": [
       "oss.download",
       "package.merge",

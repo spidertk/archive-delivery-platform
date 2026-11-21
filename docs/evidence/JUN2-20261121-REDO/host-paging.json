@@ -1,0 +1,9 @@
+{
+  "pswpin": 7075486,
+  "pswpout": 12286072,
+  "pgmajfault": 4075648,
+  "oom_kill": 0,
+  "at": "2026-11-20T20:07:14.188071+00:00",
+  "pageSize": 4096,
+  "swappiness": "20"
+}

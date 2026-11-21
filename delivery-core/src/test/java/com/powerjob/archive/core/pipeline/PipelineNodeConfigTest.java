@@ -39,4 +39,18 @@ class PipelineNodeConfigTest {
             assertThrows(IllegalArgumentException.class, () -> configs.script(node));
         }
     }
+
+    @Test void ftpCleanupRequiresExplicitBooleanAndDirectDatePath() {
+        // 凭据合法也不能放宽删除范围；只有直属日期目录允许启用保留策略。
+        for (Object cleanup : new Object[]{"true", Boolean.TRUE}) {
+            NodeDefinition unsafe = new NodeDefinition("ftp", "ftp.download-verify", "VERIFY", "ftp", null,
+                    Map.of("deliveryEntityFrom", "TASK", "ftpCredential", Map.of("root", "test-secret"),
+                            "cleanupOtherDeliveryDates", cleanup, "remotePathTemplate", "{deliveryId}/{deliveryDate}"));
+            assertThrows(IllegalArgumentException.class, () -> configs.ftp(unsafe));
+        }
+        NodeDefinition valid = new NodeDefinition("ftp", "ftp.download-verify", "VERIFY", "ftp", null,
+                Map.of("deliveryEntityFrom", "TASK", "ftpCredential", Map.of("root", "test-secret"),
+                        "cleanupOtherDeliveryDates", true, "remotePathTemplate", "{deliveryDate}"));
+        org.junit.jupiter.api.Assertions.assertTrue(configs.ftp(valid).cleanupOtherDeliveryDates());
+    }
 }

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import secrets
+import shlex
 from pathlib import Path
 
 GENERATED_KEYS = (
@@ -17,6 +18,11 @@ OSS_KEYS = (
     "TARGET_OSS_ACCESS_KEY_ID",
     "TARGET_OSS_ACCESS_KEY_SECRET",
 )
+
+
+def shell_value(value):
+    quoted = len(value) >= 2 and value[0] == value[-1] and value[0] in ('"', "'")
+    return value if quoted else shlex.quote(value)
 
 
 def main():
@@ -39,8 +45,11 @@ def main():
         "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "8",
         "ARCHIVE_TASK_LEASE_SECONDS": "900",
         "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
-        "ARCHIVE_PG_BIND_ADDRESS": "127.0.0.1",
+        "ARCHIVE_PG_BIND_ADDRESS": "0.0.0.0",
         "POWERJOB_BIND_ADDRESS": "127.0.0.1",
+        "POWERJOB_PROTOCOL_BIND_ADDRESS": "127.0.0.1",
+        "POWERJOB_SERVER_ADDRESS": "powerjob-server:7700",
+        "POWERJOB_JVMOPTIONS": "-Dpowerjob.network.external.address=powerjob-server -Dpowerjob.network.external.port=10010",
         "POWERJOB_ADMIN_INITIAL_PASSWORD": "powerjob_admin",
         "PROD_ENTITY_COUNT": "1",
         "PROD_ENTITY_1_VENDOR_CODE": "alibaba",
@@ -61,7 +70,7 @@ def main():
     for key in GENERATED_KEYS:
         if not values.get(key) or values[key].startswith("replace-") or "********" in values[key]:
             values[key] = secrets.token_urlsafe(30)
-    path.write_text("\n".join(f"{key}={value}" for key, value in values.items()) + "\n", encoding="utf-8")
+    path.write_text("\n".join(f"{key}={shell_value(value)}" for key, value in values.items()) + "\n", encoding="utf-8")
     os.chmod(path, 0o600)
     missing_oss = [key for key in OSS_KEYS
                    if not values.get(key) or values[key].startswith("replace-") or "********" in values[key]]

@@ -20,14 +20,12 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ManifestQualifyNodeTest {
     @TempDir Path temp;
 
-    @Test void metadataContainsOrderedDataIdsAndArtifactsContainOnlySourceFacts() throws Exception {
+    @Test void artifactsMatchBatchSourcesWithoutMetadataIds() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         FileTransferService files = new FileTransferService();
         Path packagePath = temp.resolve("batch_00001.tar.gz");
@@ -39,29 +37,26 @@ class ManifestQualifyNodeTest {
         ArrayNode artifacts = mapper.createArrayNode();
         addPair(artifacts.addObject(), first);
         addPair(artifacts.addObject(), second);
-        ArrayNode metadata = mapper.createArrayNode().add(11).add(12);
-        DeliveryTask task = task(artifacts, metadata, size);
-        PipelineDefinition pipeline = new PipelineDefinition("archive-delivery", 1,
-                Map.of("assignment", Map.of("minPackageBytes", 1, "maxPackageBytes", 100)), Map.of(),
+        DeliveryTask task = task(artifacts, size);
+        PipelineDefinition pipeline = new PipelineDefinition("archive-delivery", 1, Map.of(), Map.of(),
                 List.of(new NodeDefinition("repair", "python.repair", "REPAIR", "Repair", "qualify", Map.of()),
                         new NodeDefinition("qualify", "manifest.qualify", "VERIFY", "Qualify", null, Map.of())));
         ObjectNode repairOutput = mapper.createObjectNode().put("localPath", packagePath.toString())
                 .put("requestCount", 3).put("sizeBytes", size).put("sha256", sha);
-        repairOutput.set("metadataIds", metadata.deepCopy());
         NodeContext context = new NodeContext(task, first, List.of(first, second),
                 new DeliveryEntity(10, "alibaba", "jun", "Local", "FTP", "entity1", "group1", null, true),
                 pipeline.node("qualify"), pipeline, 100, 1, "worker", Map.of("repair", repairOutput));
 
         var result = new ManifestQualifyNode(files, mapper).execute(context);
-        assertEquals(2, result.outputLocator().required("metadataCount").asInt());
+        assertEquals(2, result.outputLocator().required("sourceCount").asInt());
         assertEquals(3, result.outputLocator().required("requestCount").asInt());
         assertEquals(2, artifacts.required(0).size());
         assertFalse(artifacts.required(0).has("deliveryArtifact"));
-        assertEquals(11, metadata.required(0).asLong());
-        assertEquals(12, metadata.required(1).asLong());
 
-        ArrayNode reversed = mapper.createArrayNode().add(12).add(11);
-        NodeContext invalid = new NodeContext(task(artifacts, reversed, size), context.source(), context.sources(),
+        ArrayNode reversed = mapper.createArrayNode();
+        addPair(reversed.addObject(), second);
+        addPair(reversed.addObject(), first);
+        NodeContext invalid = new NodeContext(task(reversed, size), context.source(), context.sources(),
                 context.entity(), context.node(), context.pipeline(), context.processId(), context.fence(),
                 context.workerId(), context.previousOutputs());
         assertThrows(IllegalStateException.class, () -> new ManifestQualifyNode(files, mapper).execute(invalid));
@@ -72,7 +67,7 @@ class ManifestQualifyNodeTest {
                 .put("newFileName", name).put("sizeBytes", 1).put("sha256", "0".repeat(64)).put("token", 1);
         artifact.putObject("file_mapping");
         return new SourceData(dataId, 8, name, "", mapper.createObjectNode(), null,
-                "PENDING", null, null, 0, 1, 1, "0".repeat(64), artifact);
+                "PENDING", null, null, 0, 1, 1, "0".repeat(64), "0".repeat(64), artifact);
     }
 
     private static void addPair(ObjectNode pair, SourceData source) {
@@ -80,9 +75,9 @@ class ManifestQualifyNodeTest {
         pair.set("sourceArtifact", source.artifact());
     }
 
-    private static DeliveryTask task(ArrayNode artifacts, ArrayNode metadata, long size) {
+    private static DeliveryTask task(ArrayNode artifacts, long size) {
         return new DeliveryTask(7, 8, 10, "jun", "group1", LocalDate.parse("2026-11-09"),
                 OffsetDateTime.parse("2026-11-09T18:00:00+08:00"), "batch_00001.tar.gz", size, size,
-                artifacts, metadata, "qualify", "RUNNING", "worker", null, 1, 0, null, null, null);
+                artifacts, "qualify", "RUNNING", "worker", null, 1, 0, null, null, null);
     }
 }

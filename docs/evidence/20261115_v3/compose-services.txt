@@ -1,0 +1,10 @@
+NAME                                            IMAGE                                        COMMAND                  SERVICE           CREATED        STATUS                  PORTS
+archive_delivery_production-archive-server-1    archive_delivery_production-archive-server   "java -jar /app/app.…"   archive-server    4 hours ago    Up 4 hours (healthy)    127.0.0.1:8080->8080/tcp
+archive_delivery_production-ftp-june-1          archive_delivery_production-ftp-june         "python3 /usr/local/…"   ftp-june          4 hours ago    Up 4 hours              
+archive_delivery_production-mysql-1             mysql:8.0.36                                 "docker-entrypoint.s…"   mysql             4 days ago     Up 4 days (healthy)     3306/tcp, 33060/tcp
+archive_delivery_production-postgres-1          postgres:16-alpine                           "docker-entrypoint.s…"   postgres          20 hours ago   Up 20 hours (healthy)   0.0.0.0:5432->5432/tcp
+archive_delivery_production-powerjob-server-1   powerjob/powerjob-server:v5.1.7              "sh -c 'exec java $J…"   powerjob-server   8 hours ago    Up 8 hours              127.0.0.1:7700->7700/tcp, 127.0.0.1:10010->10010/tcp, 10086/tcp
+archive_delivery_production-worker-1-1          archive_delivery_production-worker-1         "java -jar /app/app.…"   worker-1          4 hours ago    Up 4 hours              
+archive_delivery_production-worker-2-1          archive_delivery_production-worker-2         "java -jar /app/app.…"   worker-2          4 hours ago    Up 4 hours              
+archive_delivery_production-worker-3-1          archive_delivery_production-worker-3         "java -jar /app/app.…"   worker-3          4 hours ago    Up 4 hours              
+archive_delivery_production-worker-4-1          archive_delivery_production-worker-4         "java -jar /app/app.…"   worker-4          4 hours ago    Up 4 hours              

@@ -8,6 +8,9 @@ export interface Summary {
   waiting: number
   paused: number
   expired: number
+  batchPackageTotal: number
+  deliveredPackageCount: number
+  originalFileCount: number
   targets: DeliveryTarget[]
 }
 
@@ -64,7 +67,6 @@ export interface DeliveryTask {
   retryCount: number
   lastErrorCode?: string
   artifacts: ArtifactPair[]
-  metadataIds: number[]
 }
 
 export interface NodeItem {
@@ -114,4 +116,11 @@ export interface SubmitDelivery {
   deliveryDate: string
   deliveryBatch: string
   targets: SubmitTarget[]
+}
+
+export interface CreateDeliveryBatch {
+  ossUri: string
+  pipelineCode: string
+  deliveryDate: string
+  deliveryBatch: string
 }

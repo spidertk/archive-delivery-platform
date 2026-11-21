@@ -1,0 +1,148 @@
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  878.6kB
+Step 1/17 : FROM maven:3.9-eclipse-temurin-17 AS build
+ ---> 1a352420f7ab
+Step 2/17 : WORKDIR /workspace
+ ---> Using cache
+ ---> fdfcd2ffe3ac
+Step 3/17 : COPY pom.xml ./
+ ---> Using cache
+ ---> ac943f809d7f
+Step 4/17 : COPY delivery-core/pom.xml delivery-core/pom.xml
+ ---> Using cache
+ ---> 2b1509f4c070
+Step 5/17 : COPY delivery-worker/pom.xml delivery-worker/pom.xml
+ ---> Using cache
+ ---> 2377d0ae6c86
+Step 6/17 : COPY delivery-server/pom.xml delivery-server/pom.xml
+ ---> Using cache
+ ---> fa1bb5b1044c
+Step 7/17 : COPY deploy/maven-settings.xml deploy/maven-settings.xml
+ ---> Using cache
+ ---> 8119563e3955
+Step 8/17 : RUN mvn -q -s deploy/maven-settings.xml -DskipTests dependency:go-offline
+ ---> Running in 4762206fe2d3
+ ---> Removed intermediate container 4762206fe2d3
+ ---> 083f643de0a8
+Step 9/17 : COPY . .
+ ---> 7e18f94f787e
+Step 10/17 : RUN mvn -q -s deploy/maven-settings.xml -DskipTests package
+ ---> Running in e9b2d47d065a
+ ---> Removed intermediate container e9b2d47d065a
+ ---> 382a5043da0e
+Step 11/17 : FROM maven:3.9-eclipse-temurin-17
+ ---> 1a352420f7ab
+Step 12/17 : RUN apt-get update && apt-get install -y --no-install-recommends python3     && rm -rf /var/lib/apt/lists/*     && useradd -r -u 10001 -m delivery     && mkdir -p /data/work /data/ftp-verify     && chown -R 10001:10001 /data
+ ---> Running in 2ac5de8e9d42
+Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+Get:3 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [2,216 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Get:5 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1,475 kB]
+Get:6 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [55.6 kB]
+Get:7 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1,560 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+Get:10 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1,808 kB]
+Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1,822 kB]
+Get:14 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2,184 kB]
+Get:15 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [61.7 kB]
+Get:16 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2,371 kB]
+Get:17 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [669 B]
+Get:18 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+Get:19 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+Fetched 34.0 MB in 4s (9,429 kB/s)
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  libpython3-stdlib libpython3.12-minimal libpython3.12-stdlib media-types
+  netbase python3-minimal python3.12 python3.12-minimal
+Suggested packages:
+  python3-doc python3-tk python3-venv python3.12-venv python3.12-doc
+  binfmt-support
+The following NEW packages will be installed:
+  libpython3-stdlib libpython3.12-minimal libpython3.12-stdlib media-types
+  netbase python3 python3-minimal python3.12 python3.12-minimal
+0 upgraded, 9 newly installed, 0 to remove and 30 not upgraded.
+Need to get 5,996 kB of archives.
+After this operation, 23.8 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-minimal amd64 3.12.3-1ubuntu0.17 [839 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-minimal amd64 3.12.3-1ubuntu0.17 [2,335 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3-minimal amd64 3.12.3-0ubuntu2.1 [27.4 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble/main amd64 media-types all 10.1.0 [27.5 kB]
+Get:5 http://archive.ubuntu.com/ubuntu noble/main amd64 netbase all 6.4 [13.1 kB]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-stdlib amd64 3.12.3-1ubuntu0.17 [2,071 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12 amd64 3.12.3-1ubuntu0.17 [651 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3-stdlib amd64 3.12.3-0ubuntu2.1 [10.1 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3 amd64 3.12.3-0ubuntu2.1 [23.0 kB]
+[91mdebconf: delaying package configuration, since apt-utils is not installed
+[0mFetched 5,996 kB in 0s (53.8 MB/s)
+Selecting previously unselected package libpython3.12-minimal:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10014 files and directories currently installed.)
+Preparing to unpack .../libpython3.12-minimal_3.12.3-1ubuntu0.17_amd64.deb ...
+Unpacking libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.17) ...
+Selecting previously unselected package python3.12-minimal.
+Preparing to unpack .../python3.12-minimal_3.12.3-1ubuntu0.17_amd64.deb ...
+Unpacking python3.12-minimal (3.12.3-1ubuntu0.17) ...
+Setting up libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.17) ...
+Setting up python3.12-minimal (3.12.3-1ubuntu0.17) ...
+Selecting previously unselected package python3-minimal.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10325 files and directories currently installed.)
+Preparing to unpack .../0-python3-minimal_3.12.3-0ubuntu2.1_amd64.deb ...
+Unpacking python3-minimal (3.12.3-0ubuntu2.1) ...
+Selecting previously unselected package media-types.
+Preparing to unpack .../1-media-types_10.1.0_all.deb ...
+Unpacking media-types (10.1.0) ...
+Selecting previously unselected package netbase.
+Preparing to unpack .../2-netbase_6.4_all.deb ...
+Unpacking netbase (6.4) ...
+Selecting previously unselected package libpython3.12-stdlib:amd64.
+Preparing to unpack .../3-libpython3.12-stdlib_3.12.3-1ubuntu0.17_amd64.deb ...
+Unpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...
+Selecting previously unselected package python3.12.
+Preparing to unpack .../4-python3.12_3.12.3-1ubuntu0.17_amd64.deb ...
+Unpacking python3.12 (3.12.3-1ubuntu0.17) ...
+Selecting previously unselected package libpython3-stdlib:amd64.
+Preparing to unpack .../5-libpython3-stdlib_3.12.3-0ubuntu2.1_amd64.deb ...
+Unpacking libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...
+Setting up python3-minimal (3.12.3-0ubuntu2.1) ...
+Selecting previously unselected package python3.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 10766 files and directories currently installed.)
+Preparing to unpack .../python3_3.12.3-0ubuntu2.1_amd64.deb ...
+Unpacking python3 (3.12.3-0ubuntu2.1) ...
+Setting up media-types (10.1.0) ...
+Setting up netbase (6.4) ...
+Setting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.17) ...
+Setting up python3.12 (3.12.3-1ubuntu0.17) ...
+Setting up libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...
+Setting up python3 (3.12.3-0ubuntu2.1) ...
+running python rtupdate hooks for python3.12...
+running python post-rtupdate hooks for python3.12...
+[91museradd warning: delivery's uid 10001 is greater than SYS_UID_MAX 999
+[0m ---> Removed intermediate container 2ac5de8e9d42
+ ---> d69133738314
+Step 13/17 : WORKDIR /app
+ ---> Running in d0d2dbc402f6
+ ---> Removed intermediate container d0d2dbc402f6
+ ---> cc30621ac191
+Step 14/17 : COPY --from=build /workspace/delivery-worker/target/delivery-worker.jar app.jar
+ ---> 7daaf2acd133
+Step 15/17 : COPY nodes/python /app/nodes/python
+ ---> 21c839af7226
+Step 16/17 : USER 10001
+ ---> Running in ce471f14be11
+ ---> Removed intermediate container ce471f14be11
+ ---> 8ad00143500a
+Step 17/17 : ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ ---> Running in 89862d39e830
+ ---> Removed intermediate container 89862d39e830
+ ---> 0db5688e7964
+Successfully built 0db5688e7964
+Successfully tagged archive_delivery_production-worker-1:jun2-20261121

@@ -2,11 +2,14 @@
 
 ## 模块职责
 
-`delivery-server` 提供 Delivery API、实体与集中 PipelineVersion 管理、看板和 Vue 静态资源托管。它依赖 delivery-core，不执行 repair、OSS/FTP 节点或直接推进任务。入口为 `ArchiveServerApplication`，HTTP 8080，Actuator 只暴露 health。
+`delivery-server` 提供 OSS 批次创建、批次交付 API、实体与集中 PipelineVersion 管理、看板和 Vue 静态资源托管。它依赖 delivery-core，不执行 repair、OSS/FTP 节点或直接推进任务。
 
 ## API 契约
 
 ```text
+POST /api/v1/delivery-batches
+GET  /api/v1/delivery-batches/{deliveryId}
+GET  /api/v1/delivery-batches/{deliveryId}/packages
 POST /api/v1/deliveries
 GET  /api/v1/deliveries/{deliveryId}
 POST /api/v1/deliveries/{deliveryId}/pause
@@ -14,23 +17,21 @@ POST /api/v1/deliveries/{deliveryId}/resume
 POST /api/v1/deliveries/{deliveryId}/rollover
 GET  /api/v1/deliveries/{deliveryId}/tasks
 POST /api/v1/tasks/{taskId}/retry
-POST /api/v1/tasks/{taskId}/replan-underfilled
 GET  /api/v1/tasks/{taskId}/timeline
 GET  /api/v1/dashboard/targets?deliveryId={deliveryId}
 ```
 
-SubmitDeliveryRequest 只包含 ossUri、pipelineCode、deliveryDate、deliveryBatch、targets；targets 每项只有 targetCount/vendorCode/entityCode。不得恢复 sourceId、pipelineVersionId、deliveryEntityId、cutoffAt、idempotencyKey、Secret 或节点链入参。
+批次创建只含 ossUri、pipelineCode=archive-batch、deliveryDate、deliveryBatch。交付提交只含 ossUri、pipelineCode=archive-delivery、deliveryDate、deliveryBatch、targets[targetCount/vendorCode/entityCode]。
 
-deliveryBatch 全局幂等；历史请求返回原单，DELIVERED 后可对原实体追加 targetCount，其他不同请求 409。pause 只接收 reason，在节点边界暂停；PAUSED 主单通过历史请求继续。resume 使用 fromNode/taskIds/reason，retry 使用 expectedFence，replan-underfilled 只处理预期 fence 的 BLOCKED/qualify 压缩不足任务，rollover 使用 expectedDeliveryDate/deliveryDate/reason。
+BATCH_CREATE 在同参数下幂等；BATCH_SUBMIT 每次创建独立提交并领取未消费批次包，同批次两次提交不是旧请求重放。暂停恢复使用显式 resume，不再通过重复提交继续。
 
 ## 开发约束
 
 1. Controller 只做 HTTP、校验和响应；规划、外部调用和状态迁移在 core。
-2. target_strategy 只保存 vendorCode/entityCode/targetCount；看板通过复合业务键关联实体，任务聚合不含 targetSeq。
-3. 任务投影暴露 entityCode、sourceDataIds、artifacts[dataId/sourceArtifact]、metadataIds 和 newFileName；metadataIds 是与 sourceDataIds 相同的正整数 data_id 数组，不保存 requestId 或 deliveryArtifact。JSONB 必须直接输出 JSON 数组/对象，禁止把 JDBC PGobject 的 type/value 包装泄漏到 API。SHA 从最新成功 repair 节点 output_locator 派生展示，不恢复数据库冗余列。
-4. 看板只统计最新有效任务，PAUSED 和 PARTIALLY_DELIVERED 不得提前显示 DELIVERED。
-5. Pipeline 已发布不可改；nodeDefinitions/DAG/assignment/Secret 集中在 definition，不再接受独立 ruleSets、selection 或 repair.ruleSet；三个 Python 节点的 scriptPath 只能是固定脚本目录内的规范化相对 .py 路径。
-6. 修改 API 同步前端、脚本、测试、设计和 AGENTS，不保留旧适配。
+2. 看板同时暴露批次包总数、已交付包数和原始文件关系数；任务只统计最新有效任务。
+3. 任务投影暴露 entityCode、sourceDataIds、artifacts[dataId/sourceArtifact] 和 newFileName，不再有 metadataIds。
+4. Pipeline 已发布不可改；archive-batch 保存包大小与实体机器容量，archive-delivery 不重复保存这些配置。
+5. 修改 API 同步前端、脚本、测试、设计和 AGENTS，不保留旧适配。
 
 ## 测试
 
@@ -39,4 +40,6 @@ deliveryBatch 全局幂等；历史请求返回原单，DELIVERED 后可对原�
 cd web && npm ci && npm run test && npm run build
 ```
 
-重点覆盖 entityCode 提交、批次幂等、未知字段、实体校验、暂停再提交、retry fence、resume 前置事实、动态看板、Pipeline 不可变和 Secret 脱敏。
+## 生产看板打包
+
+API Dockerfile 将前端 dist 放入 src/main/resources/static 随服务 jar 发布；生产健康验收同时核对 /actuator/health、根路径 HTTP 200 和实际静态资源。JVM heap 通过 ARCHIVE_SERVER_JAVA_OPTIONS 配置，jun-2 默认 -Xms64m -Xmx256m。

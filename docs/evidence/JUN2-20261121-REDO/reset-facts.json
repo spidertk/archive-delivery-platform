@@ -1,0 +1,32 @@
+{
+  "at": "2026-11-21T03:51:15+0800",
+  "oldDeliveryIds": [
+    1,
+    2
+  ],
+  "oldCounts": {
+    "submits": 2,
+    "sources": 343,
+    "tasks": 89,
+    "nodes": 172,
+    "events": 266,
+    "allocations": 29
+  },
+  "sourceCount": 343,
+  "sourceBytes": 6507105830,
+  "deletedFtpFiles": 841,
+  "deletedFtpBytes": 57078074045,
+  "deletedDates": [
+    "2026-11-19",
+    "2026-11-22"
+  ],
+  "removedWorkPaths": [
+    "work/delivery-2",
+    "ftp-verify/2"
+  ],
+  "sourceCacheRetained": true,
+  "diskUsedBeforeCleanup": 144900308992,
+  "diskUsedAfterCleanup": 85172453376,
+  "remainingDeliverySubmits": 0,
+  "eventImmutabilityRestored": true
+}

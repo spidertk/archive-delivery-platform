@@ -47,7 +47,8 @@ final class ProcessSupport {
         // 非零退出必须阻断节点并限制错误文本长度。
         if (process.exitValue() != 0) {
             String detail = sanitize(text);
-            throw new IllegalStateException("Local data-plane process failed: " + detail.substring(0, Math.min(800, detail.length())));
+            String tail = detail.length() <= 800 ? detail : detail.substring(detail.length() - 800);
+            throw new IllegalStateException("Local data-plane process failed: " + tail);
         }
         // 只有成功输出才交给 runJson 提取标记结果。
         return text;

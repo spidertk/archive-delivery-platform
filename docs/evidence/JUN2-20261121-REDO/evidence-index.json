@@ -1,0 +1,228 @@
+{
+  "at": "2026-11-21T00:40:10.494473+00:00",
+  "registryExitCode": 0,
+  "validationDirectoryCleaned": true,
+  "observerStopped": true,
+  "files": {
+    "acceptance-report.md": {
+      "sizeBytes": 5251,
+      "sha256": "a6ad73e024ca4075539394596f3b8f33c3d5a43a7f9869aa126439831109c5d0"
+    },
+    "application.log": {
+      "sizeBytes": 20885623,
+      "sha256": "260f2ba760edaac6b5ec7393ada46178d18952fa22101719ce5ef8ac5b458c93"
+    },
+    "batch-api.json": {
+      "sizeBytes": 699,
+      "sha256": "1dfb6b892c09c2ff288624ac3ed6db3ca0586150b51b39baadf3d9427e94fcc6"
+    },
+    "batch-packages-final.json": {
+      "sizeBytes": 20396,
+      "sha256": "9e3fc9127753ef5600046d75db86c22e8df4401b492de086cfb29d1dc1112b90"
+    },
+    "batch-packages-planned.json": {
+      "sizeBytes": 18982,
+      "sha256": "450da1036d6dbcd81d0f7551d7c90743b1e7e5f016878b1c251a194a5d8856ad"
+    },
+    "batch-planning-summary.json": {
+      "sizeBytes": 221,
+      "sha256": "0d7124d56c6fb7b6ae978a724ba3fcac46e5590207043ca3490f3edee3adc4ba"
+    },
+    "batch-summary.json": {
+      "sizeBytes": 221,
+      "sha256": "e7cd55b2d3fa6cf6ccc5749ca19e616dabc91e6e36701fe2a70d138036bec83e"
+    },
+    "build-ftp.log": {
+      "sizeBytes": 8720,
+      "sha256": "629368aaee25ef4df4863d6c7d6fa016bf3202f1932ffffadc3a2b27659ac013"
+    },
+    "build-server.log": {
+      "sizeBytes": 4764,
+      "sha256": "966ba93260de84db59eb9fd2a5063694ec3ac5678909e2bc21b0c70502b27e51"
+    },
+    "build-worker-final.log": {
+      "sizeBytes": 2178,
+      "sha256": "d550480bca8b70965bc3cef756fd8320fc35e34daf17f2f92ee5346d39d175a2"
+    },
+    "build-worker.log": {
+      "sizeBytes": 9917,
+      "sha256": "d1e1bf209b43f08208ecedecd550d93aaf29d9309e93c358dcadf5a847647ff9"
+    },
+    "compose-services.txt": {
+      "sizeBytes": 1951,
+      "sha256": "942791b773fc5585537ff1999206c3e24565783c4d7347eedb86d7b4a7c87d32"
+    },
+    "create-batch-response.json": {
+      "sizeBytes": 152,
+      "sha256": "ee159b3e93f306423334603d4009bbe8d7a525ebff3bc68a6bec82ae7de174c9"
+    },
+    "create-batch.json": {
+      "sizeBytes": 236,
+      "sha256": "d33b5a20c81a52429de56a034f3a66031708b213d2ed933cdc0522dc98996f6e"
+    },
+    "database-facts.txt": {
+      "sizeBytes": 10103,
+      "sha256": "a442f2b13228754ff484a9a574f3f81169f0428073648c0affe0c92028e6ef94"
+    },
+    "deleted-ftp-inventory.json": {
+      "sizeBytes": 69675,
+      "sha256": "84f7de7d2ff44ad60830ec9cd6ad872942aca5a1802217f431fb770087e58ea5"
+    },
+    "delivery-api-1.json": {
+      "sizeBytes": 1102,
+      "sha256": "7d3f31c7fb5b0475b7afe8c8361b55bc6813ae9a81fbe495ff9ac4189a4e2fb6"
+    },
+    "delivery-summary-1.json": {
+      "sizeBytes": 545,
+      "sha256": "5d17ac2501ebcb70f7b5fbf9333a0865280fd7a4883726e67278927c708c05dd"
+    },
+    "deployment.json": {
+      "sizeBytes": 474,
+      "sha256": "8662bc5ea4ef5a0c7f224ca3ebad7f987178b707e83aeb86ba687de737db28c4"
+    },
+    "external-verification-1.log": {
+      "sizeBytes": 180010,
+      "sha256": "44be4a6edbc61cd3ff6fdafec9bd01ec83c5711f68ae4428aef8f80e89bc7525"
+    },
+    "final-facts.json": {
+      "sizeBytes": 885305,
+      "sha256": "d3eceb829f2609aab818189544dea25e262e807c89e680df348b383c60751f3a"
+    },
+    "ftp-partial.txt": {
+      "sizeBytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "ftp-sha256.txt": {
+      "sizeBytes": 12015,
+      "sha256": "fe6f47843af79b72e102f4ea774eabfb9f71e56732cf9ea2810d0cda46d417b9"
+    },
+    "host-paging.json": {
+      "sizeBytes": 174,
+      "sha256": "526f4d185d0dab91b606224a1264663eb7a7225bba35af45f30afd9ea7063289"
+    },
+    "host-vmstat.log": {
+      "sizeBytes": 715,
+      "sha256": "fcbacfc45dcff3e517e963da98cd9197369e8a9c209a7d7d1830d32af897bef2"
+    },
+    "isolated-ftp-protocol.log": {
+      "sizeBytes": 2919,
+      "sha256": "b803ee8474aaa5dca9f757aa19214246d63ba11cbc36d1e46e776ae4f08a67ba"
+    },
+    "isolated-ftp-protocol.py": {
+      "sizeBytes": 3285,
+      "sha256": "f414924caa9bfde8611d79929ac76137cdfd297d34ac96422e3817fdf61e6d3a"
+    },
+    "local-java-tests.json": {
+      "sizeBytes": 1658,
+      "sha256": "d8d749dd555d4167a860ea59223ca1e2c4ed9af7c6836e4bea6246720aefe143"
+    },
+    "maven-tests.log": {
+      "sizeBytes": 15187,
+      "sha256": "733ebe3995461a22ae3f722ecbc5060c36f6fa643092e0d31d379d8680cb98a7"
+    },
+    "observer.log": {
+      "sizeBytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "optimization-applied.json": {
+      "sizeBytes": 1159,
+      "sha256": "44d3a24b1bbd602d8328949258a17d1f4b869b0201b9ff9bf21b2584bfb68366"
+    },
+    "performance-metrics.json": {
+      "sizeBytes": 942,
+      "sha256": "18dce26edcf0f4387b06ea6cb477cf423adc0c519543452deda01d6437016112"
+    },
+    "performance-report.md": {
+      "sizeBytes": 5579,
+      "sha256": "c584140cf252b1194d325421a7974b749dc8b50511fc29c6921012da5b35e5d8"
+    },
+    "pipeline-execution.log": {
+      "sizeBytes": 185560,
+      "sha256": "b52d217b9c417902dee99f09172854f018616901bf77ad04f2d33fc0f84125b9"
+    },
+    "pipeline-exit-code": {
+      "sizeBytes": 2,
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    "preflight-before-reset.log": {
+      "sizeBytes": 416,
+      "sha256": "4d60e18ddf1ebed48367f21da207a958d7a50b7f751bfec189be521ab90dd1c6"
+    },
+    "preflight-published.log": {
+      "sizeBytes": 416,
+      "sha256": "04d3cd5171d98c58918834de02bb64ba602102bacfc159956c31fb32d2a911ca"
+    },
+    "previous-source-manifest.json": {
+      "sizeBytes": 254101,
+      "sha256": "321da240fb975a94d60009e2627560c8a0a63e09dcbf588a6b8fe68b741cb869"
+    },
+    "progress-facts.json": {
+      "sizeBytes": 788086,
+      "sha256": "6667feb1df0942429b62bef914b9a9d3d0a3c60fd8c4307c43edaf615aad9c7c"
+    },
+    "protocol-benchmark.json": {
+      "sizeBytes": 587,
+      "sha256": "d91c716e78cb49be9b119d10fdbd3d392fa5da10fbeaa26390c9afe59d619f67"
+    },
+    "provenance-verification.json": {
+      "sizeBytes": 291,
+      "sha256": "73d1f600525bd51eb65374b74917d05fed37d78c7c1f61c40d929d90eb514397"
+    },
+    "python-tests-final.log": {
+      "sizeBytes": 5896,
+      "sha256": "be7f1bc93ffc22511f263dab7748cd83b317b6ad010097972d64a4a2e3519b7b"
+    },
+    "python-tests-streaming.log": {
+      "sizeBytes": 4638,
+      "sha256": "0640c8c9b0afd1fd19d3664ed19123f5f80ef1b17c753c6f8dfa022c8b413e99"
+    },
+    "python-tests.log": {
+      "sizeBytes": 4348,
+      "sha256": "6f46d73a2648ef1309d5d5e775d64a1bae5524dc66aee7c56c06f6dc4d191199"
+    },
+    "recheck.sh": {
+      "sizeBytes": 1147,
+      "sha256": "bbd4ae526ad66a12ab52d3d4f7b3e475f8aa840c216dfb14c9b56f123506c053"
+    },
+    "reset-database.log": {
+      "sizeBytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "reset-facts.json": {
+      "sizeBytes": 637,
+      "sha256": "af0f5f0c0451ecdf5a149f1ea5fb47c49f3227c18989a62239addbb6e6ef2d9b"
+    },
+    "resources.jsonl": {
+      "sizeBytes": 501450,
+      "sha256": "da6c02ed15e2a39cead892bc6919fb4bc575d1668564778d2777a95a216e02c3"
+    },
+    "runtime-settings.json": {
+      "sizeBytes": 2568,
+      "sha256": "d487ae6d2c5e87efe56cdf61f136b32f14c83eb705a269791b7feb915e918623"
+    },
+    "source-manifest.json": {
+      "sizeBytes": 21205,
+      "sha256": "adf4c512674aadfa093fdb3c1819e617b5bcd18426fbd9e6843de821da1cda32"
+    },
+    "source-release.tar.gz": {
+      "sizeBytes": 186716,
+      "sha256": "3bab9aeb008bbdc2c6d35c8d3f98d243becf79aeee0e09958ba648fbdee26cea"
+    },
+    "submit-1.json": {
+      "sizeBytes": 355,
+      "sha256": "bc9bf44503ab97ddf9e53ba9b7833894ace7ef299ca69ae808630d23980d3977"
+    },
+    "submit-response-1.json": {
+      "sizeBytes": 149,
+      "sha256": "59d18043fbc26a24abbd2494fb89d7f93c2e6acd305447e0ae4be973529a7f61"
+    },
+    "tasks-api-1.json": {
+      "sizeBytes": 185095,
+      "sha256": "7151849f3a62d7cc910a4848ec8010457a293fc871d11b37a3c8640c5391e4dc"
+    },
+    "worker-final-release.json": {
+      "sizeBytes": 249,
+      "sha256": "2f5e6566fc13661b6a0a14fcd0d1dba141eff1bcb4e0a5923277447b5f3363cc"
+    }
+  }
+}

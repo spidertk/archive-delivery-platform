@@ -1,0 +1,11 @@
+{
+  "deployedAt": "2026-11-21T03:45:55+0800",
+  "health": "UP",
+  "dashboardHttp": 200,
+  "migrationSha256": "632f1e4a4af4ea4721f8e182ebdbf0cd0acdceb8b03f6edb073d3dc35344f243",
+  "images": {
+    "worker-1": "sha256:0db5688e79646d3eac8b3c59428b13e655598ff0c38f3b462e883de07071c210",
+    "archive-server": "sha256:63c82de54be071efbc1ecbb29c0fa8c04a7b1c5c071840d1cd319890b9690531",
+    "ftp-june": "sha256:b104f3379827737933ce4c4e04231a392e0390a9fc7696ad37aaa5536d6d32f5"
+  }
+}
