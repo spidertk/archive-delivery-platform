@@ -1,0 +1,741 @@
+{
+  "collectedAt": "2026-11-22T12:03:16.055381+00:00",
+  "health": {
+    "status": "UP"
+  },
+  "monitor": {
+    "channels": [
+      {
+        "objectCount": 40527,
+        "sizeBytes": 881621074624,
+        "observedAt": "2026-11-22T12:02:02.983653Z",
+        "lastGrowthAt": null,
+        "lastErrorCode": null,
+        "failedAt": null,
+        "sourceId": 1,
+        "sourceIds": [
+          1,
+          2
+        ],
+        "channelKey": "oss://sg-storage-20261013-6vmlk/internal/",
+        "channelCode": "internal",
+        "bucket": "sg-storage-20261013-6vmlk",
+        "ossUri": "oss://sg-storage-20261013-6vmlk/internal/",
+        "availability": "AVAILABLE",
+        "phase": "IDLE",
+        "continuousSince": null,
+        "pendingNotifications": 0,
+        "monitoringSince": "2026-11-22T09:03:28.489102Z",
+        "incomingTotalBytes": 0,
+        "incomingTodayBytes": 0,
+        "destinations": [
+          {
+            "bucket": "sg-storage-20261013-6vmlk",
+            "files": 89,
+            "totalBytes": 6003554194,
+            "todayFiles": 0,
+            "todayBytes": 0,
+            "lastTransferredAt": "2026-11-20T20:06:48.257021Z"
+          }
+        ],
+        "deliveryTotalBytes": 6003554194,
+        "deliveryTodayBytes": 0,
+        "costEstimate": {
+          "currency": "USD",
+          "monthlyStorage": 13.958251
+        }
+      },
+      {
+        "objectCount": 361506,
+        "sizeBytes": 6137079584256,
+        "observedAt": "2026-11-22T12:02:32.593160Z",
+        "lastGrowthAt": null,
+        "lastErrorCode": null,
+        "failedAt": null,
+        "sourceId": 4,
+        "sourceIds": [
+          4
+        ],
+        "channelKey": "oss://sg-oss-external-channel-source/Jayden-incoming-2.0/",
+        "channelCode": "Jayden-incoming-2.0",
+        "bucket": "sg-oss-external-channel-source",
+        "ossUri": "oss://sg-oss-external-channel-source/Jayden-incoming-2.0/",
+        "availability": "AVAILABLE",
+        "phase": "IDLE",
+        "continuousSince": null,
+        "pendingNotifications": 0,
+        "monitoringSince": "2026-11-22T09:03:58.736560Z",
+        "incomingTotalBytes": 0,
+        "incomingTodayBytes": 0,
+        "destinations": [],
+        "deliveryTotalBytes": 0,
+        "deliveryTodayBytes": 0,
+        "costEstimate": {
+          "currency": "USD",
+          "monthlyStorage": 97.165213
+        }
+      },
+      {
+        "objectCount": 429936,
+        "sizeBytes": 10489031441209,
+        "observedAt": "2026-11-22T12:03:09.738175Z",
+        "lastGrowthAt": null,
+        "lastErrorCode": null,
+        "failedAt": null,
+        "sourceId": 5,
+        "sourceIds": [
+          5
+        ],
+        "channelKey": "oss://sg-oss-external-channel-source/jayden-incoming/",
+        "channelCode": "jayden-incoming",
+        "bucket": "sg-oss-external-channel-source",
+        "ossUri": "oss://sg-oss-external-channel-source/jayden-incoming/",
+        "availability": "AVAILABLE",
+        "phase": "IDLE",
+        "continuousSince": null,
+        "pendingNotifications": 0,
+        "monitoringSince": "2026-11-22T09:04:41.488445Z",
+        "incomingTotalBytes": 0,
+        "incomingTodayBytes": 0,
+        "destinations": [],
+        "deliveryTotalBytes": 0,
+        "deliveryTodayBytes": 0,
+        "costEstimate": {
+          "currency": "USD",
+          "monthlyStorage": 166.06742
+        }
+      },
+      {
+        "objectCount": 10013,
+        "sizeBytes": 7781090133857,
+        "observedAt": "2026-11-22T12:03:13.207822Z",
+        "lastGrowthAt": null,
+        "lastErrorCode": null,
+        "failedAt": null,
+        "sourceId": 6,
+        "sourceIds": [
+          6
+        ],
+        "channelKey": "oss://sg-oss-external-channel-source/incoming/",
+        "channelCode": "incoming",
+        "bucket": "sg-oss-external-channel-source",
+        "ossUri": "oss://sg-oss-external-channel-source/incoming/",
+        "availability": "AVAILABLE",
+        "phase": "IDLE",
+        "continuousSince": null,
+        "pendingNotifications": 0,
+        "monitoringSince": "2026-11-22T09:04:52.780039Z",
+        "incomingTotalBytes": 0,
+        "incomingTodayBytes": 0,
+        "destinations": [],
+        "deliveryTotalBytes": 0,
+        "deliveryTodayBytes": 0,
+        "costEstimate": {
+          "currency": "USD",
+          "monthlyStorage": 123.193983
+        }
+      }
+    ],
+    "statisticsDate": "2026-11-22",
+    "bucketCosts": [
+      {
+        "currency": "USD",
+        "monthlyStorage": 386.426616,
+        "bucket": "sg-oss-external-channel-source",
+        "storedBytes": 24407201159322,
+        "deliveredBytes": 0
+      },
+      {
+        "currency": "USD",
+        "monthlyStorage": 13.958251,
+        "bucket": "sg-storage-20261013-6vmlk",
+        "storedBytes": 881621074624,
+        "deliveredBytes": 6003554194
+      }
+    ],
+    "pricing": {
+      "bytesPerGb": 1073741824,
+      "storageClass": "Standard LRS",
+      "basis": "预估月存储费：按新加坡标准 LRS 官方参考价计算当前监控存量持续一个月，不含免费额度、套餐折扣及其他费用。",
+      "currency": "USD",
+      "storagePerGbMonth": 0.017,
+      "region": "ap-southeast-1",
+      "sourceUrl": "https://www.alibabacloud.com/en/product/oss/pricing?_p_lc=1",
+      "verifiedOn": "2026-11-22"
+    },
+    "enabled": true,
+    "pollIntervalSeconds": 60,
+    "continuousPeriodSeconds": 1800,
+    "reportIntervalSeconds": 3600,
+    "dailyTimezone": "Asia/Shanghai"
+  },
+  "messages": [
+    {
+      "notification_id": 13,
+      "event_type": "DAILY",
+      "report_key": "daily:2026-11-22",
+      "payload": {
+        "msgtype": "template_card",
+        "template_card": {
+          "source": {
+            "desc": "OSS 渠道监控",
+            "desc_color": 1
+          },
+          "card_type": "text_notice",
+          "main_title": {
+            "desc": "11-22 20:03 · 今日 +0.00 GB",
+            "title": "📦 渠道日报"
+          },
+          "card_action": {
+            "url": "http://8.222.228.188/monitor",
+            "type": 1
+          },
+          "sub_title_text": "internal\n存量 881.62 GB · 今日 +0.00 GB\n\nJayden-incoming-2.0\n存量 6.14 TB · 今日 +0.00 GB\n\njayden-incoming\n存量 10.49 TB · 今日 +0.00 GB\n\nincoming\n存量 7.78 TB · 今日 +0.00 GB\n\n预估月存储费 US$ 400.38",
+          "emphasis_content": {
+            "desc": "当前存量",
+            "title": "25.29 TB"
+          }
+        }
+      },
+      "source_ids": [
+        1,
+        2,
+        4,
+        5,
+        6
+      ],
+      "report_day": "2026-11-22",
+      "record_watermark": 842406,
+      "created_at": "2026-11-22T12:03:13.272995+00:00",
+      "sent_at": "2026-11-22T12:03:13.69458+00:00",
+      "attempts": 0
+    }
+  ],
+  "assets": [
+    {
+      "path": "/assets/index-YqziWsjc.js",
+      "httpStatus": 200,
+      "bytes": 1045890
+    },
+    {
+      "path": "/assets/index-CRJxvxYJ.css",
+      "httpStatus": 200,
+      "bytes": 367085
+    }
+  ],
+  "trends": {
+    "1": [
+      {
+        "hour": "2026-11-22T09:00:00Z",
+        "objectCount": 40527,
+        "sizeBytes": 881621074624,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T10:00:00Z",
+        "objectCount": 40527,
+        "sizeBytes": 881621074624,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T11:00:00Z",
+        "objectCount": 40527,
+        "sizeBytes": 881621074624,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T12:00:00Z",
+        "objectCount": 40527,
+        "sizeBytes": 881621074624,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      }
+    ],
+    "4": [
+      {
+        "hour": "2026-11-22T09:00:00Z",
+        "objectCount": 361506,
+        "sizeBytes": 6137079584256,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T10:00:00Z",
+        "objectCount": 361506,
+        "sizeBytes": 6137079584256,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T11:00:00Z",
+        "objectCount": 361506,
+        "sizeBytes": 6137079584256,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T12:00:00Z",
+        "objectCount": 361506,
+        "sizeBytes": 6137079584256,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      }
+    ],
+    "5": [
+      {
+        "hour": "2026-11-22T09:00:00Z",
+        "objectCount": 429936,
+        "sizeBytes": 10489031441209,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T10:00:00Z",
+        "objectCount": 429936,
+        "sizeBytes": 10489031441209,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T11:00:00Z",
+        "objectCount": 429936,
+        "sizeBytes": 10489031441209,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T12:00:00Z",
+        "objectCount": 429936,
+        "sizeBytes": 10489031441209,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      }
+    ],
+    "6": [
+      {
+        "hour": "2026-11-22T09:00:00Z",
+        "objectCount": 10013,
+        "sizeBytes": 7781090133857,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T10:00:00Z",
+        "objectCount": 10013,
+        "sizeBytes": 7781090133857,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T11:00:00Z",
+        "objectCount": 10013,
+        "sizeBytes": 7781090133857,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      },
+      {
+        "hour": "2026-11-22T12:00:00Z",
+        "objectCount": 10013,
+        "sizeBytes": 7781090133857,
+        "addedObjects": 0,
+        "addedBytes": 0,
+        "changedObjects": 0,
+        "changedBytes": 0,
+        "removedObjects": 0,
+        "removedBytes": 0
+      }
+    ]
+  },
+  "changes": {
+    "1": [],
+    "4": [],
+    "5": [],
+    "6": []
+  },
+  "tables": [
+    {
+      "table_name": "ingest_monitor_notification",
+      "table_type": "BASE TABLE"
+    },
+    {
+      "table_name": "ingest_monitor_record",
+      "table_type": "BASE TABLE"
+    }
+  ],
+  "views": [],
+  "sources": [
+    {
+      "source_id": 1,
+      "oss_uri": "oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-response-sse-fixed-20261117-v1/products/",
+      "channel_code": "internal"
+    },
+    {
+      "source_id": 2,
+      "oss_uri": "oss://sg-storage-20261013-6vmlk/internal/archive-delivery-migrations/DO_20261117_00001/remaining-343/products/",
+      "channel_code": "internal"
+    },
+    {
+      "source_id": 4,
+      "oss_uri": "oss://sg-oss-external-channel-source/Jayden-incoming-2.0/",
+      "channel_code": "Jayden-incoming-2.0"
+    },
+    {
+      "source_id": 5,
+      "oss_uri": "oss://sg-oss-external-channel-source/jayden-incoming/",
+      "channel_code": "jayden-incoming"
+    },
+    {
+      "source_id": 6,
+      "oss_uri": "oss://sg-oss-external-channel-source/incoming/temp-20260825-1007a693ea2acd68/",
+      "channel_code": "incoming"
+    }
+  ],
+  "inventory": [
+    {
+      "source_id": 1,
+      "files": 40184,
+      "bytes": 875113968794
+    },
+    {
+      "source_id": 2,
+      "files": 343,
+      "bytes": 6507105830
+    },
+    {
+      "source_id": 4,
+      "files": 361506,
+      "bytes": 6137079584256
+    },
+    {
+      "source_id": 5,
+      "files": 429936,
+      "bytes": 10489031441209
+    },
+    {
+      "source_id": 6,
+      "files": 10013,
+      "bytes": 7781090133857
+    }
+  ],
+  "sampleFacts": [
+    {
+      "source_id": 1,
+      "samples": 83,
+      "first_id": 1,
+      "last_id": 842402,
+      "added_bytes": 1750227937588,
+      "changed_bytes": 0
+    },
+    {
+      "source_id": 2,
+      "samples": 83,
+      "first_id": 3,
+      "last_id": 842403,
+      "added_bytes": 13014211660,
+      "changed_bytes": 0
+    },
+    {
+      "source_id": 4,
+      "samples": 82,
+      "first_id": 5,
+      "last_id": 842404,
+      "added_bytes": 12274159168512,
+      "changed_bytes": 0
+    },
+    {
+      "source_id": 5,
+      "samples": 91,
+      "first_id": 9,
+      "last_id": 842405,
+      "added_bytes": 20978062882418,
+      "changed_bytes": 0
+    },
+    {
+      "source_id": 6,
+      "samples": 85,
+      "first_id": 22,
+      "last_id": 842406,
+      "added_bytes": 15562180267714,
+      "changed_bytes": 0
+    }
+  ],
+  "history": [
+    {
+      "notification_id": 1,
+      "payload": {
+        "text": "## 渠道开始接收\n渠道：ARCHIVE_SOURCE\n目录：oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-response-sse-fixed-20261117-v1/products/\n轮次：26309684-4bc6-44c3-8ce3-df99dcf83b6d\n首次观察：2026-11-22 17:03:28 +08:00\n静默计时起点：2026-11-22 17:03:28 +08:00\n本次扫描：2026-11-22 17:03:28 +08:00\n当前总量：40184 个文件，875113968794 bytes（834573.72 MiB）\n首次监控发现的存量计入首次发现量，不能据此推断实际上传时间。\n\n本轮全渠道合计\n新增 40184 个 / 875113968794 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 40184 个 / 875113968794 bytes。\n\n子目录：(根目录)\n新增 40184 个 / 875113968794 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 40184 个 / 875113968794 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:12:19.955135+00:00",
+      "attempts": 4
+    },
+    {
+      "notification_id": 2,
+      "payload": {
+        "text": "## 渠道开始接收\n渠道：ARCHIVE_SOURCE\n目录：oss://sg-storage-20261013-6vmlk/internal/archive-delivery-migrations/DO_20261117_00001/remaining-343/products/\n轮次：f18a2c8b-fded-4353-8c39-f759ba1617a3\n首次观察：2026-11-22 17:03:29 +08:00\n静默计时起点：2026-11-22 17:03:29 +08:00\n本次扫描：2026-11-22 17:03:29 +08:00\n当前总量：343 个文件，6507105830 bytes（6205.66 MiB）\n首次监控发现的存量计入首次发现量，不能据此推断实际上传时间。\n\n本轮全渠道合计\n新增 343 个 / 6507105830 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 343 个 / 6507105830 bytes。\n\n子目录：(根目录)\n新增 343 个 / 6507105830 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 343 个 / 6507105830 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:12:20.138994+00:00",
+      "attempts": 4
+    },
+    {
+      "notification_id": 3,
+      "payload": {
+        "text": "## 渠道开始接收\n渠道：Jayden-incoming-2.0\n目录：oss://sg-oss-external-channel-source/Jayden-incoming-2.0/\n轮次：62e3ea95-2941-4d71-8e2c-889061eca093\n首次观察：2026-11-22 17:03:58 +08:00\n静默计时起点：2026-11-22 17:03:58 +08:00\n本次扫描：2026-11-22 17:03:58 +08:00\n当前总量：361506 个文件，6137079584256 bytes（5852775.18 MiB）\n首次监控发现的存量计入首次发现量，不能据此推断实际上传时间。\n\n本轮全渠道合计\n新增 361506 个 / 6137079584256 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 361506 个 / 6137079584256 bytes。\n\n子目录：(根目录)\n新增 4 个 / 89 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 4 个 / 89 bytes。\n\n子目录：hao1118/\n新增 269404 个 / 2297736420300 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 269404 个 / 2297736420300 bytes。\n\n子目录：qlz39/\n新增 92098 个 / 3839343163867 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 92098 个 / 3839343163867 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:12:20.316106+00:00",
+      "attempts": 3
+    },
+    {
+      "notification_id": 4,
+      "payload": {
+        "text": "## 渠道开始接收\n渠道：jayden-incoming\n目录：oss://sg-oss-external-channel-source/jayden-incoming/\n轮次：1552a738-9041-459f-aa4a-fd53f1ed10a8\n首次观察：2026-11-22 17:04:41 +08:00\n静默计时起点：2026-11-22 17:04:41 +08:00\n本次扫描：2026-11-22 17:04:41 +08:00\n当前总量：429936 个文件，10489031441209 bytes（10003119.89 MiB）\n首次监控发现的存量计入首次发现量，不能据此推断实际上传时间。\n\n本轮全渠道合计\n新增 429936 个 / 10489031441209 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 429936 个 / 10489031441209 bytes。\n\n子目录：(根目录)\n新增 5 个 / 139 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 5 个 / 139 bytes。\n\n子目录：20261014-17-all-models-original/\n新增 1 个 / 7363 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 7363 bytes。\n\n子目录：20261014-17-claude-gpt-vps-20261121/\n新增 2081 个 / 15334698771 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 2081 个 / 15334698771 bytes。\n\n子目录：20261014-17-claude-gpt-vps-test-20261121/\n新增 375187 个 / 3567878064514 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 375187 个 / 3567878064514 bytes。\n\n子目录：20261014-17-claude-gpt/\n新增 2975 个 / 4247115932 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 2975 个 / 4247115932 bytes。\n\n子目录：_connectivity_tests/\n新增 1 个 / 114 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 114 bytes。\n\n子目录：maasData/\n新增 22083 个 / 459609752914 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 22083 个 / 459609752914 bytes。\n\n子目录：models-20261014-17/\n新增 1 个 / 640 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 640 bytes。\n\n子目录：raw-original-20261110/\n新增 14404 个 / 2870087451011 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 14404 个 / 2870087451011 bytes。\n\n子目录：raw-original-oct08-12-20261115/\n新增 10505 个 / 1937915582785 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 10505 个 / 1937915582785 bytes。\n\n子目录：vd-pt/\n新增 2071 个 / 1187161952901 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 2071 个 / 1187161952901 bytes。\n\n子目录：vp-pt/\n新增 622 个 / 446796814125 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 622 个 / 446796814125 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:12:20.673693+00:00",
+      "attempts": 3
+    },
+    {
+      "notification_id": 5,
+      "payload": {
+        "text": "## 渠道开始接收\n渠道：incoming/temp-20260825-1007a693ea2acd68\n目录：oss://sg-oss-external-channel-source/incoming/temp-20260825-1007a693ea2acd68/\n轮次：c8883030-2046-42f3-9323-300bda8e75fe\n首次观察：2026-11-22 17:04:52 +08:00\n静默计时起点：2026-11-22 17:04:52 +08:00\n本次扫描：2026-11-22 17:04:52 +08:00\n当前总量：10013 个文件，7781090133857 bytes（7420625.81 MiB）\n首次监控发现的存量计入首次发现量，不能据此推断实际上传时间。\n\n本轮全渠道合计\n新增 10013 个 / 7781090133857 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 10013 个 / 7781090133857 bytes。\n\n子目录：(根目录)\n新增 342 个 / 3489252183213 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 342 个 / 3489252183213 bytes。\n\n子目录：_connectivity_tests/\n新增 1 个 / 114 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 114 bytes。\n\n子目录：gpt-5.6-sol/\n新增 9270 个 / 3316838036967 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 9270 个 / 3316838036967 bytes。\n\n子目录：gpt-6-astra/\n新增 206 个 / 553650834500 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 206 个 / 553650834500 bytes。\n\n子目录：gpt-6-sol/\n新增 71 个 / 127520235558 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 71 个 / 127520235558 bytes。\n\n子目录：gpt-6.1-sol/\n新增 123 个 / 293828843505 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 123 个 / 293828843505 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:12:20.850772+00:00",
+      "attempts": 3
+    },
+    {
+      "notification_id": 6,
+      "payload": {
+        "text": "## 渠道接收完成（静默判定）\n渠道：ARCHIVE_SOURCE\n目录：oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-response-sse-fixed-20261117-v1/products/\n轮次：26309684-4bc6-44c3-8ce3-df99dcf83b6d\n首次观察：2026-11-22 17:03:28 +08:00\n静默计时起点：2026-11-22 17:03:28 +08:00\n本次扫描：2026-11-22 17:14:30 +08:00\n当前总量：40184 个文件，875113968794 bytes（834573.72 MiB）\n连续 10 分钟无变化；后续到数将开启新轮次。\n\n本轮全渠道合计\n新增 40184 个 / 875113968794 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 40184 个 / 875113968794 bytes。\n\n子目录：(根目录)\n新增 40184 个 / 875113968794 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 40184 个 / 875113968794 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:14:30.561544+00:00",
+      "attempts": 0
+    },
+    {
+      "notification_id": 7,
+      "payload": {
+        "text": "## 渠道接收完成（静默判定）\n渠道：ARCHIVE_SOURCE\n目录：oss://sg-storage-20261013-6vmlk/internal/archive-delivery-migrations/DO_20261117_00001/remaining-343/products/\n轮次：f18a2c8b-fded-4353-8c39-f759ba1617a3\n首次观察：2026-11-22 17:03:29 +08:00\n静默计时起点：2026-11-22 17:03:29 +08:00\n本次扫描：2026-11-22 17:14:30 +08:00\n当前总量：343 个文件，6507105830 bytes（6205.66 MiB）\n连续 10 分钟无变化；后续到数将开启新轮次。\n\n本轮全渠道合计\n新增 343 个 / 6507105830 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 343 个 / 6507105830 bytes。\n\n子目录：(根目录)\n新增 343 个 / 6507105830 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 343 个 / 6507105830 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:14:30.832346+00:00",
+      "attempts": 0
+    },
+    {
+      "notification_id": 8,
+      "payload": {
+        "text": "## 渠道接收完成（静默判定）\n渠道：Jayden-incoming-2.0\n目录：oss://sg-oss-external-channel-source/Jayden-incoming-2.0/\n轮次：62e3ea95-2941-4d71-8e2c-889061eca093\n首次观察：2026-11-22 17:03:58 +08:00\n静默计时起点：2026-11-22 17:12:49 +08:00\n本次扫描：2026-11-22 17:23:35 +08:00\n当前总量：361506 个文件，6137079584256 bytes（5852775.18 MiB）\n连续 10 分钟无变化；后续到数将开启新轮次。\n\n本轮全渠道合计\n新增 361506 个 / 6137079584256 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 361506 个 / 6137079584256 bytes。\n\n子目录：(根目录)\n新增 4 个 / 89 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 4 个 / 89 bytes。\n\n子目录：hao1118/\n新增 269404 个 / 2297736420300 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 269404 个 / 2297736420300 bytes。\n\n子目录：qlz39/\n新增 92098 个 / 3839343163867 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 92098 个 / 3839343163867 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:23:37.155881+00:00",
+      "attempts": 0
+    },
+    {
+      "notification_id": 9,
+      "payload": {
+        "text": "## 渠道接收完成（静默判定）\n渠道：jayden-incoming\n目录：oss://sg-oss-external-channel-source/jayden-incoming/\n轮次：1552a738-9041-459f-aa4a-fd53f1ed10a8\n首次观察：2026-11-22 17:04:41 +08:00\n静默计时起点：2026-11-22 17:13:24 +08:00\n本次扫描：2026-11-22 17:24:10 +08:00\n当前总量：429936 个文件，10489031441209 bytes（10003119.89 MiB）\n连续 10 分钟无变化；后续到数将开启新轮次。\n\n本轮全渠道合计\n新增 429936 个 / 10489031441209 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 429936 个 / 10489031441209 bytes。\n\n子目录：(根目录)\n新增 5 个 / 139 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 5 个 / 139 bytes。\n\n子目录：20261014-17-all-models-original/\n新增 1 个 / 7363 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 7363 bytes。\n\n子目录：20261014-17-claude-gpt-vps-20261121/\n新增 2081 个 / 15334698771 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 2081 个 / 15334698771 bytes。\n\n子目录：20261014-17-claude-gpt-vps-test-20261121/\n新增 375187 个 / 3567878064514 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 375187 个 / 3567878064514 bytes。\n\n子目录：20261014-17-claude-gpt/\n新增 2975 个 / 4247115932 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 2975 个 / 4247115932 bytes。\n\n子目录：_connectivity_tests/\n新增 1 个 / 114 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 114 bytes。\n\n子目录：maasData/\n新增 22083 个 / 459609752914 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 22083 个 / 459609752914 bytes。\n\n子目录：models-20261014-17/\n新增 1 个 / 640 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 640 bytes。\n\n子目录：raw-original-20261110/\n新增 14404 个 / 2870087451011 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 14404 个 / 2870087451011 bytes。\n\n子目录：raw-original-oct08-12-20261115/\n新增 10505 个 / 1937915582785 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 10505 个 / 1937915582785 bytes。\n\n子目录：vd-pt/\n新增 2071 个 / 1187161952901 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 2071 个 / 1187161952901 bytes。\n\n子目录：vp-pt/\n新增 622 个 / 446796814125 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 622 个 / 446796814125 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:24:12.322626+00:00",
+      "attempts": 0
+    },
+    {
+      "notification_id": 10,
+      "payload": {
+        "text": "## 渠道接收完成（静默判定）\n渠道：incoming/temp-20260825-1007a693ea2acd68\n目录：oss://sg-oss-external-channel-source/incoming/temp-20260825-1007a693ea2acd68/\n轮次：c8883030-2046-42f3-9323-300bda8e75fe\n首次观察：2026-11-22 17:04:52 +08:00\n静默计时起点：2026-11-22 17:13:27 +08:00\n本次扫描：2026-11-22 17:24:13 +08:00\n当前总量：10013 个文件，7781090133857 bytes（7420625.81 MiB）\n连续 10 分钟无变化；后续到数将开启新轮次。\n\n本轮全渠道合计\n新增 10013 个 / 7781090133857 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 10013 个 / 7781090133857 bytes。\n\n子目录：(根目录)\n新增 342 个 / 3489252183213 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 342 个 / 3489252183213 bytes。\n\n子目录：_connectivity_tests/\n新增 1 个 / 114 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 1 个 / 114 bytes。\n\n子目录：gpt-5.6-sol/\n新增 9270 个 / 3316838036967 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 9270 个 / 3316838036967 bytes。\n\n子目录：gpt-6-astra/\n新增 206 个 / 553650834500 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 206 个 / 553650834500 bytes。\n\n子目录：gpt-6-sol/\n新增 71 个 / 127520235558 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 71 个 / 127520235558 bytes。\n\n子目录：gpt-6.1-sol/\n新增 123 个 / 293828843505 bytes；覆盖 0 个 / 0 bytes；移除 0 个 / 0 bytes。 当前 123 个 / 293828843505 bytes。\n"
+      },
+      "sent_at": "2026-11-22T09:24:13.333349+00:00",
+      "attempts": 0
+    },
+    {
+      "notification_id": 11,
+      "payload": {
+        "msgtype": "template_card",
+        "template_card": {
+          "source": {
+            "desc": "渠道监控 · 11-22 18:13",
+            "desc_color": 1
+          },
+          "card_type": "text_notice",
+          "main_title": {
+            "desc": "5 个渠道 · 76,891 文件夹 · 841,982 文件",
+            "title": "📦 渠道日报"
+          },
+          "card_action": {
+            "url": "https://oss.console.aliyun.com/overview",
+            "type": 1
+          },
+          "sub_title_text": "ARCHIVE_SOURCE\n0 文件夹 · 40,184 文件 · 875.11 GB\n\nARCHIVE_SOURCE\n0 文件夹 · 343 文件 · 6.51 GB\n\nJayden-incoming-2.0\n76,425 文件夹 · 361,506 文件 · 6.14 TB\n\njayden-incoming\n455 文件夹 · 429,936 文件 · 10.49 TB\n\nincoming/temp-20260825-1007a693ea2acd68\n11 文件夹 · 10,013 文件 · 7.78 TB",
+          "emphasis_content": {
+            "desc": "总容量",
+            "title": "25.29 TB"
+          }
+        }
+      },
+      "sent_at": "2026-11-22T10:13:07.224886+00:00",
+      "attempts": 0
+    },
+    {
+      "notification_id": 12,
+      "payload": {
+        "msgtype": "markdown",
+        "markdown": {
+          "content": "📦 渠道日报 · **11-22**\n\n**internal**　40,527 文件 · 881.62 GB\n\n**Jayden-incoming-2.0**　361,506 文件 · 6.14 TB\n\n**jayden-incoming**　429,936 文件 · 10.49 TB\n\n**incoming**　10,013 文件 · 7.78 TB"
+        }
+      },
+      "sent_at": "2026-11-22T11:03:19.398601+00:00",
+      "attempts": 0
+    }
+  ],
+  "tasks": [
+    {
+      "execution_status": "SUCCEEDED",
+      "count": 89
+    }
+  ],
+  "submits": [
+    {
+      "delivery_id": 3,
+      "submission_type": "BATCH_CREATE",
+      "status": "DELIVERED",
+      "pipeline_version_id": 5
+    },
+    {
+      "delivery_id": 4,
+      "submission_type": "BATCH_SUBMIT",
+      "status": "DELIVERED",
+      "pipeline_version_id": 6
+    }
+  ],
+  "pipelineVersions": [
+    {
+      "pipeline_version_id": 1,
+      "definition_sha256": "ddd7b46600010a17522209eaea925a6782a990e3576fc702495ccf94febdeac4"
+    },
+    {
+      "pipeline_version_id": 2,
+      "definition_sha256": "3f02d2a73947790114d42250c55cecb6eede9e4c751b27ef9250b50922e6614a"
+    },
+    {
+      "pipeline_version_id": 3,
+      "definition_sha256": "d8f5aa5283a80843bbead293914b51e1966062aef1c7a7367c1f23999da6f24f"
+    },
+    {
+      "pipeline_version_id": 4,
+      "definition_sha256": "57be07b2bf04d8284913c2e1ae1396a25dbe9ebe4ddaf66d1ab9e75eb0d9c80d"
+    },
+    {
+      "pipeline_version_id": 5,
+      "definition_sha256": "183758e06d4378e5d3c9ca39004c8ee7d7e35f2c273e6902592ca90947cf766a"
+    },
+    {
+      "pipeline_version_id": 6,
+      "definition_sha256": "0650a39c843f59d2a50bbf3ddb527a1004b3839fbdfe90e84efeb22997297c8a"
+    },
+    {
+      "pipeline_version_id": 7,
+      "definition_sha256": "077d9db193623d908fa13073f02bfd65a5a7e66b2ec271ab051547f1d9d44128"
+    },
+    {
+      "pipeline_version_id": 8,
+      "definition_sha256": "74032a9ea7383ab0ab3bb8f22ba2d4bef81bacbfe5ee093ec27bf9ed3c43636a"
+    }
+  ],
+  "migrations": [
+    {
+      "version": null,
+      "success": true,
+      "installed_on": "2026-11-20T18:03:26.110362"
+    },
+    {
+      "version": "25",
+      "success": true,
+      "installed_on": "2026-11-20T18:03:26.31392"
+    },
+    {
+      "version": "26",
+      "success": true,
+      "installed_on": "2026-11-22T09:02:54.049231"
+    },
+    {
+      "version": "27",
+      "success": true,
+      "installed_on": "2026-11-22T10:11:08.138165"
+    },
+    {
+      "version": "28",
+      "success": true,
+      "installed_on": "2026-11-22T11:01:34.95866"
+    },
+    {
+      "version": "29",
+      "success": true,
+      "installed_on": "2026-11-22T12:01:20.726785"
+    }
+  ],
+  "acknowledgementLog": [
+    "archive-server-1  | 2026-11-22 12:03:13.696  INFO 1 --- [   scheduling-1] c.p.a.s.s.i.IngestMonitorService         : Ingest card acknowledged notificationId=13 httpStatus=200 businessCode=0"
+  ],
+  "apiContainer": {
+    "image": "sha256:279fc2fae52340cfb17a512c7d761c0aa382d6db2843fde4c60092c30ad291d2",
+    "oomKilled": false,
+    "restartCount": 0
+  },
+  "resources": "archive_delivery_production-archive-server-1 329.2MiB / 14.96GiB 1.99%"
+}

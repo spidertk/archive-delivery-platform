@@ -1,0 +1,186 @@
+{
+  "command": "./scripts/local-pipeline.sh",
+  "result": "PASS",
+  "mode": "local-no-external-io",
+  "pythonTests": 27,
+  "maven": {
+    "delivery-core": {
+      "totals": {
+        "tests": 28,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "com.powerjob.archive.core.config.JacksonConfigurationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.node.ManifestQualifyNodeTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.node.OssDownloadNodeTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.pipeline.PipelineNodeConfigTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.pipeline.PipelineRepositoryTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.ArchiveModelIntegrationTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.BatchPlanningServiceTest",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.FileTransferServiceTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.RemotePathServiceTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.RetryPolicyTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    "delivery-server": {
+      "totals": {
+        "tests": 25,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMessageRendererTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMonitorIntegrationTest",
+          "tests": 15,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.OssCostServiceTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.OssSourceScannerTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.WeComNotifierTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    "delivery-worker": {
+      "totals": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 3
+      },
+      "suites": [
+        {
+          "name": "com.powerjob.archive.worker.GoldenPipelineDefinitionTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.worker.RealExternalVerificationTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 3
+        }
+      ]
+    }
+  },
+  "frontendTests": 2,
+  "frontendTypecheckBuild": "PASS",
+  "staticChecks": [
+    "Markdown registry",
+    "Shell syntax",
+    "Compose config"
+  ],
+  "limitations": [
+    "Worker real external verification 3 skipped locally; not production delivery evidence.",
+    "30 minute/hourly growth uses controlled metadata in real temporary PostgreSQL, no fabricated production events."
+  ],
+  "frontendEntryBoot": "PASS; native monitor entry without global component library",
+  "hygiene": {
+    "gitDiffCheck": "PASS",
+    "secretScan": "PASS"
+  },
+  "afterMobileFix": {
+    "command": "cd web && npm run test && npm run build",
+    "frontendTests": 3,
+    "typecheckBuild": "PASS",
+    "entryBoot": "PASS; no global component library"
+  }
+}

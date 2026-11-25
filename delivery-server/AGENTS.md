@@ -27,11 +27,19 @@ BATCH_CREATE 在同参数下幂等；BATCH_SUBMIT 每次创建独立提交并领
 
 ## 开发约束
 
-1. Controller 只做 HTTP、校验和响应；规划、外部调用和状态迁移在 core。
+1. Controller 只做 HTTP、校验和响应；交付规划、节点外部调用和任务状态迁移在 core。独立来源观察及群播报集中在 service/ingestmonitor，不能推进任务状态。
 2. 看板同时暴露批次包总数、已交付包数和原始文件关系数；任务只统计最新有效任务。
 3. 任务投影暴露 entityCode、sourceDataIds、artifacts[dataId/sourceArtifact] 和 newFileName，不再有 metadataIds。
 4. Pipeline 已发布不可改；archive-batch 保存包大小与实体机器容量，archive-delivery 不重复保存这些配置。
 5. 修改 API 同步前端、脚本、测试、设计和 AGENTS，不保留旧适配。
+
+## 渠道监控
+
+service/ingestmonitor 集中负责分页扫描、差异、一级渠道聚合、30 分钟进数和小时汇总、原生卡片及只读看板投影。V29 仅 record/notification 两表；record 的 OBJECT 与 SAMPLE 行由形状约束和部分索引隔离。状态复用 ingest_source，所有趋势/游标查询显式限定 SAMPLE，快照更新显式限定 OBJECT。
+
+渠道身份=桶+第一级目录，覆盖范围去重且不扩大扫描。监控 API 返回当前存量、基线后累计/北京时间今日进数、真实成功 oss.upload 的目标桶及累计/今日交付；相同目标 URI 的多次成功以首次成功去重归日，不把回验或重试重复计为交付。MonitorDashboardService/OssCostService 只读业务事实，不推进节点；存储费按新加坡标准 LRS 官方 US$0.017/计费GB/月对当前监控存量估算，以 2026-11-20 参考汇率 1 USD=6.6777 CNY 折算人民币，不计算下载费，不把未扫描目标量当存量。storageSummary 从原始监控容量计算整月人民币总额，不累加已舍入的渠道金额；pricing 同时公开美元原价、汇率、日期与来源。群卡即使只报活跃渠道，月费总额仍覆盖全部监控渠道。
+
+WeCom 原生 template_card 链接受控 dashboard-url=/monitor；只展示精简渠道和最多三条实际变化目录。发送器检查跳转等于受控 URL，HTTP 200 且 errcode=0 才确认，历史消息不投递。通知及游标同事务，Secret 不进入消息、API、日志或证据。Worker 不运行监控。公网由独立只读网关限制到看板及限定 GET，完整管理 API 仍回环。
 
 ## 测试
 

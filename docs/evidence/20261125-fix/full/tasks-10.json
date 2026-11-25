@@ -1,0 +1,5241 @@
+{
+  "total": 100,
+  "items": [
+    {
+      "taskId": 183,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000003.tar.gz",
+      "sizeBytes": 4940667,
+      "tokenCount": 4940667,
+      "sha256": "8ff7b82cf8fd74f7ddab2f535b5d8b53ba93969da0d637d9f5a0cdaa8fb5d225",
+      "artifacts": [
+        {
+          "dataId": 689,
+          "sourceArtifact": {
+            "token": 5444700,
+            "sha256": "d80c23ed5aec38c496cc9e875bdeb944aa320c3f392c350f6feb46da391b4128",
+            "sizeBytes": 5444700,
+            "artifactSeq": 1,
+            "newFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0001-of0004.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0001-of0004.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564978225,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        689
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 184,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000004.tar.gz",
+      "sizeBytes": 97620133,
+      "tokenCount": 97620133,
+      "sha256": "f515ee14e4716207241716f2d23b6b58c5acad5271b6b41e5a2bb00c416f75bf",
+      "artifacts": [
+        {
+          "dataId": 712,
+          "sourceArtifact": {
+            "token": 99929720,
+            "sha256": "f0442fa0e5d55769fe67a900010762173d35f4d48ed46a58b7d7fc14049db09e",
+            "sizeBytes": 99929720,
+            "artifactSeq": 1,
+            "newFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0002-of0004.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0002-of0004.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564979089,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        712
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 185,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000005.tar.gz",
+      "sizeBytes": 95418096,
+      "tokenCount": 95418096,
+      "sha256": "34dd830a4e2a38a8b42c051c9c93db1eac3780ae71daa7a668379337b329751c",
+      "artifacts": [
+        {
+          "dataId": 708,
+          "sourceArtifact": {
+            "token": 97583299,
+            "sha256": "2e03a0770233b77da880cceab0f078db9455d21af05ffbd43e003081e4bc455f",
+            "sizeBytes": 97583299,
+            "artifactSeq": 1,
+            "newFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0003-of0004.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0003-of0004.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564978850,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        708
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 186,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000006.tar.gz",
+      "sizeBytes": 96174474,
+      "tokenCount": 96174474,
+      "sha256": "7242d7b2e9303c04bac4414701931dabf589b58bd38ea0037e973d16ab201d0a",
+      "artifacts": [
+        {
+          "dataId": 707,
+          "sourceArtifact": {
+            "token": 98425075,
+            "sha256": "3571abeac11fb8b41e2b7b7f76fe2d94944246c4306191cf0c81588c74c84a2e",
+            "sizeBytes": 98425075,
+            "artifactSeq": 1,
+            "newFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0004-of0004.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0080cd2b8fd929e123f0532ea5658d3f615b4ca76d5d6a57250df41c28471e11-part0004-of0004.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564979328,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        707
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 187,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000007.tar.gz",
+      "sizeBytes": 17348409,
+      "tokenCount": 17348409,
+      "sha256": "cc85fef630b21549dd2891f22cd857bd3247b0ca25836a95f21d65d50651acef",
+      "artifacts": [
+        {
+          "dataId": 693,
+          "sourceArtifact": {
+            "token": 18705905,
+            "sha256": "8d473fe8791494b14fca26a9a4f69175dd901a9a2983e7ba7dde1777a266bbd1",
+            "sizeBytes": 18705905,
+            "artifactSeq": 1,
+            "newFileName": "009e5fc51c865200283266d98366280b191ee3464ece2ac26d6812a74fc9da5f-part0001-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "009e5fc51c865200283266d98366280b191ee3464ece2ac26d6812a74fc9da5f-part0001-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564978327,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        693
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 188,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000008.tar.gz",
+      "sizeBytes": 94091243,
+      "tokenCount": 94091243,
+      "sha256": "b1cc8c1ab17bdc505b23b5f124ee86178da139d17fcc957797a087d5ce421e4c",
+      "artifacts": [
+        {
+          "dataId": 715,
+          "sourceArtifact": {
+            "token": 96698349,
+            "sha256": "9dfa1076f2d4e3835c0e699a11f45121c0a3f45f0f3d3ab72df0e98daf6f908f",
+            "sizeBytes": 96698349,
+            "artifactSeq": 1,
+            "newFileName": "009e5fc51c865200283266d98366280b191ee3464ece2ac26d6812a74fc9da5f-part0002-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "009e5fc51c865200283266d98366280b191ee3464ece2ac26d6812a74fc9da5f-part0002-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564978926,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        715
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 189,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000009.tar.gz",
+      "sizeBytes": 94391609,
+      "tokenCount": 94391609,
+      "sha256": "ed826ba790eef1a6751d2d3c9815873c1734767ef3fc930d3bd17842f8d7ae29",
+      "artifacts": [
+        {
+          "dataId": 717,
+          "sourceArtifact": {
+            "token": 96895939,
+            "sha256": "d54bcfd55dcb4dcd0cbe56ed3a02315c4429b45438750f06af64429c2c2399e6",
+            "sizeBytes": 96895939,
+            "artifactSeq": 1,
+            "newFileName": "009e5fc51c865200283266d98366280b191ee3464ece2ac26d6812a74fc9da5f-part0003-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "009e5fc51c865200283266d98366280b191ee3464ece2ac26d6812a74fc9da5f-part0003-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564978878,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        717
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 190,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000010.tar.gz",
+      "sizeBytes": 58390788,
+      "tokenCount": 58390788,
+      "sha256": "3402cf86d0a4d5fc52afdafe3a3857aeb82df99a2d4a1f90ca2f88c1b542719d",
+      "artifacts": [
+        {
+          "dataId": 699,
+          "sourceArtifact": {
+            "token": 37494774,
+            "sha256": "de1f6c7540d0e63997b3f3428993a29a3b5f70ab8b97bc5ac16d5a285892c76e",
+            "sizeBytes": 37494774,
+            "artifactSeq": 1,
+            "newFileName": "00a11c1b5e3515afbafeaaf3acfb3d7b9fb38a49cfd938a9fdefc5adcd2b07d9-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00a11c1b5e3515afbafeaaf3acfb3d7b9fb38a49cfd938a9fdefc5adcd2b07d9-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 695,
+          "sourceArtifact": {
+            "token": 23939021,
+            "sha256": "a1c5420498c27aed0591643d6e7efb74f530fb1e0fe38ba2ca7d6414d1760dc7",
+            "sizeBytes": 23939021,
+            "artifactSeq": 1,
+            "newFileName": "00ab9b2cd8618e0d4c43f9964c8270559af6843b153ca359bf5c98feca5fd434-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00ab9b2cd8618e0d4c43f9964c8270559af6843b153ca359bf5c98feca5fd434-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795564978788,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        699,
+        695
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 191,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000011.tar.gz",
+      "sizeBytes": 76952183,
+      "tokenCount": 76952183,
+      "sha256": "356c8d28f005f2b4a2f541cd47cb2f5776875b9f9eda31cda6428e50ff8d76e2",
+      "artifacts": [
+        {
+          "dataId": 706,
+          "sourceArtifact": {
+            "token": 80337729,
+            "sha256": "ac811dc6823c19011810da689dd1b03ca5ed9efd105bcba9ab132063987518a2",
+            "sizeBytes": 80337729,
+            "artifactSeq": 1,
+            "newFileName": "00b15ab44fc4046a6480d4eec543e92b6c06e43b69d604c9f303544edebdf6e3-part0001-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00b15ab44fc4046a6480d4eec543e92b6c06e43b69d604c9f303544edebdf6e3-part0001-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565068547,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        706
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 192,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000012.tar.gz",
+      "sizeBytes": 96182225,
+      "tokenCount": 96182225,
+      "sha256": "9e0e8e6ba40e314a68ef2af6b7e8ee4a64bb651c91ca599412145f138493e07e",
+      "artifacts": [
+        {
+          "dataId": 704,
+          "sourceArtifact": {
+            "token": 98841232,
+            "sha256": "1450546c3180d5a02e2aba335e58b34d862c85ad2a4f7e9e0d8575a5b17cc344",
+            "sizeBytes": 98841232,
+            "artifactSeq": 1,
+            "newFileName": "00b15ab44fc4046a6480d4eec543e92b6c06e43b69d604c9f303544edebdf6e3-part0002-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00b15ab44fc4046a6480d4eec543e92b6c06e43b69d604c9f303544edebdf6e3-part0002-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565911960,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        704
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 193,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000013.tar.gz",
+      "sizeBytes": 31718980,
+      "tokenCount": 31718980,
+      "sha256": "8511a4477aff8fb77b539924ad480018f78cc4f414d7fbf2e5fb2111d6077343",
+      "artifacts": [
+        {
+          "dataId": 692,
+          "sourceArtifact": {
+            "token": 6581944,
+            "sha256": "7cdf8a690620cc46bc96d399f959d69f4e650cdc456897bf9c44797d945d7655",
+            "sizeBytes": 6581944,
+            "artifactSeq": 1,
+            "newFileName": "00cf9afcfb6c7dc906f19f7efb8de71df0a3ae10c7f9a4064cc3bc3fd482c62d-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00cf9afcfb6c7dc906f19f7efb8de71df0a3ae10c7f9a4064cc3bc3fd482c62d-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 691,
+          "sourceArtifact": {
+            "token": 4080454,
+            "sha256": "8aa1cfa92e41c46702bba031d95dd8cab60883ad349c437f99d0d8fc4b5ca18a",
+            "sizeBytes": 4080454,
+            "artifactSeq": 1,
+            "newFileName": "00d742b43f7b301af1c62bf9df770dcd808587956bf277523deb168e68964379-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00d742b43f7b301af1c62bf9df770dcd808587956bf277523deb168e68964379-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 696,
+          "sourceArtifact": {
+            "token": 9942192,
+            "sha256": "5fc112e780984d8570174a33ecba0c553e2d39f0588517fe64a4535ef68ceb90",
+            "sizeBytes": 9942192,
+            "artifactSeq": 1,
+            "newFileName": "00e4430e3da713d0f87dbd8380087615923f8fbdf8157116e3f0112a76886f58-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00e4430e3da713d0f87dbd8380087615923f8fbdf8157116e3f0112a76886f58-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 698,
+          "sourceArtifact": {
+            "token": 14751547,
+            "sha256": "bde2117ba94b17833bd48cebd8be974c50c6aa0c457834169f072b931139038e",
+            "sizeBytes": 14751547,
+            "artifactSeq": 1,
+            "newFileName": "00e5692babe106998aced58cf668ef1a7a9041ddd510e09563686d329438a651-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "00e5692babe106998aced58cf668ef1a7a9041ddd510e09563686d329438a651-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565058375,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        692,
+        691,
+        696,
+        698
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 194,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000014.tar.gz",
+      "sizeBytes": 87477940,
+      "tokenCount": 87477940,
+      "sha256": "c86eaca1e5ef61c0262179112f0d48e54fc2e01a6c5b73c76a98615e3ed5b5f0",
+      "artifacts": [
+        {
+          "dataId": 711,
+          "sourceArtifact": {
+            "token": 92824117,
+            "sha256": "b02ed28cb7c12c232a81dc6c933f355dc6f60808bc25b51c93c56e211dc78cc6",
+            "sizeBytes": 92824117,
+            "artifactSeq": 1,
+            "newFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0001-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0001-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565921924,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        711
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 195,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000015.tar.gz",
+      "sizeBytes": 95449378,
+      "tokenCount": 95449378,
+      "sha256": "621f3e8ce225ac990a1de37e6c1e58493cd11157b6f1476aed62ed97b7beb94a",
+      "artifacts": [
+        {
+          "dataId": 718,
+          "sourceArtifact": {
+            "token": 99484042,
+            "sha256": "5b43ff207d2d8e92b0d9caf8b8ae059fc652e2a518da4ce52591cba9f680b853",
+            "sizeBytes": 99484042,
+            "artifactSeq": 1,
+            "newFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0002-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0002-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565068613,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        718
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 196,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000016.tar.gz",
+      "sizeBytes": 96821136,
+      "tokenCount": 96821136,
+      "sha256": "99a02700a0391c50f57e7a993b802816076b8cd20076ce351c87ceae9127e9a8",
+      "artifacts": [
+        {
+          "dataId": 710,
+          "sourceArtifact": {
+            "token": 99539044,
+            "sha256": "faed679977e94934a40f7df6bf3777d2714a9f731e2087fce858e61c07783694",
+            "sizeBytes": 99539044,
+            "artifactSeq": 1,
+            "newFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0003-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0003-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565915630,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        710
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 197,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000017.tar.gz",
+      "sizeBytes": 94507048,
+      "tokenCount": 94507048,
+      "sha256": "fc17cf070ade257253754f7324f046b156cd89af9060b1762ba46254e5b35ef2",
+      "artifacts": [
+        {
+          "dataId": 716,
+          "sourceArtifact": {
+            "token": 96930666,
+            "sha256": "7f23d8f6d67d2bbbfb88416affa2f358467ce3b82acf476ccc827a47c84da2a4",
+            "sizeBytes": 96930666,
+            "artifactSeq": 1,
+            "newFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0004-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0004-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565058570,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        716
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 198,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000018.tar.gz",
+      "sizeBytes": 94688296,
+      "tokenCount": 94688296,
+      "sha256": "1a4de01c0def6799054af4cf58d857c269bd85d9d3f7350bea854cdf406ada94",
+      "artifacts": [
+        {
+          "dataId": 714,
+          "sourceArtifact": {
+            "token": 94933699,
+            "sha256": "9f0687e7f9948efe986578df257d8b1aba850b7dc0980cfe9510e951148628d8",
+            "sizeBytes": 94933699,
+            "artifactSeq": 1,
+            "newFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0005-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "012d72fe236d34cfa4d065e29f571a89850e29638a1f4426c1696b2a1785fa49-part0005-of0005.tar.gz"
+          }
+        },
+        {
+          "dataId": 702,
+          "sourceArtifact": {
+            "token": 2364407,
+            "sha256": "2ed90cda52c9ecdbadecc810b6313cac27a808653fb44df4fd223e8f19db53f7",
+            "sizeBytes": 2364407,
+            "artifactSeq": 1,
+            "newFileName": "015260986b961be1f8bed5b318e0198be569df8a24d4c6f53bc5cb544b1b4ead-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015260986b961be1f8bed5b318e0198be569df8a24d4c6f53bc5cb544b1b4ead-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565068618,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        714,
+        702
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 199,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000019.tar.gz",
+      "sizeBytes": 23194712,
+      "tokenCount": 23194712,
+      "sha256": "443a10520a7efed49573c5845795a82783b1baa36ce9773cc21ca8b5e14ac290",
+      "artifacts": [
+        {
+          "dataId": 703,
+          "sourceArtifact": {
+            "token": 7431810,
+            "sha256": "de0bca9185545b24ab18fe170055d160075084929d5adee95fd359ec05760685",
+            "sizeBytes": 7431810,
+            "artifactSeq": 1,
+            "newFileName": "0156343f4af1d3d1573afc259fbb63d5932294ad0a7f685d3ba1f1bb9da8bb74-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0156343f4af1d3d1573afc259fbb63d5932294ad0a7f685d3ba1f1bb9da8bb74-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 705,
+          "sourceArtifact": {
+            "token": 16743994,
+            "sha256": "c03289724177d25c17a03b0147fae05122b7b0940212d2687fae0e8dc4ba107d",
+            "sizeBytes": 16743994,
+            "artifactSeq": 1,
+            "newFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0001-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0001-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565128319,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        703,
+        705
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 200,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000020.tar.gz",
+      "sizeBytes": 96383662,
+      "tokenCount": 96383662,
+      "sha256": "0dc03b86e95839235ae89bafec5b9bea3991958d7b0379542be28cfcaf0da0a4",
+      "artifacts": [
+        {
+          "dataId": 724,
+          "sourceArtifact": {
+            "token": 99241868,
+            "sha256": "a92e7b55e382a0d3dacce447a59de4f63fbd2affa1b6a356f51a25b6f06e3e8d",
+            "sizeBytes": 99241868,
+            "artifactSeq": 1,
+            "newFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0002-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0002-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565128619,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        724
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 201,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000021.tar.gz",
+      "sizeBytes": 96553402,
+      "tokenCount": 96553402,
+      "sha256": "5b99e6653dbb7b647398cdb4ae744fefd9c766f480e955a6013b5040edecc99f",
+      "artifacts": [
+        {
+          "dataId": 723,
+          "sourceArtifact": {
+            "token": 99500227,
+            "sha256": "c270ae1ece90fa864af0869f45305cbb356fda0f164f8a02e5b8f52f84a153fb",
+            "sizeBytes": 99500227,
+            "artifactSeq": 1,
+            "newFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0003-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0003-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565138683,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        723
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 202,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000022.tar.gz",
+      "sizeBytes": 93502914,
+      "tokenCount": 93502914,
+      "sha256": "bd6014b4fc304069c83eb621851ba527957ee80d6bf1539efb2cc7b97257a54e",
+      "artifacts": [
+        {
+          "dataId": 719,
+          "sourceArtifact": {
+            "token": 96165659,
+            "sha256": "48abcdfe8e74c8a679a842e22c6ed756b8a7ec56f736ee38c4a76853f6de1702",
+            "sizeBytes": 96165659,
+            "artifactSeq": 1,
+            "newFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0004-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0004-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565138665,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        719
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 203,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000023.tar.gz",
+      "sizeBytes": 91401089,
+      "tokenCount": 91401089,
+      "sha256": "1e09360b819b7e016789a5dff06e5e79059098612d453dd7c9b22fdc65a792c5",
+      "artifacts": [
+        {
+          "dataId": 720,
+          "sourceArtifact": {
+            "token": 93741049,
+            "sha256": "1c21a041ccec2c0585f0733ccab559ba8bc9c64348570b8b9316ce2339896197",
+            "sizeBytes": 93741049,
+            "artifactSeq": 1,
+            "newFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0005-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0005-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565138666,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        720
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 204,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000024.tar.gz",
+      "sizeBytes": 93905838,
+      "tokenCount": 93905838,
+      "sha256": "32c52f187509bcc0becfb03e58c48a6c259218ccc2b5a933b99c32a9ec22cca7",
+      "artifacts": [
+        {
+          "dataId": 731,
+          "sourceArtifact": {
+            "token": 96713370,
+            "sha256": "5009ecd27b8edcad64a1968453c9b92ec8c264e4dd6e30e5d2e4d37341b0c864",
+            "sizeBytes": 96713370,
+            "artifactSeq": 1,
+            "newFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0006-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0006-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565198606,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        731
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 205,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000025.tar.gz",
+      "sizeBytes": 96560679,
+      "tokenCount": 96560679,
+      "sha256": "7fb50abce07ee2fe5873da0b683f980e5e2be7869d781e962e6f5a316343b64d",
+      "artifacts": [
+        {
+          "dataId": 732,
+          "sourceArtifact": {
+            "token": 98686688,
+            "sha256": "504654a1ee1858d3a15c167d941eaa3a702744a124a0b41c358ad470c84f93a8",
+            "sizeBytes": 98686688,
+            "artifactSeq": 1,
+            "newFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0007-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "015ca7ab7d6fd588fad7e105ad5f687fbd82c2e299aa5df0bd8ce1ae34996cdd-part0007-of0007.tar.gz"
+          }
+        },
+        {
+          "dataId": 709,
+          "sourceArtifact": {
+            "token": 374170,
+            "sha256": "c23bbae557d77f727925ceb532387024d103984ee0620684dbc9ca83a5487e08",
+            "sizeBytes": 374170,
+            "artifactSeq": 1,
+            "newFileName": "0175cc98c2d739cc364f6bdf45d41916c8739f0e8402b7a829a2c9657deb0257-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0175cc98c2d739cc364f6bdf45d41916c8739f0e8402b7a829a2c9657deb0257-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565198623,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        732,
+        709
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 206,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000026.tar.gz",
+      "sizeBytes": 95846060,
+      "tokenCount": 95846060,
+      "sha256": "6e7d03f5a89fa1517fc1b58dc569e0573ae6fc767430b55cf544eeb33b1c0813",
+      "artifacts": [
+        {
+          "dataId": 713,
+          "sourceArtifact": {
+            "token": 10138073,
+            "sha256": "39246b9ae4574c74e5757b95a2f8a9b526d0abebaf34c82f1b999c46328a885a",
+            "sizeBytes": 10138073,
+            "artifactSeq": 1,
+            "newFileName": "0175ed768ec203e10ba3e48ec7f7e046aa12ea942a3d21cc3eb101a53cc7decc-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0175ed768ec203e10ba3e48ec7f7e046aa12ea942a3d21cc3eb101a53cc7decc-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 749,
+          "sourceArtifact": {
+            "token": 88041341,
+            "sha256": "b12c9302fa7b0f3eb96627bbfcfec419119732fe2dcae982e0cdb926c1519058",
+            "sizeBytes": 88041341,
+            "artifactSeq": 1,
+            "newFileName": "0183c86d4f414196c76d6c2e672e7b7024dd7d6030505ddff63916f5376f01d8-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0183c86d4f414196c76d6c2e672e7b7024dd7d6030505ddff63916f5376f01d8-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565208637,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        713,
+        749
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 207,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000027.tar.gz",
+      "sizeBytes": 78665941,
+      "tokenCount": 78665941,
+      "sha256": "7fb7165fa7420849d41cabe27b8aeb223bb2b219a306582812e73da022ad34ef",
+      "artifacts": [
+        {
+          "dataId": 746,
+          "sourceArtifact": {
+            "token": 65727148,
+            "sha256": "be0c5edc08f8ac296ab7b01a752ae2979d345d6e8ef899ac0e6c690dfc64e535",
+            "sizeBytes": 65727148,
+            "artifactSeq": 1,
+            "newFileName": "0188a7fbd44dab00247b88246c98c89174e68d8e73408d7be2d72aafa1e9ba07-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0188a7fbd44dab00247b88246c98c89174e68d8e73408d7be2d72aafa1e9ba07-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 730,
+          "sourceArtifact": {
+            "token": 13497841,
+            "sha256": "5fb8e9c9531dca1f68d5dc166044fe6c29abe62fcd5ab495f1f8724ee2b217dd",
+            "sizeBytes": 13497841,
+            "artifactSeq": 1,
+            "newFileName": "018e5d35142de168b8dc5d84d4eb17b300bb32cb6d66185cfb6818c54be8a40f-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "018e5d35142de168b8dc5d84d4eb17b300bb32cb6d66185cfb6818c54be8a40f-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 722,
+          "sourceArtifact": {
+            "token": 4277118,
+            "sha256": "827b4eb998c624de5f3d1d5be4e77b9325b481f5741c1f37c18a1ec3ebdc1472",
+            "sizeBytes": 4277118,
+            "artifactSeq": 1,
+            "newFileName": "0193f1cd81df8d254c2c6334e248f614f1c7c8a85605334bed72cb05242080ff-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0193f1cd81df8d254c2c6334e248f614f1c7c8a85605334bed72cb05242080ff-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 721,
+          "sourceArtifact": {
+            "token": 573698,
+            "sha256": "f04790c5d43f22d5c92cf8e1d85bf0987cffc9c6c458d426a61d1eb5abbd576d",
+            "sizeBytes": 573698,
+            "artifactSeq": 1,
+            "newFileName": "019fcebccb982a4be60560a4183a3fdb5f69960b9c4348b0f5d9d34b36b6dc85-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "019fcebccb982a4be60560a4183a3fdb5f69960b9c4348b0f5d9d34b36b6dc85-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565208590,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        746,
+        730,
+        722,
+        721
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 208,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000028.tar.gz",
+      "sizeBytes": 68005006,
+      "tokenCount": 68005006,
+      "sha256": "de4a3c0be4c68fb24a55d947e81f6e1178a6a2d79e1959f66b9e1c7190a9d46c",
+      "artifacts": [
+        {
+          "dataId": 739,
+          "sourceArtifact": {
+            "token": 40535562,
+            "sha256": "a6a26b79a183d61d59d1da6551ffc1ec18a257e80a7ac8c160e595399834b994",
+            "sizeBytes": 40535562,
+            "artifactSeq": 1,
+            "newFileName": "01b2159aacf09a4079ac5f72ff25cf48fea7303fdb1715446268391b935fa778-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "01b2159aacf09a4079ac5f72ff25cf48fea7303fdb1715446268391b935fa778-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 727,
+          "sourceArtifact": {
+            "token": 5616358,
+            "sha256": "bd9bb1396a5e6efbe6bda412b63ee5097bdd9ff48876f5740c64aff521859ff1",
+            "sizeBytes": 5616358,
+            "artifactSeq": 1,
+            "newFileName": "01be54b803be61c419c106ca5dc71b99a78a45a1b66835fdbb3b6c907fdbfbc1-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "01be54b803be61c419c106ca5dc71b99a78a45a1b66835fdbb3b6c907fdbfbc1-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 725,
+          "sourceArtifact": {
+            "token": 189533,
+            "sha256": "4ea1a3c2035debe3c0485a6b088746b496ac07e8ab685b5b9d3b0035c618fd22",
+            "sizeBytes": 189533,
+            "artifactSeq": 1,
+            "newFileName": "01c4950d9589ebf67efcccb7a9757fadb80f8d38b7c5fbe45cf71edcc31af6c8-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "01c4950d9589ebf67efcccb7a9757fadb80f8d38b7c5fbe45cf71edcc31af6c8-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 726,
+          "sourceArtifact": {
+            "token": 5577276,
+            "sha256": "0d167d29162a0bf0e102edf3d346fabbf8d8a30340581b2069ced2ac36581380",
+            "sizeBytes": 5577276,
+            "artifactSeq": 1,
+            "newFileName": "01c9c4b43ea044cc582a88234658165a865cdfc326b21a7a4c7ea1b77ce9ba8c-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "01c9c4b43ea044cc582a88234658165a865cdfc326b21a7a4c7ea1b77ce9ba8c-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 729,
+          "sourceArtifact": {
+            "token": 3096766,
+            "sha256": "9c7f4eb2f6dd75d62aecb640dac7bb13dd95b33854fea73ab4d77a4a0cd080f3",
+            "sizeBytes": 3096766,
+            "artifactSeq": 1,
+            "newFileName": "01db224fd5d34627074e60402f3cb2d1d61aafc0392aa5636b8558d843dd1629-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "01db224fd5d34627074e60402f3cb2d1d61aafc0392aa5636b8558d843dd1629-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 728,
+          "sourceArtifact": {
+            "token": 4021807,
+            "sha256": "784eb41e25ac10ba300407858680f5eb8f98c6f59d707520235bad17f13bfea5",
+            "sizeBytes": 4021807,
+            "artifactSeq": 1,
+            "newFileName": "01dd756ae03015f28eed8e7e51946964d17c088143c281b64b7dfc08098bf3d0-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "01dd756ae03015f28eed8e7e51946964d17c088143c281b64b7dfc08098bf3d0-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 735,
+          "sourceArtifact": {
+            "token": 15496679,
+            "sha256": "af5202b15f4fe2838ac66a3edc536452b2d5d5af388e02c84414991cadd2fba7",
+            "sizeBytes": 15496679,
+            "artifactSeq": 1,
+            "newFileName": "01e739b7b5cbd4421234f918110eeefe52b7f73ebe437efae749afea20dd174c-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "01e739b7b5cbd4421234f918110eeefe52b7f73ebe437efae749afea20dd174c-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565208556,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        739,
+        727,
+        725,
+        726,
+        729,
+        728,
+        735
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 209,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000029.tar.gz",
+      "sizeBytes": 42570190,
+      "tokenCount": 42570190,
+      "sha256": "0953b26d9632f162cc2539c9e0ba0ce2919ccafa234dc94f4e6fa49a0332bccb",
+      "artifacts": [
+        {
+          "dataId": 743,
+          "sourceArtifact": {
+            "token": 45121555,
+            "sha256": "3fde8569d77e52ce21a27bbf0301c17d3b1f7fa447cf372a71687df4bf74dc88",
+            "sizeBytes": 45121555,
+            "artifactSeq": 1,
+            "newFileName": "02059232b0d7462cd029c649db425412ad77e61c008b9935b5ee68441b6fde6e-part0001-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02059232b0d7462cd029c649db425412ad77e61c008b9935b5ee68441b6fde6e-part0001-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565640622,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        743
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 210,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000030.tar.gz",
+      "sizeBytes": 93471065,
+      "tokenCount": 93471065,
+      "sha256": "779a40f189bd9831e8d5a12f3b5cf7033ba47b40493dd89bb6d7719369f66c9c",
+      "artifacts": [
+        {
+          "dataId": 763,
+          "sourceArtifact": {
+            "token": 99184334,
+            "sha256": "e56b49edd2ef6ab366eb2f6f4d625b8f45075be957b0af216769ee09feda6999",
+            "sizeBytes": 99184334,
+            "artifactSeq": 1,
+            "newFileName": "02059232b0d7462cd029c649db425412ad77e61c008b9935b5ee68441b6fde6e-part0002-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02059232b0d7462cd029c649db425412ad77e61c008b9935b5ee68441b6fde6e-part0002-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565640931,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        763
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 211,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000031.tar.gz",
+      "sizeBytes": 94702370,
+      "tokenCount": 94702370,
+      "sha256": "4b32b020d69fdd58af08c4dfc0dbda027f46c9a117d94017802c44ee589f12c4",
+      "artifacts": [
+        {
+          "dataId": 767,
+          "sourceArtifact": {
+            "token": 99641175,
+            "sha256": "e5124b00c2bf805ceca07229d1928051d2e09f8ddd09c3ccf5f969f3ee3c8c4f",
+            "sizeBytes": 99641175,
+            "artifactSeq": 1,
+            "newFileName": "02059232b0d7462cd029c649db425412ad77e61c008b9935b5ee68441b6fde6e-part0003-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02059232b0d7462cd029c649db425412ad77e61c008b9935b5ee68441b6fde6e-part0003-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795566152892,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        767
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 212,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000032.tar.gz",
+      "sizeBytes": 20896111,
+      "tokenCount": 20896111,
+      "sha256": "e3c8758ccfed55b21b544ece875dfee4fe2c4d7a1e05cfdc27a551d6b6b9e742",
+      "artifacts": [
+        {
+          "dataId": 734,
+          "sourceArtifact": {
+            "token": 2187553,
+            "sha256": "cbc879d30b576cf535c8dc40f124179909496b24c082dffac04e970ee41e5d00",
+            "sizeBytes": 2187553,
+            "artifactSeq": 1,
+            "newFileName": "02182c4397b267c98af3cd26aa7b272c3837a4b0246eaa50ff306df79817655a-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02182c4397b267c98af3cd26aa7b272c3837a4b0246eaa50ff306df79817655a-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 733,
+          "sourceArtifact": {
+            "token": 991880,
+            "sha256": "fb23baca9237774f4ca00a64169149b61b8f9b6a036377f7c023110b23dc5f05",
+            "sizeBytes": 991880,
+            "artifactSeq": 1,
+            "newFileName": "022c3d5bf2328ccf0d4131b5a49bd67125830556285ef67dc6bfcf939bbab8cb-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "022c3d5bf2328ccf0d4131b5a49bd67125830556285ef67dc6bfcf939bbab8cb-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 736,
+          "sourceArtifact": {
+            "token": 4521382,
+            "sha256": "9d2088a3c30b4b539793bdae073db1be9b114534bb746c0053b405600ab0f666",
+            "sizeBytes": 4521382,
+            "artifactSeq": 1,
+            "newFileName": "022cbd8893132ae62cbe546e2f4a17fdafdfb43bf49a64e46629e2827f8abd46-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "022cbd8893132ae62cbe546e2f4a17fdafdfb43bf49a64e46629e2827f8abd46-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 738,
+          "sourceArtifact": {
+            "token": 14865733,
+            "sha256": "80b808011b20f18e3ad2a045c524fe7e911b1996f526d312d16cf29cdcb17c9c",
+            "sizeBytes": 14865733,
+            "artifactSeq": 1,
+            "newFileName": "02433d2d50c8c6173bfa077c1a5344905416f9d604729a3d922ce39974b5d475-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02433d2d50c8c6173bfa077c1a5344905416f9d604729a3d922ce39974b5d475-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795566147470,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        734,
+        733,
+        736,
+        738
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 213,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000033.tar.gz",
+      "sizeBytes": 79705215,
+      "tokenCount": 79705215,
+      "sha256": "67e3433d511d85aa9415581a9a6fa928c151df7c08d0ea6aea963868d6ce0932",
+      "artifacts": [
+        {
+          "dataId": 766,
+          "sourceArtifact": {
+            "token": 84791744,
+            "sha256": "c8c604a5970ebac734a825b417dc618f04bcc21983074c8305f92cec488b0140",
+            "sizeBytes": 84791744,
+            "artifactSeq": 1,
+            "newFileName": "0257e4d4aefd94776993314fc74d12af747ff10f2f0e6266968226ac4f036486-part0001-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0257e4d4aefd94776993314fc74d12af747ff10f2f0e6266968226ac4f036486-part0001-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 7,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795566152245,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        766
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 214,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000034.tar.gz",
+      "sizeBytes": 94536211,
+      "tokenCount": 94536211,
+      "sha256": "319d6e999290c918c999df24fe9a2dfffe879cbed5fe66e5106de9215c717d30",
+      "artifacts": [
+        {
+          "dataId": 771,
+          "sourceArtifact": {
+            "token": 99591977,
+            "sha256": "8a4f1cb6552c979028b82e78aa12400585d6c59516fe6e0b9271a5a93b7150b7",
+            "sizeBytes": 99591977,
+            "artifactSeq": 1,
+            "newFileName": "0257e4d4aefd94776993314fc74d12af747ff10f2f0e6266968226ac4f036486-part0002-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0257e4d4aefd94776993314fc74d12af747ff10f2f0e6266968226ac4f036486-part0002-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565652050,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        771
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 215,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000035.tar.gz",
+      "sizeBytes": 55328048,
+      "tokenCount": 55328048,
+      "sha256": "3278f32057dced9da62b2e343f50b172709af7fd82b5ce8554c0f23b2317f25b",
+      "artifacts": [
+        {
+          "dataId": 742,
+          "sourceArtifact": {
+            "token": 13317912,
+            "sha256": "256d029044bf57973624619d53712d53f78a20d19650aa3ffc5dbb26f4be17a5",
+            "sizeBytes": 13317912,
+            "artifactSeq": 1,
+            "newFileName": "026825c66c0a1a540e6594390d27edfb12063aa21ca5e988a8b6a8304e8338c0-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "026825c66c0a1a540e6594390d27edfb12063aa21ca5e988a8b6a8304e8338c0-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 737,
+          "sourceArtifact": {
+            "token": 527691,
+            "sha256": "c325724a4241ce8f63c0c3266334384e7fee1afa2724202c869cb1c0dd981d7d",
+            "sizeBytes": 527691,
+            "artifactSeq": 1,
+            "newFileName": "027162ef55ba11eb7c82ae5bd2483c9b32520c4b53cbc18ec7452a6dff49b180-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "027162ef55ba11eb7c82ae5bd2483c9b32520c4b53cbc18ec7452a6dff49b180-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 741,
+          "sourceArtifact": {
+            "token": 2449878,
+            "sha256": "4cb42165cec98661f61f53beec7159001c2df9b2d6d1ef43700f1d2fbf11bcab",
+            "sizeBytes": 2449878,
+            "artifactSeq": 1,
+            "newFileName": "02c805b7ff618e0cb28698070576650f99874915caf35efea7262ecce913a5a3-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02c805b7ff618e0cb28698070576650f99874915caf35efea7262ecce913a5a3-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 744,
+          "sourceArtifact": {
+            "token": 13104289,
+            "sha256": "efdf6515b94cc96b1139d83cbd2c2b01a666960cfc6fd04e8c81e590928df5ec",
+            "sizeBytes": 13104289,
+            "artifactSeq": 1,
+            "newFileName": "02cfdce06c43431778f38003d501c1a0536d72fc7125ff78f4faa3b838500cf9-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02cfdce06c43431778f38003d501c1a0536d72fc7125ff78f4faa3b838500cf9-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 740,
+          "sourceArtifact": {
+            "token": 2845653,
+            "sha256": "d73e3d7aae265964d3586dd232faa4ed22f8e6e7350d6284f5f76d6499558842",
+            "sizeBytes": 2845653,
+            "artifactSeq": 1,
+            "newFileName": "02ec216db3c47dd839c0cf825afaaef03c42631e6dc22b811f124f40810e8ffe-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02ec216db3c47dd839c0cf825afaaef03c42631e6dc22b811f124f40810e8ffe-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 745,
+          "sourceArtifact": {
+            "token": 13799818,
+            "sha256": "0487df2fcc0ca0d672842cbdb7df3c8166898fdab12528864acf747d7aff3386",
+            "sizeBytes": 13799818,
+            "artifactSeq": 1,
+            "newFileName": "02fb6b42e6f271b1a4c863e3a490e622ebf9628d5e43ea1f6312e1997f051313-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "02fb6b42e6f271b1a4c863e3a490e622ebf9628d5e43ea1f6312e1997f051313-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 750,
+          "sourceArtifact": {
+            "token": 13465108,
+            "sha256": "2fe1b362b4624322e4bdd02eff780c8f116436feba6a80af1b738d1749a6e27e",
+            "sizeBytes": 13465108,
+            "artifactSeq": 1,
+            "newFileName": "03089a5a49ae20e9813b0fc213d3a74ec61da07743e772e895106e482da1db5d-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03089a5a49ae20e9813b0fc213d3a74ec61da07743e772e895106e482da1db5d-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 747,
+          "sourceArtifact": {
+            "token": 680098,
+            "sha256": "83dffca8b1e2d64141f4fc29b808d04f24bf060e8f908908aff3ae7671ffcbde",
+            "sizeBytes": 680098,
+            "artifactSeq": 1,
+            "newFileName": "030bbf5146d2cc9704b8bec489785f671d9300afd85aeaaf634093204a5f8578-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "030bbf5146d2cc9704b8bec489785f671d9300afd85aeaaf634093204a5f8578-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565652017,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        742,
+        737,
+        741,
+        744,
+        740,
+        745,
+        750,
+        747
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 216,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000036.tar.gz",
+      "sizeBytes": 76445591,
+      "tokenCount": 76445591,
+      "sha256": "6a39a03d18ee37945c0995541125fb5aad7c434da3b717b4138b2d693b0712d4",
+      "artifacts": [
+        {
+          "dataId": 776,
+          "sourceArtifact": {
+            "token": 81732764,
+            "sha256": "08fd93e6a4e5e024d97dad6034c258372b9d5a2b88bf911880aa68be34beff83",
+            "sizeBytes": 81732764,
+            "artifactSeq": 1,
+            "newFileName": "03162081af1f391915d6b18fe8a96afde412d6193e7f6013e39ee068e98646e4-part0001-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03162081af1f391915d6b18fe8a96afde412d6193e7f6013e39ee068e98646e4-part0001-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565661227,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        776
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 217,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000037.tar.gz",
+      "sizeBytes": 93963059,
+      "tokenCount": 93963059,
+      "sha256": "ec6f4d94a9b3460e3ecd59937b4ddb5c1df74dcffbb444cc7defeec3f307c8b6",
+      "artifacts": [
+        {
+          "dataId": 778,
+          "sourceArtifact": {
+            "token": 99931763,
+            "sha256": "125cf9127dc08667500d95f80154e6865454642dfd511469e5934d2a03a4eaf3",
+            "sizeBytes": 99931763,
+            "artifactSeq": 1,
+            "newFileName": "03162081af1f391915d6b18fe8a96afde412d6193e7f6013e39ee068e98646e4-part0002-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03162081af1f391915d6b18fe8a96afde412d6193e7f6013e39ee068e98646e4-part0002-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565663063,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        778
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 218,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000038.tar.gz",
+      "sizeBytes": 78105296,
+      "tokenCount": 78105296,
+      "sha256": "48fe30e4f6a0ae650592936dc6f016552f56018c3bce08f7e346240be23cc5aa",
+      "artifacts": [
+        {
+          "dataId": 758,
+          "sourceArtifact": {
+            "token": 15154784,
+            "sha256": "61f1a1bbd24749012317e15a9fa2530007003490cbdc2ab36b772d82221af3d9",
+            "sizeBytes": 15154784,
+            "artifactSeq": 1,
+            "newFileName": "03164c759c585d41a3c8d3f5c6d9c4869a8fb2394fd1d732d48b0819c6fd9135-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03164c759c585d41a3c8d3f5c6d9c4869a8fb2394fd1d732d48b0819c6fd9135-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 760,
+          "sourceArtifact": {
+            "token": 23819063,
+            "sha256": "e9d89c97c9162036f2e76027b2ec3a06fc929cf33f8fb9da49ae2dc477feff49",
+            "sizeBytes": 23819063,
+            "artifactSeq": 1,
+            "newFileName": "032ab6db343d639d48ed5cdce12cf5578f85a9c842f8ffa89ce96efa992af39a-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "032ab6db343d639d48ed5cdce12cf5578f85a9c842f8ffa89ce96efa992af39a-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 748,
+          "sourceArtifact": {
+            "token": 2082437,
+            "sha256": "ec84e763322dff230985738a1a0c542e361d0b93cb42778181d3e41a38e2aeaa",
+            "sizeBytes": 2082437,
+            "artifactSeq": 1,
+            "newFileName": "032e2b8b6ca47a39f5c8cd977c137285a61047980bd221f484e1b38c6a11b01d-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "032e2b8b6ca47a39f5c8cd977c137285a61047980bd221f484e1b38c6a11b01d-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 752,
+          "sourceArtifact": {
+            "token": 10893867,
+            "sha256": "3cc231c414f384e95cd3b16bdb4858d2508e7b42d5789ec7f081ca92e8e8544b",
+            "sizeBytes": 10893867,
+            "artifactSeq": 1,
+            "newFileName": "034a56285c7509d60ccfce8c63afeb73f63f18be03bbaa330aff6c8102e40b8e-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "034a56285c7509d60ccfce8c63afeb73f63f18be03bbaa330aff6c8102e40b8e-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 751,
+          "sourceArtifact": {
+            "token": 4799151,
+            "sha256": "7efcb741a1e10fd7112007d824c2737ed5da89a177dae9ba7a2416e0a1ac23e7",
+            "sizeBytes": 4799151,
+            "artifactSeq": 1,
+            "newFileName": "034a9e43d0eb476c98f32adef6a3ba4facab901fbcc900236217579859f586be-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "034a9e43d0eb476c98f32adef6a3ba4facab901fbcc900236217579859f586be-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 757,
+          "sourceArtifact": {
+            "token": 10053258,
+            "sha256": "76beb52b6667a6c791893e7a145d4727f1a4af48703cade44d9c480fcc620723",
+            "sizeBytes": 10053258,
+            "artifactSeq": 1,
+            "newFileName": "03535c7433c2fc0ce3d2e7222f9947659b22a386870284c196b8cb089d30fc3a-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03535c7433c2fc0ce3d2e7222f9947659b22a386870284c196b8cb089d30fc3a-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 753,
+          "sourceArtifact": {
+            "token": 349796,
+            "sha256": "ba288ec7a1e85f92a8a4d3fd521db7f1375de4d6c484297cc05c845b78d905da",
+            "sizeBytes": 349796,
+            "artifactSeq": 1,
+            "newFileName": "0383619d314b237dec26973678ac7d27b3d7ffee372bb2c6048b44ce0f0958d1-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0383619d314b237dec26973678ac7d27b3d7ffee372bb2c6048b44ce0f0958d1-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 759,
+          "sourceArtifact": {
+            "token": 9372994,
+            "sha256": "d3bc6957155c65c9e5461e308681eb23db5bf5bb7e0689bc80c280a400a30515",
+            "sizeBytes": 9372994,
+            "artifactSeq": 1,
+            "newFileName": "03914e75e42c52a51d530f76d11e88e2aab798098aa301395c43a309db156427-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03914e75e42c52a51d530f76d11e88e2aab798098aa301395c43a309db156427-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 754,
+          "sourceArtifact": {
+            "token": 2030033,
+            "sha256": "76c2a44be270c5999f5b1c6985e8e99dda99bb1b2f4af99c238ddc1761cd4870",
+            "sizeBytes": 2030033,
+            "artifactSeq": 1,
+            "newFileName": "03933c52e27de925365c395439fcee9734fc1e52b4aba0966baa9e5d89860b57-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03933c52e27de925365c395439fcee9734fc1e52b4aba0966baa9e5d89860b57-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 755,
+          "sourceArtifact": {
+            "token": 2685455,
+            "sha256": "5dd591cf30206b787d8303be2ff9ae092c25283a2d3f6423891a40a4a1e8fb5d",
+            "sizeBytes": 2685455,
+            "artifactSeq": 1,
+            "newFileName": "039444b5995ba23e7002dd4047ed96e7833c3829ac19c5414597b44db2c46a99-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "039444b5995ba23e7002dd4047ed96e7833c3829ac19c5414597b44db2c46a99-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 756,
+          "sourceArtifact": {
+            "token": 3464603,
+            "sha256": "7e5dc43a39b116f4e09f9961ef44a17bc99243e3513ecf9f7d599f33cdd5cc48",
+            "sizeBytes": 3464603,
+            "artifactSeq": 1,
+            "newFileName": "039e7d3f5bcd123c0f9d01d061e5fac9c6fea8d2563671a20630018da41074f9-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "039e7d3f5bcd123c0f9d01d061e5fac9c6fea8d2563671a20630018da41074f9-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565670497,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        758,
+        760,
+        748,
+        752,
+        751,
+        757,
+        753,
+        759,
+        754,
+        755,
+        756
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 219,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000039.tar.gz",
+      "sizeBytes": 33095064,
+      "tokenCount": 33095064,
+      "sha256": "04f01a96e54970b75d268fee41a2b94109a88bcecf271e8d2f4552893d25b8cc",
+      "artifacts": [
+        {
+          "dataId": 768,
+          "sourceArtifact": {
+            "token": 34408694,
+            "sha256": "89d46ec5239898ab03962e4ad2d6f276ef8d36cd781c6fdbf30377b0cdceae9c",
+            "sizeBytes": 34408694,
+            "artifactSeq": 1,
+            "newFileName": "03a631fc86d641a7420ef341d4b8a86638c5277fe2c4513b88547520b53bbf1d-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03a631fc86d641a7420ef341d4b8a86638c5277fe2c4513b88547520b53bbf1d-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565666703,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        768
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 220,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000040.tar.gz",
+      "sizeBytes": 87746142,
+      "tokenCount": 87746142,
+      "sha256": "46f0c7ff5f54c79271ba5aa3b115d9ffd6d72bcb3073fc9381b1681bc2137064",
+      "artifacts": [
+        {
+          "dataId": 781,
+          "sourceArtifact": {
+            "token": 95618395,
+            "sha256": "ffe3147c68abd115d829d0a0dda351d9c1e23bcdfe94f4d679bd956554d3dbde",
+            "sizeBytes": 95618395,
+            "artifactSeq": 1,
+            "newFileName": "03cd0aefee76ddab4a1eb589f4433f3bc3cb6a04f5bf7f4035ac34ddb3d1b6cb-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03cd0aefee76ddab4a1eb589f4433f3bc3cb6a04f5bf7f4035ac34ddb3d1b6cb-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 764,
+          "sourceArtifact": {
+            "token": 2372790,
+            "sha256": "219e72badb069992edf0d5c426bcdcbfd1eaa753264c5c6822d0970b1611191e",
+            "sizeBytes": 2372790,
+            "artifactSeq": 1,
+            "newFileName": "03db35c70e9ba602c183df6d3f55575b03ea222e4c913b8e70bdf625b83946fb-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03db35c70e9ba602c183df6d3f55575b03ea222e4c913b8e70bdf625b83946fb-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565677166,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        781,
+        764
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 221,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000041.tar.gz",
+      "sizeBytes": 73908574,
+      "tokenCount": 73908574,
+      "sha256": "56e16db59788c6d3b298ee2d99721c5572413774943d6e05964dc5a2c0f1993f",
+      "artifacts": [
+        {
+          "dataId": 765,
+          "sourceArtifact": {
+            "token": 4748110,
+            "sha256": "411471967b695350e0c813419ef206c106c201739bc68e3a583bbed62302b86e",
+            "sizeBytes": 4748110,
+            "artifactSeq": 1,
+            "newFileName": "03df3329b03485e68bdb70579085db11371274150ad499c452e09b94be744ba7-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03df3329b03485e68bdb70579085db11371274150ad499c452e09b94be744ba7-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 775,
+          "sourceArtifact": {
+            "token": 26213119,
+            "sha256": "41ee2f649179ce83f8aba3df11064e84d3382f38b352d63c35ed1eff4ec29309",
+            "sizeBytes": 26213119,
+            "artifactSeq": 1,
+            "newFileName": "03f02d218552f97edf76e63e7f9d363026f19d032d8089a64ee32fb027463177-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03f02d218552f97edf76e63e7f9d363026f19d032d8089a64ee32fb027463177-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 773,
+          "sourceArtifact": {
+            "token": 23021404,
+            "sha256": "d5638972e6c67ab2a023457e49c5fe02c93010b8b580b2df8f3494f675b71d81",
+            "sizeBytes": 23021404,
+            "artifactSeq": 1,
+            "newFileName": "03f1d063915e7b2ea0ecd1df588b86fab917cff1ecb69b980fa5e0b4f64691cc-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03f1d063915e7b2ea0ecd1df588b86fab917cff1ecb69b980fa5e0b4f64691cc-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 770,
+          "sourceArtifact": {
+            "token": 22612615,
+            "sha256": "ec7e9414c8709c5432a9b15ecc05782979be84064263f55b926189111f5c7429",
+            "sizeBytes": 22612615,
+            "artifactSeq": 1,
+            "newFileName": "03fb512d445e00f0556d4487e50eb90ae58db40f35c2932844422aaa0ef27e83-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "03fb512d445e00f0556d4487e50eb90ae58db40f35c2932844422aaa0ef27e83-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 761,
+          "sourceArtifact": {
+            "token": 1887367,
+            "sha256": "731b78a1994c9a561cbe52bbceb466b7f08a37f883035682e1ec86ed18160757",
+            "sizeBytes": 1887367,
+            "artifactSeq": 1,
+            "newFileName": "04035f63c436385e159b9a198850267239da08f40c57a3ac8a39601796222098-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04035f63c436385e159b9a198850267239da08f40c57a3ac8a39601796222098-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565677841,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        765,
+        775,
+        773,
+        770,
+        761
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 222,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000042.tar.gz",
+      "sizeBytes": 78573854,
+      "tokenCount": 78573854,
+      "sha256": "df19758a446ee296d720ac59277aecd43c8a13b16b9b4441c61b29daaf5a0fdc",
+      "artifacts": [
+        {
+          "dataId": 780,
+          "sourceArtifact": {
+            "token": 83799152,
+            "sha256": "04ec3d6e070165ae5f18e7bacc386713273c020304fa3c9ec26e6253f494df07",
+            "sizeBytes": 83799152,
+            "artifactSeq": 1,
+            "newFileName": "0418c4a907a200faeb722260234413eb410a41fedad90b439cce9b6f225c03e1-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0418c4a907a200faeb722260234413eb410a41fedad90b439cce9b6f225c03e1-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 762,
+          "sourceArtifact": {
+            "token": 1853958,
+            "sha256": "6c5dfce71851be9b4e6c4f2072b125f0a34fc3b2d3a32534b2228eee7cc3b8dc",
+            "sizeBytes": 1853958,
+            "artifactSeq": 1,
+            "newFileName": "04222bb694eeb357c71464387eba83d60e36e081d55299691f6de790085d0b96-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04222bb694eeb357c71464387eba83d60e36e081d55299691f6de790085d0b96-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565685535,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        780,
+        762
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 223,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000043.tar.gz",
+      "sizeBytes": 75132195,
+      "tokenCount": 75132195,
+      "sha256": "357049cdaa13b97815e44e30192a447411c638697b4c877f0bbe1a4baa9ef36a",
+      "artifacts": [
+        {
+          "dataId": 782,
+          "sourceArtifact": {
+            "token": 77529429,
+            "sha256": "71056b18df5567d3a6af4d8fbf38df6586d42421b470c65ed3a05e5265f8ed28",
+            "sizeBytes": 77529429,
+            "artifactSeq": 1,
+            "newFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0001-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0001-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565684305,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        782
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 224,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000044.tar.gz",
+      "sizeBytes": 94474742,
+      "tokenCount": 94474742,
+      "sha256": "4d2da41b5e38ee79476e4ac68031bfaafdfe0ad55728b1fa6b406703db345b74",
+      "artifacts": [
+        {
+          "dataId": 783,
+          "sourceArtifact": {
+            "token": 97500946,
+            "sha256": "b744e85e3f75f1dda758e238a4243416551cfbf9b87d9c018d5b54bd63d640a0",
+            "sizeBytes": 97500946,
+            "artifactSeq": 1,
+            "newFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0002-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0002-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565692306,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        783
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 225,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000045.tar.gz",
+      "sizeBytes": 94313829,
+      "tokenCount": 94313829,
+      "sha256": "3ef258e60e3d2ff80a6f56cc03fa1fd6b01ac5342f33f6bc2026cbb48bbb0481",
+      "artifacts": [
+        {
+          "dataId": 793,
+          "sourceArtifact": {
+            "token": 97661328,
+            "sha256": "e60dfa7d25f453473ef44e208bfeedbf1d16499e06847f702cb6105fc1500cee",
+            "sizeBytes": 97661328,
+            "artifactSeq": 1,
+            "newFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0003-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0003-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565693821,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        793
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 226,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000046.tar.gz",
+      "sizeBytes": 91013523,
+      "tokenCount": 91013523,
+      "sha256": "9d358bb273195d8ff5e047b745c406a699521c893aa05825db97eea6ac0fdeed",
+      "artifacts": [
+        {
+          "dataId": 784,
+          "sourceArtifact": {
+            "token": 94219819,
+            "sha256": "8ed9235258676bcb5c3b6eff323be724c3a6db7e5de5a93093f95c16a65e5a3d",
+            "sizeBytes": 94219819,
+            "artifactSeq": 1,
+            "newFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0004-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0004-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565700882,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        784
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 227,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000047.tar.gz",
+      "sizeBytes": 88569197,
+      "tokenCount": 88569197,
+      "sha256": "243df23e02db238b89a78f297513a5ba2ae29b111c69bca675f7396f96320e1b",
+      "artifacts": [
+        {
+          "dataId": 785,
+          "sourceArtifact": {
+            "token": 90851880,
+            "sha256": "e640a14c54fbd679f8634eb72c7a911cf6cae463de23c43094ecf6097701e780",
+            "sizeBytes": 90851880,
+            "artifactSeq": 1,
+            "newFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0005-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0450c6458de63da3af31c7e499498f203dc7cd97a2e8dc23ea2e8485fc3e61a7-part0005-of0005.tar.gz"
+          }
+        },
+        {
+          "dataId": 769,
+          "sourceArtifact": {
+            "token": 887195,
+            "sha256": "6eda64c081ecc706fb78859a44c6afb6722dc9b3f566571b91906005d3167ac3",
+            "sizeBytes": 887195,
+            "artifactSeq": 1,
+            "newFileName": "04552f628d31867ec22e4561daf4778b98e5f0ace50278e7d91c9b6fe2076c04-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04552f628d31867ec22e4561daf4778b98e5f0ace50278e7d91c9b6fe2076c04-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565701517,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        785,
+        769
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 228,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000048.tar.gz",
+      "sizeBytes": 49414239,
+      "tokenCount": 49414239,
+      "sha256": "f1be2800e350489b8b0dbce58b99ef83e147c3f9b7a42016c398edd821c20919",
+      "artifacts": [
+        {
+          "dataId": 774,
+          "sourceArtifact": {
+            "token": 15411060,
+            "sha256": "aa682c23852b8458731f5d5780dc7f4a0a06a018513bdefc74eba788429a52a6",
+            "sizeBytes": 15411060,
+            "artifactSeq": 1,
+            "newFileName": "046261b74013dc284cc53669bf0c229369090ce8326578aac407615f794e4232-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "046261b74013dc284cc53669bf0c229369090ce8326578aac407615f794e4232-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 772,
+          "sourceArtifact": {
+            "token": 9488663,
+            "sha256": "7444649c5d6bfdcf5c4d8f57bec7628825a7ccb9480d6436fd2a7f7b9f0761a9",
+            "sizeBytes": 9488663,
+            "artifactSeq": 1,
+            "newFileName": "046b02eddeab85d9c7b0bbd821aa29ffde895a67318360eeeebc7f071101f506-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "046b02eddeab85d9c7b0bbd821aa29ffde895a67318360eeeebc7f071101f506-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 777,
+          "sourceArtifact": {
+            "token": 27386119,
+            "sha256": "094b1d2bf0b4ec14f90c61ecd5b1e731c2ac91aca2b9c69283cbf8bf08c0f5f3",
+            "sizeBytes": 27386119,
+            "artifactSeq": 1,
+            "newFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0001-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0001-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565705989,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        774,
+        772,
+        777
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 229,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000049.tar.gz",
+      "sizeBytes": 95936362,
+      "tokenCount": 95936362,
+      "sha256": "9475adda97de40d59c35ede532dc2d56f3546e3648d20ef1fc923ae3cc601f0b",
+      "artifacts": [
+        {
+          "dataId": 791,
+          "sourceArtifact": {
+            "token": 98467512,
+            "sha256": "87dd9dd7b796e1dcfbb9c1c63d038ed33dfd475ff250b4f4276ecade801827a1",
+            "sizeBytes": 98467512,
+            "artifactSeq": 1,
+            "newFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0002-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0002-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565710055,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        791
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 230,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000050.tar.gz",
+      "sizeBytes": 90551183,
+      "tokenCount": 90551183,
+      "sha256": "9e1ce5108f1fd5b7116b0f522796a120cf70077d40b131b619ed02dfd0ccebcb",
+      "artifacts": [
+        {
+          "dataId": 792,
+          "sourceArtifact": {
+            "token": 92753629,
+            "sha256": "46fca4a781a8253720a4adce8c6f66125e98eab4b943b877d9e897aeb4a5c880",
+            "sizeBytes": 92753629,
+            "artifactSeq": 1,
+            "newFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0003-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0003-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565713583,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        792
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 231,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000051.tar.gz",
+      "sizeBytes": 91257537,
+      "tokenCount": 91257537,
+      "sha256": "457175cb08ca35df345f4f385850b51948bbc9bf4291fe4dc9db957f54d369b2",
+      "artifacts": [
+        {
+          "dataId": 789,
+          "sourceArtifact": {
+            "token": 93505744,
+            "sha256": "1088219aa01b859a5f9301fe49a7cd7e968208c1f33d546f3fbe3f0e2dcb1b9d",
+            "sizeBytes": 93505744,
+            "artifactSeq": 1,
+            "newFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0004-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0004-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565717846,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        789
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 232,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000052.tar.gz",
+      "sizeBytes": 95113012,
+      "tokenCount": 95113012,
+      "sha256": "30d76816e553b3049ce906f94557a6cc05f1778b75927e3ce8a80f3a05a8388c",
+      "artifacts": [
+        {
+          "dataId": 798,
+          "sourceArtifact": {
+            "token": 97346596,
+            "sha256": "f36fb0ff70d85beef266c078cca2d3343ae046df1c47a0674d55b9f1e5e3c7a8",
+            "sizeBytes": 97346596,
+            "artifactSeq": 1,
+            "newFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0005-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0005-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565721810,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        798
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 233,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000053.tar.gz",
+      "sizeBytes": 96111727,
+      "tokenCount": 96111727,
+      "sha256": "ddf3fd857a4563a765e8a9b81ea20e64087c827355f00eae6211fd641d84eabd",
+      "artifacts": [
+        {
+          "dataId": 794,
+          "sourceArtifact": {
+            "token": 98347299,
+            "sha256": "582905c0bde4e14eea0ec66b5c2dd490a9c26025d534f00e7340d22700d4e962",
+            "sizeBytes": 98347299,
+            "artifactSeq": 1,
+            "newFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0006-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0006-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565726267,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        794
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 234,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000054.tar.gz",
+      "sizeBytes": 95370933,
+      "tokenCount": 95370933,
+      "sha256": "898705dd5b0880d912d9d6d4403a911d7c10ddf38758ca7b3ce7aa3a5dd77523",
+      "artifacts": [
+        {
+          "dataId": 795,
+          "sourceArtifact": {
+            "token": 93467412,
+            "sha256": "87e58968260ab4a6da376c79ce5948b81a29293b4878379d0647b7beae09e8c7",
+            "sizeBytes": 93467412,
+            "artifactSeq": 1,
+            "newFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0007-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0473d2dc4878300acb89b7be5bcca293679012b8adf07fcfa58f96e89cf80ce2-part0007-of0007.tar.gz"
+          }
+        },
+        {
+          "dataId": 779,
+          "sourceArtifact": {
+            "token": 4635707,
+            "sha256": "fadfa8bd7fc317892dfd2b61aacf3efbc80ff3a90fe4c4a0c6fdd57bd7eecfa7",
+            "sizeBytes": 4635707,
+            "artifactSeq": 1,
+            "newFileName": "047d12b77c16298e16af960acfd9236ae2f2b9613f504c22cdbcfc22b16ded82-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "047d12b77c16298e16af960acfd9236ae2f2b9613f504c22cdbcfc22b16ded82-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565730314,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        795,
+        779
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 235,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000055.tar.gz",
+      "sizeBytes": 50198898,
+      "tokenCount": 50198898,
+      "sha256": "f3ad3fdf18e42a5ec069c3c4da59705c8fa6f031c5b4da94a4b3db46c7416251",
+      "artifacts": [
+        {
+          "dataId": 790,
+          "sourceArtifact": {
+            "token": 53271687,
+            "sha256": "5255e32f211a3669b4ccd2ac0ee93250f3b206b6ecc6380d6a783e75156d939a",
+            "sizeBytes": 53271687,
+            "artifactSeq": 1,
+            "newFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0001-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0001-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565732448,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        790
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 236,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000056.tar.gz",
+      "sizeBytes": 93850510,
+      "tokenCount": 93850510,
+      "sha256": "3fed2682b442815463b23d7b66f117cb0f06eb4127322ab99b9ff87aa9849c8f",
+      "artifacts": [
+        {
+          "dataId": 803,
+          "sourceArtifact": {
+            "token": 99747175,
+            "sha256": "3ba98267b81cc3eb5795c46df01bd3feeaf88e5b634e7c0fbe8779e4bda11500",
+            "sizeBytes": 99747175,
+            "artifactSeq": 1,
+            "newFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0002-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0002-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565739580,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        803
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 237,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000057.tar.gz",
+      "sizeBytes": 94244416,
+      "tokenCount": 94244416,
+      "sha256": "682a90abcd33a54d487955e30d5b2c966d4292cf5bd470486674ed0041930b43",
+      "artifacts": [
+        {
+          "dataId": 801,
+          "sourceArtifact": {
+            "token": 99731041,
+            "sha256": "926e473f1622f9b712b79976fdf9712b27bab64161b2c10ddef50c02ccc49a73",
+            "sizeBytes": 99731041,
+            "artifactSeq": 1,
+            "newFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0003-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0003-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565743189,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        801
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 238,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000058.tar.gz",
+      "sizeBytes": 94249809,
+      "tokenCount": 94249809,
+      "sha256": "94d84bf3db131ebe0f05eb4dfc19d48f876cf1634038e6044ad92c4e99b60d7b",
+      "artifacts": [
+        {
+          "dataId": 806,
+          "sourceArtifact": {
+            "token": 99316031,
+            "sha256": "9c8100ed4a0cb8513ae25e7f2900203253efb9814bcfa75e09dee8192286d013",
+            "sizeBytes": 99316031,
+            "artifactSeq": 1,
+            "newFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0004-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0004-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565748544,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        806
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 239,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000059.tar.gz",
+      "sizeBytes": 94459644,
+      "tokenCount": 94459644,
+      "sha256": "9adc6a5ab39c2f6adb1dfee5d32673b597539eb160e7485241eb60681eda688f",
+      "artifacts": [
+        {
+          "dataId": 807,
+          "sourceArtifact": {
+            "token": 99860858,
+            "sha256": "7abec12e1b467dad500cbf9d6ad6202aac76ebc6ed9bd0c62a58994b75c3e60d",
+            "sizeBytes": 99860858,
+            "artifactSeq": 1,
+            "newFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0005-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0005-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565754997,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        807
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 240,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000060.tar.gz",
+      "sizeBytes": 94705828,
+      "tokenCount": 94705828,
+      "sha256": "e65054a31e756f91e90f0ad275cbf8eb6bb0616b5d2f82b951b6744fbbbb6b4e",
+      "artifacts": [
+        {
+          "dataId": 808,
+          "sourceArtifact": {
+            "token": 99747368,
+            "sha256": "47cb8529a8f2f4f3789502f3d83328140a89eb0b030bc359ab4105bd26baf220",
+            "sizeBytes": 99747368,
+            "artifactSeq": 1,
+            "newFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0006-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0489afb274e1ecbe6df9f837810c0e9bf821882746453b60e2fcafd973eb8dda-part0006-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565758576,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        808
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 241,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000061.tar.gz",
+      "sizeBytes": 7449133,
+      "tokenCount": 7449133,
+      "sha256": "b7b9c6e02d03448c9019386419d603cab318ac324ec32cd5c8c9950324c31a04",
+      "artifacts": [
+        {
+          "dataId": 786,
+          "sourceArtifact": {
+            "token": 291578,
+            "sha256": "8a945d8739553283d87ee4b393694b4257b7f8fd3e746c7d7b5a4bf5d5b70382",
+            "sizeBytes": 291578,
+            "artifactSeq": 1,
+            "newFileName": "049a6cf4d71975b206694f3f67ef890e171570b635109ab4d6a7a6b276607455-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "049a6cf4d71975b206694f3f67ef890e171570b635109ab4d6a7a6b276607455-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 787,
+          "sourceArtifact": {
+            "token": 1219180,
+            "sha256": "f0117f77e5867120253517aa699ab9eabd8686d5514b53f32fe53cf1f98bce82",
+            "sizeBytes": 1219180,
+            "artifactSeq": 1,
+            "newFileName": "04a5c1b2fd4fdb3791e9d267444d47dfc3e9249c00a1dcace7fd28d4db7a636e-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04a5c1b2fd4fdb3791e9d267444d47dfc3e9249c00a1dcace7fd28d4db7a636e-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 788,
+          "sourceArtifact": {
+            "token": 6493295,
+            "sha256": "20e9555113ec40772d20e74fbf821155adeee2a589d6ff30163659dd5254076e",
+            "sizeBytes": 6493295,
+            "artifactSeq": 1,
+            "newFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0001-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0001-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565756129,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        786,
+        787,
+        788
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 242,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000062.tar.gz",
+      "sizeBytes": 95110484,
+      "tokenCount": 95110484,
+      "sha256": "b27ff3b0991784a86f95555b0e6ff93d0a9b4a35b6e4214f7eef6b255a663b2c",
+      "artifacts": [
+        {
+          "dataId": 812,
+          "sourceArtifact": {
+            "token": 99811093,
+            "sha256": "59d2970acf0adc7dc95b15804ff1fd0b267e92a6a5ba27560d1296fc950d38f1",
+            "sizeBytes": 99811093,
+            "artifactSeq": 1,
+            "newFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0002-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0002-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565764727,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        812
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 243,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000063.tar.gz",
+      "sizeBytes": 94719155,
+      "tokenCount": 94719155,
+      "sha256": "aab8c8eef1d1d8a3ee0bbf88443bc89ddf58462b6a4aa92e66ab7430d437b018",
+      "artifacts": [
+        {
+          "dataId": 814,
+          "sourceArtifact": {
+            "token": 98994017,
+            "sha256": "808fd0549f83307df563ae2c5d2286cae874fb9672612f7d395c0db9078ca385",
+            "sizeBytes": 98994017,
+            "artifactSeq": 1,
+            "newFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0003-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0003-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565767389,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        814
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 244,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000064.tar.gz",
+      "sizeBytes": 92391479,
+      "tokenCount": 92391479,
+      "sha256": "504104f1355b6314f926e82ac7e0d6ec10fe05a8e8d5dc02d31aa37e30438f21",
+      "artifacts": [
+        {
+          "dataId": 815,
+          "sourceArtifact": {
+            "token": 99325540,
+            "sha256": "deb99a95abc300e47b679831f13007bb6b9f3b2d25a01601c6e37f685a93608e",
+            "sizeBytes": 99325540,
+            "artifactSeq": 1,
+            "newFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0004-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0004-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565774029,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        815
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 245,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000065.tar.gz",
+      "sizeBytes": 92788802,
+      "tokenCount": 92788802,
+      "sha256": "8a54873095ba9a4ba1c7a95a35813e764d73b2d3ebf96f3375e8d606b25f917a",
+      "artifacts": [
+        {
+          "dataId": 816,
+          "sourceArtifact": {
+            "token": 99139678,
+            "sha256": "f59efaf7012b47c5310147da85799bb5d85dbb7e1135ceaa46fc6c6032d233cc",
+            "sizeBytes": 99139678,
+            "artifactSeq": 1,
+            "newFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0005-of0005.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04c813f1066d4c3e3c083f98bb5e27f300d79791d3e0620a1d1a55151aff9a5a-part0005-of0005.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565776808,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        816
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 246,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000066.tar.gz",
+      "sizeBytes": 49209281,
+      "tokenCount": 49209281,
+      "sha256": "c43e6c9929aca4f2b62bdff0698f64b333dc85a17420becab7fa94262c1b246b",
+      "artifacts": [
+        {
+          "dataId": 799,
+          "sourceArtifact": {
+            "token": 19279288,
+            "sha256": "2fcf924cd561febc5fe36255e7eed7c17311fce91df06f03636aafcba78ddecd",
+            "sizeBytes": 19279288,
+            "artifactSeq": 1,
+            "newFileName": "04dacfe65a2e000321ad86984a64c7bce8e9df4ee8205735c36fa83518611e03-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04dacfe65a2e000321ad86984a64c7bce8e9df4ee8205735c36fa83518611e03-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 797,
+          "sourceArtifact": {
+            "token": 2349547,
+            "sha256": "dfc754497987ddb386330eb9ea08ceed8372808a77c6f6d330bf217255f55d09",
+            "sizeBytes": 2349547,
+            "artifactSeq": 1,
+            "newFileName": "04e48c09a22900f4171f086748001c5e9eceef9b446c8768b9533b6c5ab10c6e-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04e48c09a22900f4171f086748001c5e9eceef9b446c8768b9533b6c5ab10c6e-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 810,
+          "sourceArtifact": {
+            "token": 30863942,
+            "sha256": "ee6c285fae87f0b843ebea267faa67d77431d9830e9ad559ae78fcc4185925a1",
+            "sizeBytes": 30863942,
+            "artifactSeq": 1,
+            "newFileName": "04e8ebc396b5f7c08dfcdd8ff702dc5901d6eb8255530016f11e3173b007476c-part0001-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04e8ebc396b5f7c08dfcdd8ff702dc5901d6eb8255530016f11e3173b007476c-part0001-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565779226,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        799,
+        797,
+        810
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 247,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000067.tar.gz",
+      "sizeBytes": 94070743,
+      "tokenCount": 94070743,
+      "sha256": "9390b1c0149b8367e889d93275f2c7b1d40a78018ff185d6c8e9cba3b188397c",
+      "artifacts": [
+        {
+          "dataId": 817,
+          "sourceArtifact": {
+            "token": 99893935,
+            "sha256": "37f8ad471905319f6def1325bcd63b9fb8c19790e9ad79e5e73822813a46aa01",
+            "sizeBytes": 99893935,
+            "artifactSeq": 1,
+            "newFileName": "04e8ebc396b5f7c08dfcdd8ff702dc5901d6eb8255530016f11e3173b007476c-part0002-of0002.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04e8ebc396b5f7c08dfcdd8ff702dc5901d6eb8255530016f11e3173b007476c-part0002-of0002.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565785777,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        817
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 248,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000068.tar.gz",
+      "sizeBytes": 70404258,
+      "tokenCount": 70404258,
+      "sha256": "7f5459f4927c07338843c02d024d618761bdb3d9ba5a78de69e25b46800a6455",
+      "artifacts": [
+        {
+          "dataId": 796,
+          "sourceArtifact": {
+            "token": 648688,
+            "sha256": "8ac1f959a4c52b25ae39b116e0979773dadd621916581e47d3e142a25ef00f98",
+            "sizeBytes": 648688,
+            "artifactSeq": 1,
+            "newFileName": "04f3e187148f68a2c1c40a315278f34eaf0f5bac07f6d914733d1b1077286493-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "04f3e187148f68a2c1c40a315278f34eaf0f5bac07f6d914733d1b1077286493-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 802,
+          "sourceArtifact": {
+            "token": 2541652,
+            "sha256": "de315ab9b2f819540881e9c1cc6d0fd5f532d2fe1efec85f12d46480c5fb423b",
+            "sizeBytes": 2541652,
+            "artifactSeq": 1,
+            "newFileName": "05017cceb7457e63dbd7bcecde3191a5928532e074d5bdd4a566925ae72dd895-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "05017cceb7457e63dbd7bcecde3191a5928532e074d5bdd4a566925ae72dd895-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 800,
+          "sourceArtifact": {
+            "token": 3046621,
+            "sha256": "a5878578b92d32fe3d2c46abf871b3ff9c914d6c81b19602e3ae1dee3883417c",
+            "sizeBytes": 3046621,
+            "artifactSeq": 1,
+            "newFileName": "0513139f1af0c023698451527fed5cabaf87f5cecce4ad781b0450ce1e3435a1-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0513139f1af0c023698451527fed5cabaf87f5cecce4ad781b0450ce1e3435a1-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 805,
+          "sourceArtifact": {
+            "token": 21849674,
+            "sha256": "14423fcba7f07319d2aaea21cf77443ab287080b83973f265cbbd437027305d5",
+            "sizeBytes": 21849674,
+            "artifactSeq": 1,
+            "newFileName": "0515f3cd86d43d7d964bf0defee78a59bba524ce4e84cc5526ed2c73a43f735e-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0515f3cd86d43d7d964bf0defee78a59bba524ce4e84cc5526ed2c73a43f735e-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 804,
+          "sourceArtifact": {
+            "token": 9449354,
+            "sha256": "04335fac480c59ed85b89f92f989196abff1859b9b0a79cd2d7c514758f96796",
+            "sizeBytes": 9449354,
+            "artifactSeq": 1,
+            "newFileName": "05322bd4bbbf1092947fe3c0610387058d9735c9fd1dd236e60362384e11380d-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "05322bd4bbbf1092947fe3c0610387058d9735c9fd1dd236e60362384e11380d-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 813,
+          "sourceArtifact": {
+            "token": 34376928,
+            "sha256": "5f0b72949b6575ed44d6b57ccff58b01b2cdafbbd2eb8cdb842e3a1c3ee82d04",
+            "sizeBytes": 34376928,
+            "artifactSeq": 1,
+            "newFileName": "0540a770627624a4e4e3fd0e8fdccb6cbb8174f5dfe6607c62a6b658fbecbce8-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0540a770627624a4e4e3fd0e8fdccb6cbb8174f5dfe6607c62a6b658fbecbce8-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 809,
+          "sourceArtifact": {
+            "token": 1344290,
+            "sha256": "59c850480eb086e19505419e68d0197410718e264009bef93e01d8f0ce87c1d5",
+            "sizeBytes": 1344290,
+            "artifactSeq": 1,
+            "newFileName": "05433231c4530a2a02e31ae48e29699dc18a7e5d32623e565aa809e34e59f8a0-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "05433231c4530a2a02e31ae48e29699dc18a7e5d32623e565aa809e34e59f8a0-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 811,
+          "sourceArtifact": {
+            "token": 3147027,
+            "sha256": "7a712d11cba81f68fafbe14b972203376a08c56414f254db6ab0d7f049a8ff0b",
+            "sizeBytes": 3147027,
+            "artifactSeq": 1,
+            "newFileName": "059e52ef51c00460ade0d77b8f206fc9eb6c264f1a94a847db414851393fe6e3-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e52ef51c00460ade0d77b8f206fc9eb6c264f1a94a847db414851393fe6e3-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565787618,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        796,
+        802,
+        800,
+        805,
+        804,
+        813,
+        809,
+        811
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 249,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000069.tar.gz",
+      "sizeBytes": 71733597,
+      "tokenCount": 71733597,
+      "sha256": "bb12e301c39fa1ff14f0955ec5e3a7108e200b193701f0ddbc101d9cbd0ffc00",
+      "artifacts": [
+        {
+          "dataId": 819,
+          "sourceArtifact": {
+            "token": 73372085,
+            "sha256": "ffbdadd82345d08165f97411fb20fa22d0f0b5cff0e22822494d1fa1e8e05365",
+            "sizeBytes": 73372085,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0001-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0001-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565791767,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        819
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 250,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000070.tar.gz",
+      "sizeBytes": 97351655,
+      "tokenCount": 97351655,
+      "sha256": "0e76c1575542916eb6b117f78cedea2b994499c9340c1819dd794d2cf1576a25",
+      "artifacts": [
+        {
+          "dataId": 824,
+          "sourceArtifact": {
+            "token": 99566489,
+            "sha256": "1b4d50ea3440312eae0e2da20a1e877adabc85425f7ca7fd4d0f01932d13818e",
+            "sizeBytes": 99566489,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0002-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0002-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565795579,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        824
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 251,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000071.tar.gz",
+      "sizeBytes": 75831206,
+      "tokenCount": 75831206,
+      "sha256": "30643f781de649e88249f102a6539404fb5d033594a020643abc2b3eddc2fcd4",
+      "artifacts": [
+        {
+          "dataId": 823,
+          "sourceArtifact": {
+            "token": 77554756,
+            "sha256": "6469ad0f2966e866b6d42f414045edcab0e13cf173d8bc59311a17e06641479b",
+            "sizeBytes": 77554756,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0003-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0003-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565797857,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        823
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 252,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000072.tar.gz",
+      "sizeBytes": 84747510,
+      "tokenCount": 84747510,
+      "sha256": "017f5dce95df5e37612ad9521a4fe7e48effcb81fe574674b5188c9efb0d9ebf",
+      "artifacts": [
+        {
+          "dataId": 825,
+          "sourceArtifact": {
+            "token": 86652273,
+            "sha256": "9eaf07ab9ab85e6657343bd75db16370947e935b1e81c1d759fcc15df4c3b040",
+            "sizeBytes": 86652273,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0004-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0004-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565802804,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        825
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 253,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000073.tar.gz",
+      "sizeBytes": 87535785,
+      "tokenCount": 87535785,
+      "sha256": "e25c9b74c1587aec4c3d943c13f411f0255dc9716a80af40df03e7da6a1403a3",
+      "artifacts": [
+        {
+          "dataId": 830,
+          "sourceArtifact": {
+            "token": 89498245,
+            "sha256": "c660333c9317e4b0af6eafc7ef5905a683efc92192416b83461b4351826c792b",
+            "sizeBytes": 89498245,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0005-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0005-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565806653,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        830
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 254,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000074.tar.gz",
+      "sizeBytes": 87548512,
+      "tokenCount": 87548512,
+      "sha256": "3956bbc83db0e244cf60ae6c33daf1d11d3879e473ca214b8e852f5c2ba806a0",
+      "artifacts": [
+        {
+          "dataId": 827,
+          "sourceArtifact": {
+            "token": 89513248,
+            "sha256": "347f513569ae8bdc09b3b7513cdbf6bfd61082235f33435c1ce19d11ec012c40",
+            "sizeBytes": 89513248,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0006-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0006-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565810735,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        827
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 255,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000075.tar.gz",
+      "sizeBytes": 87681168,
+      "tokenCount": 87681168,
+      "sha256": "01d0538fafaa9195d144ea8e306f391ee996a5133b710ff766488f5c33e6e365",
+      "artifacts": [
+        {
+          "dataId": 832,
+          "sourceArtifact": {
+            "token": 89649367,
+            "sha256": "d0f15542a35bb841d9ed416f8a7a49471cbe2be1a6011a8ba976b762015579b4",
+            "sizeBytes": 89649367,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0007-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0007-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565813981,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        832
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 256,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000076.tar.gz",
+      "sizeBytes": 87703046,
+      "tokenCount": 87703046,
+      "sha256": "941f8b3d1dbfdc36a858984877f8641cbc71462d6037beb690ef33d60e1ea429",
+      "artifacts": [
+        {
+          "dataId": 828,
+          "sourceArtifact": {
+            "token": 89676290,
+            "sha256": "e538f2e7b97b832998bbcb16b2465c386adf33652371a572f8f2a1c675ae3bd8",
+            "sizeBytes": 89676290,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0008-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0008-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565818332,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        828
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 257,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000077.tar.gz",
+      "sizeBytes": 87819424,
+      "tokenCount": 87819424,
+      "sha256": "ee79158f418d98f58a2f134986496546c93ac40ecd20935a33e65490079379bd",
+      "artifacts": [
+        {
+          "dataId": 835,
+          "sourceArtifact": {
+            "token": 89792776,
+            "sha256": "981cfab2b99be21eda3a07f6cca23bc2d3f6c4285ac6f98c25fb843ded8dc886",
+            "sizeBytes": 89792776,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0009-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0009-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565821230,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        835
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 258,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000078.tar.gz",
+      "sizeBytes": 87905793,
+      "tokenCount": 87905793,
+      "sha256": "f9666f3b2dfba69f5d41a441928168626a348708b3684d8ab2982538c7e913bd",
+      "artifacts": [
+        {
+          "dataId": 831,
+          "sourceArtifact": {
+            "token": 89886668,
+            "sha256": "7f83982aeccfa49ef8e3067271bb4033f3be8fddb0e58c5420c32f522725148f",
+            "sizeBytes": 89886668,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0010-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0010-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565825931,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        831
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 259,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000079.tar.gz",
+      "sizeBytes": 87924034,
+      "tokenCount": 87924034,
+      "sha256": "46f4b33e0d94e5d4b232793db16913ebb954755924a042208c27ce31addf7450",
+      "artifacts": [
+        {
+          "dataId": 826,
+          "sourceArtifact": {
+            "token": 89906501,
+            "sha256": "5ab37aa6890a960c8c8a243e34d7dba2b3f82f7f5f9089ad560ecb851010c552",
+            "sizeBytes": 89906501,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0011-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0011-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565828704,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        826
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 260,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000080.tar.gz",
+      "sizeBytes": 87961183,
+      "tokenCount": 87961183,
+      "sha256": "7ab9382360520aa7dfe50997073955c305565a88105efe615c1c38a15e72c20b",
+      "artifacts": [
+        {
+          "dataId": 833,
+          "sourceArtifact": {
+            "token": 89942981,
+            "sha256": "23b6fa5815b00c89361d6cc4bc0a8fe31c300a5d0ab7b1e0f3592c3ef217bc8f",
+            "sizeBytes": 89942981,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0012-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0012-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565833522,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        833
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 261,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000081.tar.gz",
+      "sizeBytes": 88633015,
+      "tokenCount": 88633015,
+      "sha256": "dc63d8996598b17992ae9b38a13d5805e578966eecf90376871c5dbd793c4831",
+      "artifacts": [
+        {
+          "dataId": 834,
+          "sourceArtifact": {
+            "token": 90631673,
+            "sha256": "82940e0f73e7c42dd61581200412a262f0030aeb073740821ef03cd6ae597aea",
+            "sizeBytes": 90631673,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0013-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0013-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565836297,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        834
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 262,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000082.tar.gz",
+      "sizeBytes": 90008952,
+      "tokenCount": 90008952,
+      "sha256": "366f51c42b6f6df6462fed322dceaf7840b250aab4dd1b4b05643ab9e7336516",
+      "artifacts": [
+        {
+          "dataId": 837,
+          "sourceArtifact": {
+            "token": 92032268,
+            "sha256": "d1f72db2e0abe0e99aca605121bdf6acbd96eb6abd258035d7068da0461eef33",
+            "sizeBytes": 92032268,
+            "artifactSeq": 1,
+            "newFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0014-of0014.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "059e78b327fe1360607be2d2c91387c07b716b30ed0594bba4ae18400b0b84aa-part0014-of0014.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565841532,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        837
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 263,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000083.tar.gz",
+      "sizeBytes": 46457929,
+      "tokenCount": 46457929,
+      "sha256": "055ade92bb5b5de22b3d6c1769fb8f6c5ff28645451557dc4226f01791361194",
+      "artifacts": [
+        {
+          "dataId": 818,
+          "sourceArtifact": {
+            "token": 11229491,
+            "sha256": "cd6962c5a5734e0a7c7537dfa26b53066a761113562d942fd912cb41f4598f18",
+            "sizeBytes": 11229491,
+            "artifactSeq": 1,
+            "newFileName": "05b4db473a42a3719e266abbce715ea336ba04b1f69913ecc4681e79099dc9bc-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "05b4db473a42a3719e266abbce715ea336ba04b1f69913ecc4681e79099dc9bc-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 820,
+          "sourceArtifact": {
+            "token": 15301877,
+            "sha256": "a3ebb542b7cafb612d821f1417dd8853c3e5ae3e9dadc66f0e48d8ba7ad37739",
+            "sizeBytes": 15301877,
+            "artifactSeq": 1,
+            "newFileName": "05e79bccc5b9ba6d40b0494cde51b8dfea42f96acd1e28ab47e8d91f84580fbc-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "05e79bccc5b9ba6d40b0494cde51b8dfea42f96acd1e28ab47e8d91f84580fbc-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 822,
+          "sourceArtifact": {
+            "token": 12967553,
+            "sha256": "93a1506ebd84bc76afeb6e3fcf38dacb07a76c03cca4e6d9c2e4accd4ed6de88",
+            "sizeBytes": 12967553,
+            "artifactSeq": 1,
+            "newFileName": "05ec7dd4306883e961a1a58c7c103f3fc5399326000766f6b5e452a29e3cf006-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "05ec7dd4306883e961a1a58c7c103f3fc5399326000766f6b5e452a29e3cf006-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 821,
+          "sourceArtifact": {
+            "token": 10249253,
+            "sha256": "043c5f95224c45777a09b4b95539b25f6ec3f91d25655c874af4fe71031cccdd",
+            "sizeBytes": 10249253,
+            "artifactSeq": 1,
+            "newFileName": "060f1dd73507f33f11ed7487d59e211d71fda0af28956107635fff863e1f4d36-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "060f1dd73507f33f11ed7487d59e211d71fda0af28956107635fff863e1f4d36-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565842288,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        818,
+        820,
+        822,
+        821
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 264,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000084.tar.gz",
+      "sizeBytes": 62932253,
+      "tokenCount": 62932253,
+      "sha256": "f2aaef8c24a9be3e68c58aa1485037ba1348557edc06a7d3eb367aa1cbf0124e",
+      "artifacts": [
+        {
+          "dataId": 836,
+          "sourceArtifact": {
+            "token": 70742337,
+            "sha256": "4e37c9f873fa5b9a279c4fbf7d6baea7e207a351557dab5685b701c5c4426390",
+            "sizeBytes": 70742337,
+            "artifactSeq": 1,
+            "newFileName": "0625f23e9ad17bbbc51524858c1107c49eeed9c9da37a04387d008dd8894baaa-part0001-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0625f23e9ad17bbbc51524858c1107c49eeed9c9da37a04387d008dd8894baaa-part0001-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565850246,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        836
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 265,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000085.tar.gz",
+      "sizeBytes": 89625837,
+      "tokenCount": 89625837,
+      "sha256": "a11674d4ad0370325f6cdae5c7d98d0ce8b6e10855b851103d3a33ff37d9cd34",
+      "artifacts": [
+        {
+          "dataId": 847,
+          "sourceArtifact": {
+            "token": 99435257,
+            "sha256": "f08e3382d64863be06df4b1f961cd02cac322129bfa87dc3d6acf9cafe4723ed",
+            "sizeBytes": 99435257,
+            "artifactSeq": 1,
+            "newFileName": "0625f23e9ad17bbbc51524858c1107c49eeed9c9da37a04387d008dd8894baaa-part0002-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0625f23e9ad17bbbc51524858c1107c49eeed9c9da37a04387d008dd8894baaa-part0002-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565853520,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        847
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 266,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000086.tar.gz",
+      "sizeBytes": 89568845,
+      "tokenCount": 89568845,
+      "sha256": "caccee20f3fae68c03c04897d17f8ff9e1a82406ce67684d8d6338a7b4282e6c",
+      "artifacts": [
+        {
+          "dataId": 848,
+          "sourceArtifact": {
+            "token": 99514038,
+            "sha256": "feb4764b73cbcda2dc1f9ca6e18bc0eb96d67580d4eb9bfa34eaf26c42240b2b",
+            "sizeBytes": 99514038,
+            "artifactSeq": 1,
+            "newFileName": "0625f23e9ad17bbbc51524858c1107c49eeed9c9da37a04387d008dd8894baaa-part0003-of0003.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0625f23e9ad17bbbc51524858c1107c49eeed9c9da37a04387d008dd8894baaa-part0003-of0003.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565860394,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        848
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 267,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000087.tar.gz",
+      "sizeBytes": 11953102,
+      "tokenCount": 11953102,
+      "sha256": "270fbeb7c6cc7a0ea859dc5da0ae420ea8b3a2bca2519e79fa329cdb649124b5",
+      "artifacts": [
+        {
+          "dataId": 829,
+          "sourceArtifact": {
+            "token": 12280519,
+            "sha256": "922d9868b039f663e982ac13b22ad0a4fa5c3b422a77637a2f0eff0d4d9b42e0",
+            "sizeBytes": 12280519,
+            "artifactSeq": 1,
+            "newFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0001-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0001-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565854869,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        829
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 268,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000088.tar.gz",
+      "sizeBytes": 96886610,
+      "tokenCount": 96886610,
+      "sha256": "a92d01827a581fb4d24ec89d328c964bc4cfa159a8270f6047d3da491755c2f0",
+      "artifacts": [
+        {
+          "dataId": 851,
+          "sourceArtifact": {
+            "token": 99352256,
+            "sha256": "01478b3aa7da738e9a9e4cd2dd42d226b7f4e2031f971c3a48a5687db941f121",
+            "sizeBytes": 99352256,
+            "artifactSeq": 1,
+            "newFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0002-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0002-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565862981,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        851
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 269,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000089.tar.gz",
+      "sizeBytes": 96750278,
+      "tokenCount": 96750278,
+      "sha256": "c832cb94352015956793959bac55ea19166a827dc4ce397937c02e6a613b9a41",
+      "artifacts": [
+        {
+          "dataId": 852,
+          "sourceArtifact": {
+            "token": 99168514,
+            "sha256": "902071482ea0be12982cf41787205e41cc485b1c928833bbc717174e9feebc8c",
+            "sizeBytes": 99168514,
+            "artifactSeq": 1,
+            "newFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0003-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0003-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565868911,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        852
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 270,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000090.tar.gz",
+      "sizeBytes": 93398707,
+      "tokenCount": 93398707,
+      "sha256": "06572c3393f4f36891640b84de0a6cb42e230910e5e5a89012cbb0dd227c7808",
+      "artifacts": [
+        {
+          "dataId": 849,
+          "sourceArtifact": {
+            "token": 95756845,
+            "sha256": "2bfc1d8768ad3a20d861998413e0900086a5b156470931613b58748295513384",
+            "sizeBytes": 95756845,
+            "artifactSeq": 1,
+            "newFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0004-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0004-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565870807,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        849
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 271,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000091.tar.gz",
+      "sizeBytes": 95479029,
+      "tokenCount": 95479029,
+      "sha256": "863dd4a4bb4c5c9e3b28dc77370d2eee91cc7ff8016c2ec8ffad3e0cfe66adf5",
+      "artifacts": [
+        {
+          "dataId": 858,
+          "sourceArtifact": {
+            "token": 98014729,
+            "sha256": "d3fcdb60d341b501044e28efda03d4bfd83e164b92431d0e428cd310ed11bfa5",
+            "sizeBytes": 98014729,
+            "artifactSeq": 1,
+            "newFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0005-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0005-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565876962,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        858
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 272,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000092.tar.gz",
+      "sizeBytes": 95021372,
+      "tokenCount": 95021372,
+      "sha256": "12c08c09cd0ed1162b267b939dbbd2ab1fddb4ae0b3aebf3c9113a0f8474c2b4",
+      "artifacts": [
+        {
+          "dataId": 856,
+          "sourceArtifact": {
+            "token": 97224401,
+            "sha256": "23448d61dea8771045ebd42c717550f12a5d513f1f587823b0d743f90c46269a",
+            "sizeBytes": 97224401,
+            "artifactSeq": 1,
+            "newFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0006-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0006-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565878931,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        856
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 273,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000093.tar.gz",
+      "sizeBytes": 95447901,
+      "tokenCount": 95447901,
+      "sha256": "7db851e89e9445bdbc9a5664313b8b773ddf1aa97abcfea9192196062c4ef2dd",
+      "artifacts": [
+        {
+          "dataId": 859,
+          "sourceArtifact": {
+            "token": 97653562,
+            "sha256": "cec719058fb88577a8f2a351efccc51a06dd10712943ccf85e5c7da4c4293615",
+            "sizeBytes": 97653562,
+            "artifactSeq": 1,
+            "newFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0007-of0007.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064105194fd1010e06eee5493f85034f37d0ebb2b4bbd5f6c0fa17b0bf42cc90-part0007-of0007.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565885047,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        859
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 274,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000094.tar.gz",
+      "sizeBytes": 92546638,
+      "tokenCount": 92546638,
+      "sha256": "f9cdc28ae09e817be40991f5e909e69f5b2e1a7696bd6994b13e96217e60e835",
+      "artifacts": [
+        {
+          "dataId": 842,
+          "sourceArtifact": {
+            "token": 6552904,
+            "sha256": "a8b7e6675d6fcf65369af50dd6499a7d74d387a1eab73d589ce90bca153e1f08",
+            "sizeBytes": 6552904,
+            "artifactSeq": 1,
+            "newFileName": "064dac599907acadb1de559393931c520094478d681738534494bd7f48391e7d-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "064dac599907acadb1de559393931c520094478d681738534494bd7f48391e7d-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 840,
+          "sourceArtifact": {
+            "token": 4323938,
+            "sha256": "d089e4234e9a5fa09606c5a8210250d19f8fefb7b5811ba818e629c6c8f6712d",
+            "sizeBytes": 4323938,
+            "artifactSeq": 1,
+            "newFileName": "065106587a3d35fa667f56f2a917397e97ca08fda38df121b8e88dc7488f24e4-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "065106587a3d35fa667f56f2a917397e97ca08fda38df121b8e88dc7488f24e4-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 843,
+          "sourceArtifact": {
+            "token": 10852028,
+            "sha256": "80a4e615be613d1a83c856d2a4f9c54da7e4891a3b34a869f28a1f12fa7767f0",
+            "sizeBytes": 10852028,
+            "artifactSeq": 1,
+            "newFileName": "069ec4deb2b26b9130b3b801f60c5c715f3b991fa13491b624939d0ae34c2a5a-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "069ec4deb2b26b9130b3b801f60c5c715f3b991fa13491b624939d0ae34c2a5a-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 839,
+          "sourceArtifact": {
+            "token": 2159501,
+            "sha256": "a8969fe431e631fa11bd70b039c2e02239c3e0ba95880b744680399e0ca8bd33",
+            "sizeBytes": 2159501,
+            "artifactSeq": 1,
+            "newFileName": "06aaadfb92cb66a57830c4f598853798939393ac8f7b4a061225828ce82cd8fa-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "06aaadfb92cb66a57830c4f598853798939393ac8f7b4a061225828ce82cd8fa-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 845,
+          "sourceArtifact": {
+            "token": 23708687,
+            "sha256": "f1ef2aef163a12b6cd8c1733fcfddc890806bd80dfe3582b08260c1c41c6eebb",
+            "sizeBytes": 23708687,
+            "artifactSeq": 1,
+            "newFileName": "06e8527fa91a55aa3f578bfa18e2fc0a59a1977c9f7036a17673e4b12dd9834e-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "06e8527fa91a55aa3f578bfa18e2fc0a59a1977c9f7036a17673e4b12dd9834e-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 846,
+          "sourceArtifact": {
+            "token": 51480560,
+            "sha256": "d0d381e3d592144d741cb98778625149901ae24b04d2ee60df5210b18a5836f9",
+            "sizeBytes": 51480560,
+            "artifactSeq": 1,
+            "newFileName": "06e9624ee1b3cf0afdfcdf456cdc3bc9b206ec414eb6a32c8742d13bf2927af6-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "06e9624ee1b3cf0afdfcdf456cdc3bc9b206ec414eb6a32c8742d13bf2927af6-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565889112,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        842,
+        840,
+        843,
+        839,
+        845,
+        846
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 275,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000095.tar.gz",
+      "sizeBytes": 86223868,
+      "tokenCount": 86223868,
+      "sha256": "94c94b1b02d2e0b78fee01afd4bed304691ec66567fd76492bbada148b914e41",
+      "artifacts": [
+        {
+          "dataId": 854,
+          "sourceArtifact": {
+            "token": 77904555,
+            "sha256": "fcbffde04cea9ddbff9d152c9d6267141718c6c7764661aa8e5b7bb0e3fa570c",
+            "sizeBytes": 77904555,
+            "artifactSeq": 1,
+            "newFileName": "06f54e5651ec2445d2ca646a7f87ebdd7d8aeb5b6d673dacec403cfedcfcd5d0-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "06f54e5651ec2445d2ca646a7f87ebdd7d8aeb5b6d673dacec403cfedcfcd5d0-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 838,
+          "sourceArtifact": {
+            "token": 1190071,
+            "sha256": "2dfb300da985883c6990455f1c66d5873205c40c7e6342db0b4ee7fc2c9be5cb",
+            "sizeBytes": 1190071,
+            "artifactSeq": 1,
+            "newFileName": "070781154dc38622b109959251e282261ee1a7eb0f957c4ad650e0195838aeeb-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "070781154dc38622b109959251e282261ee1a7eb0f957c4ad650e0195838aeeb-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 841,
+          "sourceArtifact": {
+            "token": 1642491,
+            "sha256": "23b3fade2ffd0224b42aabdcbe26e3160980bf70af9b5d714de341eabf92c917",
+            "sizeBytes": 1642491,
+            "artifactSeq": 1,
+            "newFileName": "07111c551be08c09ae93757ad81aa7a5d3de21175d7261997ee7096a5efa1263-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "07111c551be08c09ae93757ad81aa7a5d3de21175d7261997ee7096a5efa1263-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 844,
+          "sourceArtifact": {
+            "token": 10988618,
+            "sha256": "b57723dfba5f65e700e2e3d79068aa303c30f852183ee1ec7e5a566e24fd1f5b",
+            "sizeBytes": 10988618,
+            "artifactSeq": 1,
+            "newFileName": "071ae2c9eccf765ed71790ddb1bd5a7325b8ddfcff346fcdd59c1eb20fe2ccd0-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "071ae2c9eccf765ed71790ddb1bd5a7325b8ddfcff346fcdd59c1eb20fe2ccd0-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565894053,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        854,
+        838,
+        841,
+        844
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 276,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000096.tar.gz",
+      "sizeBytes": 81403575,
+      "tokenCount": 81403575,
+      "sha256": "3a3c2a5f7be85d5d3d4d25571d23fd8f5848a827eb9e8fd5d3cad28483d80f5f",
+      "artifacts": [
+        {
+          "dataId": 855,
+          "sourceArtifact": {
+            "token": 83132036,
+            "sha256": "98abb3e9331f8c5a1811d4f83cf6d1160671320bc92172f0c19d03f3a53a07fc",
+            "sizeBytes": 83132036,
+            "artifactSeq": 1,
+            "newFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0001-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0001-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565896943,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        855
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 277,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000097.tar.gz",
+      "sizeBytes": 88943619,
+      "tokenCount": 88943619,
+      "sha256": "9d4c8e6e36857fa3751d224a0bdaf2ab393abd9d3e92ac0d308db3a36508ec55",
+      "artifacts": [
+        {
+          "dataId": 864,
+          "sourceArtifact": {
+            "token": 90844963,
+            "sha256": "0043e2f74fb88c5598595342965ada86edcff02ed4e3d0f0c69689057686a534",
+            "sizeBytes": 90844963,
+            "artifactSeq": 1,
+            "newFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0002-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0002-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565905430,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        864
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 278,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000098.tar.gz",
+      "sizeBytes": 88671459,
+      "tokenCount": 88671459,
+      "sha256": "97528d910c53e0965b81bbfce1fac722f1b87e46b53f60f76dd9c937ae67b022",
+      "artifacts": [
+        {
+          "dataId": 860,
+          "sourceArtifact": {
+            "token": 90577271,
+            "sha256": "a724621ede58b283a235d40d81e0c30d364321be3e68036ebfbb2efa27616cd8",
+            "sizeBytes": 90577271,
+            "artifactSeq": 1,
+            "newFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0003-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0003-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565910614,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        860
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 279,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000099.tar.gz",
+      "sizeBytes": 89970557,
+      "tokenCount": 89970557,
+      "sha256": "8ddfa787b6b9d26c5aa1a4eaec244cd912c886562a87ea861dfdeabfd32f50ca",
+      "artifacts": [
+        {
+          "dataId": 869,
+          "sourceArtifact": {
+            "token": 91883010,
+            "sha256": "10e832fffff7c2894187460223a27e1a1a81c96a90c3b308273df11010c0c6d4",
+            "sizeBytes": 91883010,
+            "artifactSeq": 1,
+            "newFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0004-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0004-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565919946,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        869
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 280,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000100.tar.gz",
+      "sizeBytes": 85385314,
+      "tokenCount": 85385314,
+      "sha256": "41a84085831690426f9a5aa12e9a3e76969b4ad2a91e4e21900dcea5d4cc2dd5",
+      "artifacts": [
+        {
+          "dataId": 871,
+          "sourceArtifact": {
+            "token": 87298609,
+            "sha256": "e2101c007bc1c799eaa87bdf31322a59cca566545fd035fa72782be20e14bf81",
+            "sizeBytes": 87298609,
+            "artifactSeq": 1,
+            "newFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0005-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0005-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565923247,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        871
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 281,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000101.tar.gz",
+      "sizeBytes": 97255626,
+      "tokenCount": 97255626,
+      "sha256": "32615cc7b1184a124f84fc87a90d65e6feeaedfe42888aae18d68e48b2cc424f",
+      "artifacts": [
+        {
+          "dataId": 873,
+          "sourceArtifact": {
+            "token": 99433350,
+            "sha256": "d88afe6f0092a754ee292d77c7708d1425a993d9ca7d0d52a32c4004acb4f375",
+            "sizeBytes": 99433350,
+            "artifactSeq": 1,
+            "newFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0006-of0006.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0727806aebfc8ee77d781dccb365fe86b8ead323cc190544a11489ce7ffa386f-part0006-of0006.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565925312,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        873
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    },
+    {
+      "taskId": 282,
+      "deliveryId": 10,
+      "deliveryEntityId": 1,
+      "entityCode": "jun-2",
+      "workerGroup": "group1",
+      "vendorCode": "alibaba",
+      "entityName": "生产交付实体jun-2",
+      "accountName": "root",
+      "deliveryDate": 1795564800000,
+      "cutoffAt": 1795629600000,
+      "newFileName": "batch_0000102.tar.gz",
+      "sizeBytes": 42524745,
+      "tokenCount": 42524745,
+      "sha256": "efd828a889bb6dbe9c447a058978436e69e6751aa20f0d3a930ed08b13372cca",
+      "artifacts": [
+        {
+          "dataId": 850,
+          "sourceArtifact": {
+            "token": 9851301,
+            "sha256": "5cd4caa73507b3ed37770e3e942b281d4f7caa6bc2f97f341c209e50010f5e88",
+            "sizeBytes": 9851301,
+            "artifactSeq": 1,
+            "newFileName": "0733b6f259f8ab75154503ccf79b3d0afa6d62716050f7d124d1ac80969195ed-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "0733b6f259f8ab75154503ccf79b3d0afa6d62716050f7d124d1ac80969195ed-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 866,
+          "sourceArtifact": {
+            "token": 32648726,
+            "sha256": "0bfe7608de108ce82b9d9b0c4921bc1279fd020431be388db3a13e85072f1cbc",
+            "sizeBytes": 32648726,
+            "artifactSeq": 1,
+            "newFileName": "07408e3554fb0f0f92a1ed5010f2b65b361cfdf05ad7cf33c80eff4c5caa9c2e-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "07408e3554fb0f0f92a1ed5010f2b65b361cfdf05ad7cf33c80eff4c5caa9c2e-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 857,
+          "sourceArtifact": {
+            "token": 2252455,
+            "sha256": "11cffc9ddc6c0c22cb1365d00a9efc2aba1145c458249cabe0f199e3cf89631c",
+            "sizeBytes": 2252455,
+            "artifactSeq": 1,
+            "newFileName": "07483c207c318ac945a74692172d5d1b3d09a3be773f36b32454c6c9567c35d4-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "07483c207c318ac945a74692172d5d1b3d09a3be773f36b32454c6c9567c35d4-part0001-of0001.tar.gz"
+          }
+        },
+        {
+          "dataId": 853,
+          "sourceArtifact": {
+            "token": 847698,
+            "sha256": "42bf06d0499e7004976c24640fa2d704597727a41d0c590bb3abfd4fbef518ba",
+            "sizeBytes": 847698,
+            "artifactSeq": 1,
+            "newFileName": "07718cfba46340bf99366109442b94d89e5d9e600ce230a3a507c4ec7a11994a-part0001-of0001.tar.gz",
+            "file_mapping": {},
+            "originalFileName": "07718cfba46340bf99366109442b94d89e5d9e600ce230a3a507c4ec7a11994a-part0001-of0001.tar.gz"
+          }
+        }
+      ],
+      "currentNodeId": "ftpDownloadVerify",
+      "executionStatus": "SUCCEEDED",
+      "fence": 6,
+      "retryCount": 0,
+      "nextRetryAt": null,
+      "lastErrorCode": null,
+      "completedAt": 1795565924018,
+      "qualification": "QUALIFIED",
+      "sourceDataIds": [
+        850,
+        866,
+        857,
+        853
+      ],
+      "stageCode": "VERIFY",
+      "displayName": "交付 FTP 上传下载核验"
+    }
+  ]
+}

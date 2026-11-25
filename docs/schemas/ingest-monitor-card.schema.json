@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ingest monitor outbox payload",
+  "description": "Current messages are native cards linking only to the controlled read-only /monitor page. Historical text and Markdown are retained without delivery.",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "msgtype": {
+          "const": "markdown"
+        },
+        "markdown": {
+          "type": "object",
+          "properties": {
+            "content": {
+              "type": "string",
+              "maxLength": 4096
+            }
+          },
+          "required": [
+            "content"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "msgtype",
+        "markdown"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "msgtype": {
+          "const": "template_card"
+        },
+        "template_card": {
+          "type": "object",
+          "properties": {
+            "card_type": {
+              "const": "text_notice"
+            },
+            "source": {
+              "type": "object",
+              "properties": {
+                "desc": {
+                  "type": "string"
+                },
+                "desc_color": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 3
+                }
+              },
+              "required": [
+                "desc",
+                "desc_color"
+              ],
+              "additionalProperties": false
+            },
+            "main_title": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "desc": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "desc"
+              ],
+              "additionalProperties": false
+            },
+            "emphasis_content": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "desc": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "desc"
+              ],
+              "additionalProperties": false
+            },
+            "sub_title_text": {
+              "type": "string"
+            },
+            "quote_area": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "quote_text": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "title",
+                "quote_text"
+              ],
+              "additionalProperties": false
+            },
+            "card_action": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "const": 1
+                },
+                "url": {
+                  "type": "string",
+                  "format": "uri",
+                  "pattern": "^https?://"
+                }
+              },
+              "required": [
+                "type",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "card_type",
+            "source",
+            "main_title",
+            "emphasis_content",
+            "sub_title_text",
+            "card_action"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "msgtype",
+        "template_card"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

@@ -28,7 +28,7 @@ class ManifestQualifyNodeTest {
     @Test void artifactsMatchBatchSourcesWithoutMetadataIds() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         FileTransferService files = new FileTransferService();
-        Path packagePath = temp.resolve("batch_00001.tar.gz");
+        Path packagePath = temp.resolve("batch_0000001.tar.gz");
         Files.writeString(packagePath, "merged-package");
         long size = Files.size(packagePath);
         String sha = files.sha256(packagePath);
@@ -77,7 +77,7 @@ class ManifestQualifyNodeTest {
 
     private static DeliveryTask task(ArrayNode artifacts, long size) {
         return new DeliveryTask(7, 8, 10, "jun", "group1", LocalDate.parse("2026-11-09"),
-                OffsetDateTime.parse("2026-11-09T18:00:00+08:00"), "batch_00001.tar.gz", size, size,
+                OffsetDateTime.parse("2026-11-09T18:00:00+08:00"), "batch_0000001.tar.gz", size, size,
                 artifacts, "qualify", "RUNNING", "worker", null, 1, 0, null, null, null);
     }
 }

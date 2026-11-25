@@ -1,0 +1,67 @@
+{
+  "migration": "29 (unchanged)",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "39fd95c6581fa5c0335c7dba289167daf919ccf6c0ca18257ae8ced755a12a64"
+    },
+    {
+      "path": "delivery-server/AGENTS.md",
+      "sha256": "5f9b4a10311114e6ecfa8d45d7485764b9162199f1a9a87d6d43ac2588c2dd95"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/OssCostService.java",
+      "sha256": "5477f6016a6ca28a577a3845e5fea2ac229864910164d5f720a1cf3bce2aeac7"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/IngestMessageRenderer.java",
+      "sha256": "e48d1c110fbbf816d4d46980db118c7fd3f1c77285e76c609e155965d294cbdb"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/MonitorDashboardService.java",
+      "sha256": "1bcf27b621801a2b395206e7ee6a5dcbb0a30b8992934276f0011b2b7a5a457c"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/OssCostServiceTest.java",
+      "sha256": "d51eb5de0c2c7b98269efa359bad11c502df5585f778d3ea6a24dcf1f35db6b4"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/IngestMessageRendererTest.java",
+      "sha256": "53ee477bab8c10265a5b386309859fa0fa957403044cf15d03565bfa9d5efbfb"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/IngestMonitorIntegrationTest.java",
+      "sha256": "eaa7128f203c7af86da7ba807a33cd88f979781ca1261b536f4fc12e35647114"
+    },
+    {
+      "path": "web/AGENTS.md",
+      "sha256": "dcf8fdc38d5ea6696697d3eb337f624a7c362a8f34660c5982a8e3334e7c5844"
+    },
+    {
+      "path": "web/src/components/IngestMonitorPanel.vue",
+      "sha256": "38cf9d55439240c263f2045e6a1f8007eb20ff4aecb3016c6e2c526cd48dc729"
+    },
+    {
+      "path": "web/src/components/IngestMonitorPanel.spec.ts",
+      "sha256": "24e747ad528459e304102d114f1e9074971ff85ca3c9038088ea0973d6f52d99"
+    },
+    {
+      "path": "web/src/types.ts",
+      "sha256": "3d93f6ec60556e3765be2475672f315e4ed950796797d3892dbc5e5ed770b3a9"
+    },
+    {
+      "path": "web/src/monitor-entry.spec.ts",
+      "sha256": "3d92d3418f4bbb52fa3198b6c2cffdda78c42c5d7fd785917dd7cb520de02930"
+    },
+    {
+      "path": "docs/AGENTS.md",
+      "sha256": "f222e0fd628438d98b7ef12693da6905c0954b8c0ea9ee4f69c28ceb1e16b56b"
+    },
+    {
+      "path": "docs/ingest-channel-monitor.md",
+      "sha256": "acd5ca3c2fc691f2ff3171fe7428b54eddf8724b23aa4819e2df2f386cb7b87e"
+    }
+  ],
+  "image": "sha256:5a54d13f60a1220bf2d89b140997f1ef154dd6fe86190e02a11f8c4621626ddf",
+  "deployedSourceHashesVerified": true
+}

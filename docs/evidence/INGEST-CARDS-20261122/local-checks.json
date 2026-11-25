@@ -1,0 +1,29 @@
+{
+  "delivery-core": {
+    "tests": 28,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "delivery-worker": {
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "delivery-server": {
+    "tests": 18,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "python": {
+    "tests": 27,
+    "failures": 0
+  },
+  "frontend": {
+    "tests": 2,
+    "failures": 0,
+    "build": "PASS"
+  }
+}

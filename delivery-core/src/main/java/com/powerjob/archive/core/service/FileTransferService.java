@@ -68,7 +68,7 @@ public class FileTransferService {
     public void cleanupAfterVerification(Path taskRoot, Path ossCopy, String packageName) throws IOException {
         Path normalized = taskRoot.toAbsolutePath().normalize();
         Path verifiedCopy = ossCopy.toAbsolutePath().normalize();
-        if (!verifiedCopy.startsWith(normalized) || !packageName.matches("batch_\\d{5}\\.tar\\.gz")) {
+        if (!verifiedCopy.startsWith(normalized) || !packageName.matches("batch_\\d{7}\\.tar\\.gz")) {
             throw new IllegalArgumentException("Cleanup paths must stay inside the current task");
         }
         deleteTree(normalized.resolve("sources"));

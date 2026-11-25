@@ -75,10 +75,21 @@ class RealExternalVerificationTest {
             targetClient.shutdown();
         }
         var ftp = configs.ftp(deliveryPipeline.nodes().stream().filter(node -> node.type().equals("ftp.download-verify")).findFirst().orElseThrow());
+        // 预检只覆盖本次 Markdown 黄金用例的目标实体，避免其他机器复用同名 FTP 账户时串检其网络。
+        JsonNode targets = goldenTargets();
+        var targetKeys = new java.util.HashSet<String>();
+        for (JsonNode goldenTarget : targets) {
+            assertTrue(targetKeys.add(goldenTarget.required("vendorCode").asText() + "/" + goldenTarget.required("entityCode").asText()),
+                    "Golden preflight targets must be unique");
+        }
         List<Map<String, Object>> entities = jdbc.queryForList("SELECT * FROM delivery_entity WHERE enabled=true ORDER BY delivery_entity_id")
-                .stream().filter(entity -> ftp.ftpCredential().containsKey(entity.get("account_name").toString())).toList();
-        assertEquals(expectedEntities(), entities.size(), "Pipeline-configured FTP entity count differs from verification profile");
-        for (Map<String, Object> entity : entities) ftpPreflight(entity, ftp);
+                .stream().filter(entity -> targetKeys.contains(entity.get("vendor_code") + "/" + entity.get("entity_code"))).toList();
+        assertEquals(expectedEntities(), targetKeys.size(), "Golden target count differs from verification profile");
+        assertEquals(targetKeys.size(), entities.size(), "Every golden FTP target must be registered and enabled");
+        for (Map<String, Object> entity : entities) {
+            assertTrue(ftp.ftpCredential().containsKey(entity.get("account_name").toString()), "Target FTP credential is missing");
+            ftpPreflight(entity, ftp);
+        }
         System.out.println("REAL PREFLIGHT PASSED: batch and delivery Pipelines, source/target OSS and FTP are available");
     }
 
@@ -168,10 +179,7 @@ class RealExternalVerificationTest {
                     sourceBytes += source.required("sizeBytes").asLong();
                     URI sourceUri = URI.create(source.required("uri").asText());
                     assertTrue(assignedUris.add(sourceUri.toString()), "Source OSS URI delivered twice: " + sourceUri);
-                    Path sourceFile = temp.resolve("source-" + taskId + "-" + source.required("dataId").asLong() + ".tar.gz");
-                    transfers.download(sourceConfig, sourceUri.getHost(), sourceUri.getPath().replaceFirst("^/", ""), sourceFile,
-                            source.required("sizeBytes").asLong(), source.required("sha256").asText());
-                    Files.deleteIfExists(sourceFile);
+                    verifySourceBytes(sourceConfig, sourceUri, source.required("sizeBytes").asLong(), source.required("sha256").asText());
                 }
                 assertTrue(sourceBytes > 0 && sourceBytes <= maxBytes);
                 JsonNode mergeOutput = output(jdbc, sourceTaskId, "package.merge");
@@ -215,6 +223,34 @@ class RealExternalVerificationTest {
 
     private static int expectedEntities() {
         return Integer.parseInt(System.getenv().getOrDefault("ARCHIVE_VERIFY_EXPECTED_ENTITIES", "1"));
+    }
+
+    private JsonNode goldenTargets() throws Exception {
+        // Maven 从模块目录启动测试；向上定位仓库，读取生产入口本轮生成的无 Secret 目标快照。
+        Path root = Path.of("").toAbsolutePath();
+        while (root != null && !Files.isDirectory(root.resolve("deploy/pipelines"))) {
+            root = root.getParent();
+        }
+        if (root == null) throw new IllegalStateException("Cannot locate the pipeline registry root");
+        return mapper.readTree(Files.readString(root.resolve("deploy/golden-case.json"))).required("targets");
+    }
+
+    private void verifySourceBytes(OssNodeConfig config, URI uri, long expectedSize, String expectedSha) throws Exception {
+        // 独立 SOURCE_GET 仍完整读取真实对象并核对 size/SHA，避免 300 GB 来源再次落盘挤占交付 IO。
+        OSS client = clients.create(config);
+        try (var input = client.getObject(uri.getHost(), uri.getPath().replaceFirst("^/", "")).getObjectContent()) {
+            var digest = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] buffer = new byte[1024 * 1024];
+            long size = 0;
+            for (int read; (read = input.read(buffer)) != -1;) {
+                digest.update(buffer, 0, read);
+                size += read;
+            }
+            assertEquals(expectedSize, size, "Real source GET size mismatch");
+            assertEquals(expectedSha, java.util.HexFormat.of().formatHex(digest.digest()), "Real source GET SHA mismatch");
+        } finally {
+            client.shutdown();
+        }
     }
 
     private JdbcTemplate jdbc() {

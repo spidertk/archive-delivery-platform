@@ -48,7 +48,7 @@ class FileFtp:
     def storbinary(self, command, stream):
         self.path(command.removeprefix("STOR ")).write_bytes(stream.read())
 
-    def retrbinary(self, command, callback):
+    def retrbinary(self, command, callback, blocksize=8192):
         self.retrievals += 1
         if self.fail_retrieval:
             callback(b"incomplete")
@@ -76,8 +76,8 @@ class FtpNodeTest(unittest.TestCase):
         source.write_bytes(b"verified archive bytes")
         self.request = {
             "host": "ftp-test", "port": 21, "username": "test", "password": "test-secret",
-            "rootPath": "/", "remotePath": "2026-11-21/batch_00001.tar.gz",
-            "sourcePath": str(source), "downloadPath": str(self.root / "downloads" / "batch_00001.tar.gz"),
+            "rootPath": "/", "remotePath": "2026-11-21/batch_0000001.tar.gz",
+            "sourcePath": str(source), "downloadPath": str(self.root / "downloads" / "batch_0000001.tar.gz"),
             "expectedSize": source.stat().st_size, "expectedSha256": hashlib.sha256(source.read_bytes()).hexdigest(),
             "cleanupOtherDeliveryDates": True, "deliveryDate": "2026-11-21", "retentionRoot": str(self.root / "locks")}
 
@@ -152,6 +152,23 @@ class FtpNodeTest(unittest.TestCase):
                 node.transfer(self.request, verify_only=True)
         self.assertFalse(list(self.ftp.root.iterdir()))
 
+    def test_independent_verification_streams_bytes_without_local_archive(self):
+        self.request["cleanupOtherDeliveryDates"] = False
+        self.write_remote(self.request["remotePath"], Path(self.request["sourcePath"]).read_bytes())
+        with patch.object(node.ftplib, "FTP", return_value=self.ftp):
+            result = node.transfer(self.request, verify_only=True)
+        self.assertEqual(self.request["expectedSha256"], result["sha256"])
+        self.assertFalse(Path(self.request["downloadPath"]).exists())
+        self.assertEqual(1, self.ftp.retrievals)
+
+    def test_independent_verification_rejects_same_size_corruption(self):
+        self.request["cleanupOtherDeliveryDates"] = False
+        self.write_remote(self.request["remotePath"], b"x" * self.request["expectedSize"])
+        with patch.object(node.ftplib, "FTP", return_value=self.ftp):
+            with self.assertRaisesRegex(ValueError, "SHA mismatch"):
+                node.transfer(self.request, verify_only=True)
+        self.assertFalse(Path(self.request["downloadPath"]).exists())
+
     def test_same_date_retry_cleans_late_other_date_directory(self):
         self.transfer()
         self.write_remote("2026-11-19/late-file.tar.gz")
@@ -162,7 +179,7 @@ class FtpNodeTest(unittest.TestCase):
 
     def test_new_date_waits_for_transfer_and_old_retry_cannot_delete_it(self):
         self.write_remote("2026-11-21/keep.tar.gz")
-        next_request = dict(self.request, deliveryDate="2026-11-22", remotePath="2026-11-22/batch_00001.tar.gz")
+        next_request = dict(self.request, deliveryDate="2026-11-22", remotePath="2026-11-22/batch_0000001.tar.gz")
         started, finished = threading.Event(), threading.Event()
         errors = []
         def next_date():

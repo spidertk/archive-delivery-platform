@@ -1,0 +1,33 @@
+{
+  "status": "PASSED",
+  "schemaVersion": 1,
+  "entityCode": "jun-2",
+  "sources": [
+    {
+      "fileName": "43b48ce806d7f543ad2bad71d0b2de30fefcba31b5ac363f0b52bf5bcf4801cf-part0003-of0003.tar.gz",
+      "compressedBytes": 98853693,
+      "sha256": "d891d2a9b73a359270d8caecb7cb9f3fd22b1202951d5ea66594fc519905c282",
+      "requestCount": 75,
+      "fileCount": 225,
+      "contentBytes": 170424797
+    }
+  ],
+  "sourceArchiveCount": 1,
+  "requestCount": 75,
+  "sourceFileCount": 225,
+  "artifactFileCount": 225,
+  "sourceContentBytes": 170424797,
+  "artifactContentBytes": 170425401,
+  "artifact": {
+    "fileName": "batch_0000945.tar.gz",
+    "compressedBytes": 94236468,
+    "sha256": "50323f3b1b9ac592e156b57f8c15567812b59bfa85d6f2848e920d7276b29540"
+  },
+  "preservedContentSha256": "ceba75ccc3fdd7973b3a39fee715e3bac23bfc65f43983662d8baa212f6f82b3",
+  "directoryNamesPreserved": true,
+  "requestIdsPreserved": true,
+  "requestTimesNormalized": true,
+  "nonMetadataContentPreserved": true,
+  "deliveryId": 19,
+  "taskId": 1125
+}

@@ -88,6 +88,8 @@ public class TaskExecutionService {
                     processId, task.fence(), workerId, nodes.succeededOutputs(task.taskId())));
             if (result.kind() == NodeResult.ResultKind.WAITING) {
                 transactions.executeWithoutResult(status -> {
+                    // 外部 IO 已结束，父批次锁只覆盖节点结果、任务状态和投影的原子提交。
+                    projections.lockBatch(task.deliveryId());
                     nodes.finish(processId, "WAITING", result.inputLocator(), result.outputLocator(), null, null);
                     tasks.markWaiting(task.taskId(), task.fence(), workerId, result.nextPoll().toSeconds());
                     projections.refresh(task.deliveryId());
@@ -103,6 +105,7 @@ public class TaskExecutionService {
             }
             boolean terminal = result.nextNode() == null;
             transactions.executeWithoutResult(status -> {
+                projections.lockBatch(task.deliveryId());
                 if (result.sourcePatch() != null) sources.markSourcesQualified(task.taskId(), result.sourcePatch().requestNamespace());
                 nodes.finish(processId, "SUCCEEDED", result.inputLocator(), result.outputLocator(), null, null);
                 tasks.complete(task.taskId(), task.fence(), workerId, terminal ? node.id() : result.nextNode(), result.sourcePatch(), terminal);
@@ -113,7 +116,13 @@ public class TaskExecutionService {
             });
             log.info("Delivery node succeeded deliveryId={} taskId={} processId={} node={}", task.deliveryId(), task.taskId(), processId, node.id());
         } catch (Exception error) {
-            fail(task, node, processId, workerId, sourceDataId, error);
+            // 子进程已回收；暂时清除中断标记让 PG 连接池能持久化失败，避免任务残留 RUNNING。
+            boolean interrupted = Thread.interrupted();
+            try {
+                fail(task, node, processId, workerId, sourceDataId, error);
+            } finally {
+                if (interrupted || error instanceof InterruptedException) Thread.currentThread().interrupt();
+            }
         }
         return 1;
     }
@@ -122,6 +131,7 @@ public class TaskExecutionService {
         if (error instanceof PackageOverflowException) {
             try {
                 transactions.executeWithoutResult(status -> {
+                    projections.lockBatch(task.deliveryId());
                     BatchReplanService.ReplanResult replanned = replans.moveLastSourceToNewPackage(task.taskId(), task.fence(), workerId);
                     nodes.finish(processId, "FAILED", null, null, "PACKAGE_OVERFLOW_REPLANNED", safeError(error));
                     var payload = mapper.createObjectNode().put("taskId", task.taskId())
@@ -144,6 +154,7 @@ public class TaskExecutionService {
         RetryPolicy.Decision decision = retries.onFailure(error, task.retryCount(), 5);
         String detail = safeError(error);
         transactions.executeWithoutResult(status -> {
+            projections.lockBatch(task.deliveryId());
             nodes.finish(processId, "FAILED", null, null, decision.errorCode(), detail);
             tasks.markFailure(task.taskId(), task.fence(), workerId, decision);
             events.append(task.deliveryId(), task.taskId(), processId, task.deliveryEntityId(), sourceDataId, "NODE_FAILED",

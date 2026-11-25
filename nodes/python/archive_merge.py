@@ -19,7 +19,7 @@ def sha256(path):
 
 
 def merge(sources, target, manifest_path):
-    """每个源包只解包一次；同名目录以来源序号隔离成员键，同时保留原始路径和来源血缘。"""
+    """每个源包只解包一次并保留原始目录；目录冲突必须失败，禁止改名后交付。"""
     sources = [Path(source).resolve(strict=True) for source in sources]
     target = Path(target).resolve()
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -38,17 +38,17 @@ def merge(sources, target, manifest_path):
             extract_dir = temp_dir / f"source-{index:05d}"
             extract_dir.mkdir()
             safe_extract(source, extract_dir)
-            names = sorted(path.name for path in extract_dir.iterdir() if path.is_dir())
+            # 所有顶层成员都必须是请求目录；根部普通文件不能在 merge 时被静默丢弃。
+            entries = list(extract_dir.iterdir())
+            if any(not path.is_dir() for path in entries):
+                raise ValueError("Source archive contains a non-request top-level member: " + source.name)
+            names = sorted(path.name for path in entries)
             if not names:
                 raise ValueError(f"Source archive contains no request directories: {source.name}")
             for name in names:
                 member_key = name
                 if member_key in member_keys:
-                    member_key = f"source-{index:05d}__{name}"
-                    suffix = 2
-                    while member_key in member_keys:
-                        member_key = f"source-{index:05d}-{suffix}__{name}"
-                        suffix += 1
+                    raise ValueError("Duplicate original request directory: " + name)
                 member_keys.add(member_key)
                 os.replace(extract_dir / name, workspace / member_key)
                 members.append({"memberKey": member_key, "originalPath": name,
@@ -60,7 +60,7 @@ def merge(sources, target, manifest_path):
         if target.exists():
             shutil.rmtree(target)
         os.replace(workspace, target)
-        result = {"protocolVersion": 3, "workspacePath": str(target), "requestCount": len(members),
+        result = {"protocolVersion": 4, "workspacePath": str(target), "requestCount": len(members),
                   "sourceCount": len(sources), "sourceBytes": sum(fact["sizeBytes"] for fact in source_facts),
                   "sources": source_facts, "members": members}
         manifest_path = Path(manifest_path).resolve()

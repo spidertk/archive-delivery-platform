@@ -1,0 +1,9 @@
+{
+  "source": "https://api.frankfurter.dev/v1/2026-11-20?base=USD&symbols=CNY",
+  "amount": 1.0,
+  "base": "USD",
+  "date": "2026-11-20",
+  "rates": {
+    "CNY": 6.6777
+  }
+}

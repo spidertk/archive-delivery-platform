@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "testedAt": "2026-11-25T01:10:35.801532+00:00",
+  "mode": "isolated-local-postgresql-16",
+  "status": "PASSED",
+  "checks": [
+    "Default mode preserves source referenced by an old unconsumed plan",
+    "Explicit eviction mode can reclaim a verified source referenced only by an old unconsumed plan",
+    "Current batch unconsumed source remains protected",
+    "READY/RUNNING/WAITING/RETRY_WAIT/PAUSED/BLOCKED references all preserve the source",
+    "SUCCEEDED/EXPIRED/CANCELLED references allow verified cache eviction"
+  ],
+  "temporaryPostgresContainerRemoved": true
+}

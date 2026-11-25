@@ -1,0 +1,183 @@
+{
+  "mode": "local-no-external-io",
+  "command": "./scripts/local-pipeline.sh",
+  "result": "PASS",
+  "python": {
+    "tests": 27,
+    "failures": 0
+  },
+  "maven": {
+    "delivery-core": {
+      "totals": {
+        "tests": 28,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "com.powerjob.archive.core.config.JacksonConfigurationTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.node.ManifestQualifyNodeTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.node.OssDownloadNodeTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.pipeline.PipelineNodeConfigTest",
+          "tests": 4,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.pipeline.PipelineRepositoryTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.ArchiveModelIntegrationTest",
+          "tests": 8,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.BatchPlanningServiceTest",
+          "tests": 5,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.FileTransferServiceTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.RemotePathServiceTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.core.service.RetryPolicyTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    "delivery-server": {
+      "totals": {
+        "tests": 21,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0
+      },
+      "suites": [
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMessageRendererTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest",
+          "tests": 1,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMonitorIntegrationTest",
+          "tests": 13,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.OssSourceScannerTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.server.service.ingestmonitor.WeComNotifierTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        }
+      ]
+    },
+    "delivery-worker": {
+      "totals": {
+        "tests": 5,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 3
+      },
+      "suites": [
+        {
+          "name": "com.powerjob.archive.worker.GoldenPipelineDefinitionTest",
+          "tests": 2,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 0
+        },
+        {
+          "name": "com.powerjob.archive.worker.RealExternalVerificationTest",
+          "tests": 3,
+          "failures": 0,
+          "errors": 0,
+          "skipped": 3
+        }
+      ]
+    }
+  },
+  "frontend": {
+    "tests": 2,
+    "result": "PASS",
+    "typecheckAndBuild": "PASS"
+  },
+  "staticChecks": [
+    "Markdown registry",
+    "Shell syntax",
+    "Compose config"
+  ],
+  "additionalRendererCheck": {
+    "command": "./scripts/maven-test.sh -pl delivery-server -am -Dtest=IngestMessageRendererTest -Dsurefire.failIfNoSpecifiedTests=false test",
+    "tests": 3,
+    "result": "PASS"
+  },
+  "limits": [
+    "3 RealExternalVerificationTest cases skipped: this local run does not exercise delivery OSS/FTP writes.",
+    "Continuous 30 minute and hourly growth verified using real temporary PostgreSQL with controlled metadata, not fabricated production events."
+  ],
+  "hygiene": {
+    "gitDiffCheck": "PASS",
+    "secretScan": "PASS; real webhook values absent in release source and evidence; two test-only non-credential placeholders excluded"
+  }
+}

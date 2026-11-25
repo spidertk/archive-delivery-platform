@@ -8,7 +8,7 @@
 
 ## 2. V25 批次数据库基线
 
-当前迁移为 `delivery-core/src/main/resources/db/migration/V25__batch_delivery_baseline.sql`。
+批次基线为 `delivery-core/src/main/resources/db/migration/V25__batch_delivery_baseline.sql`；最新 V29 仅调整渠道监控的两表事实与只读看板，不改变批次血缘。
 
 - BATCH_CREATE 保存 OSS 批次总单，BATCH_SUBMIT 保存每次独立交付提交。
 - source_data.unique_key 固定为 sha256；delivery_batch 保存原始文件到合并包、实体、Worker 和消费提交的关系。
@@ -21,7 +21,7 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env \
   "SELECT version,success FROM archive_delivery.flyway_schema_history ORDER BY installed_rank DESC LIMIT 3;"
 ```
 
-最新成功版本必须为 25。
+最新成功版本必须为 29。渠道监控配置及独立发布见 [ingest-channel-monitor.md](ingest-channel-monitor.md)。
 
 ## 3. 受控配置
 
@@ -42,10 +42,10 @@ chmod 600 deploy/.env
 ./scripts/production-registry.sh all
 ```
 
-执行顺序：V25 → PowerJob 通用调度 → 发布 archive-batch/archive-delivery → 来源/实体 → 真实预检 → 创建并规划一次 OSS 批次 → 每次独立提交和消费 → 有界等待 → 独立 OSS/FTP 验证和证据。
+执行顺序：V25 批次基线及 V29 两表监控迁移 → PowerJob 通用调度 → 发布 archive-batch/archive-delivery → 来源/实体 → 真实预检 → 创建并规划一次 OSS 批次 → 每次独立提交和消费 → 有界等待 → 独立 OSS/FTP 验证和证据。
 
 批次创建执行真实 OSS 下载和装箱；交付执行 merge 请求目录、repair 按 entityCode 修复并只最终封包一次、qualify、OSS SDK PUT/HEAD/GET、FTP 上传下载核验。生产 gzipCompressLevel=5。
 
 ## 5. 证据与运维
 
-成功证据位于 `docs/evidence/<deliveryBatch>/`，必须包含 batchDeliveryId、每次 deliveryId/taskId、两个 PipelineVersion、V25、节点 locator、外部 URI、size/SHA、原始文件/批次包/任务数量和复核命令。日常运维见 `production-operations.md`，AI review 见 `pipeline-maintenance.md`。
+成功证据位于 `docs/evidence/<deliveryBatch>/`，必须包含 batchDeliveryId、每次 deliveryId/taskId、两个 PipelineVersion、实际迁移版本、节点 locator、外部 URI、size/SHA、原始文件/批次包/任务数量和复核命令。日常运维见 `production-operations.md`，AI review 见 `pipeline-maintenance.md`。

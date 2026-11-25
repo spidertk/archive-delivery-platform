@@ -1,23 +1,40 @@
 import json
 import re
 import tarfile
+from datetime import datetime
 from pathlib import Path, PurePosixPath
 
-TIME_OF_DAY_RE = re.compile(r"(\d{2}):(\d{2}):(\d{2})(\.\d+)?")
-REQUEST_ID_RE = re.compile(r"^\d{14}[A-Za-z0-9]{25}$")
+REQUEST_TIME_RE = re.compile(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$")
 
 
-def normalize_request_time(value, archive_date):
-    """生产协议使用交付日期和源时间部分，统一为 UTC 纳秒 ISO 8601。"""
-    match = TIME_OF_DAY_RE.search(str(value or ""))
+def normalize_request_time(value):
+    """保留源日期和时分秒，仅去除小数秒及格式后缀；缺失或无效时间不伪造业务事实。"""
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("Source requestTime is missing")
+    match = re.fullmatch(r"(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?", value.strip())
     if not match:
-        return f"{archive_date}T00:00:00.000000000Z"
-    fraction = ((match.group(4) or ".")[1:]).ljust(9, "0")[:9]
-    return f"{archive_date}T{match.group(1)}:{match.group(2)}:{match.group(3)}.{fraction}Z"
+        raise ValueError("Source requestTime is invalid")
+    # 校验源日历和时钟值后只输出秒级原始墙上时间，不按交付日期改写或跨时区平移。
+    formatted = f"{match.group(1)} {match.group(2)}"
+    try:
+        datetime.strptime(formatted, "%Y-%m-%d %H:%M:%S")
+    except ValueError as error:
+        raise ValueError("Source requestTime is invalid") from error
+    return formatted
 
 
-def fix_request(request_dir, fallback_number, archive_date, provider_code):
-    """合法 39 位源 requestId 保留；缺失或旧格式使用 Java 幂等号段确定性补号。"""
+def source_request_id(metadata):
+    """允许 UUID 等真实来源 ID；缺失和互相矛盾的字段必须失败，不再生成或改写编号。"""
+    values = [metadata[key] for key in ("requestId", "request_id") if key in metadata]
+    if not values or any(not isinstance(value, str) or not value.strip() for value in values):
+        raise ValueError("Source requestId is missing or invalid")
+    if len(set(values)) != 1:
+        raise ValueError("Source requestId and request_id disagree")
+    return values[0]
+
+
+def fix_request(request_dir, provider_code):
+    """保留原始请求 ID 和目录，只规范实体、时间格式与响应模式。"""
     request_dir = Path(request_dir)
     metadata_path = request_dir / "metadata.json"
     if not metadata_path.is_file():
@@ -26,20 +43,10 @@ def fix_request(request_dir, fallback_number, archive_date, provider_code):
         raise FileNotFoundError("Missing biz_request.json in " + request_dir.name)
     with metadata_path.open(encoding="utf-8") as stream:
         metadata = json.load(stream)
-    original_request_id = metadata.get("requestId")
-    if original_request_id and REQUEST_ID_RE.fullmatch(str(original_request_id)):
-        new_request_id = str(original_request_id)
-    else:
-        match = TIME_OF_DAY_RE.search(str(metadata.get("requestTime") or ""))
-        time_part = "".join(match.group(1, 2, 3)) if match else "000000"
-        new_request_id = archive_date.replace("-", "") + time_part + f"{fallback_number:025d}"
-        if fallback_number < 1 or fallback_number > 9999999999999999999999999:
-            raise ValueError("Fallback request number exceeds 25 digits")
-    if not REQUEST_ID_RE.fullmatch(new_request_id):
-        raise ValueError("requestId does not match the 39-character production protocol: " + new_request_id)
-    metadata["requestId"] = new_request_id
+    request_id = source_request_id(metadata)
+    # requestId/request_id 是来源事实，保留字段名和值；目录与 ID 分别校验，不能强制互相改名。
     metadata["providerCode"] = provider_code
-    metadata["requestTime"] = normalize_request_time(metadata.get("requestTime"), archive_date)
+    metadata["requestTime"] = normalize_request_time(metadata.get("requestTime"))
     stream_response = request_dir / "biz_stream_response.jsonl"
     sync_response = request_dir / "biz_response.json"
     mode = metadata.get("requestMode", "")
@@ -65,10 +72,10 @@ def fix_request(request_dir, fallback_number, archive_date, provider_code):
         raise ValueError("Unsupported requestMode=" + repr(mode) + " in " + request_dir.name)
     with metadata_path.open("w", encoding="utf-8") as stream:
         json.dump(metadata, stream, ensure_ascii=False)
-    return original_request_id, new_request_id
+    return request_id
 
 
-def verify_output(artifact, archive_date, provider_code):
+def verify_output(artifact, provider_code):
     """一次顺序读取 gzip 即完成全部请求协议校验，避免逐请求回卷重解压。"""
     errors = []
     requests = {}
@@ -90,29 +97,29 @@ def verify_output(artifact, archive_date, provider_code):
                 if path.name == "metadata.json":
                     with archive.extractfile(member) as stream:
                         request["metadata"] = json.load(stream)
-    expected_time = re.compile(rf"^{re.escape(archive_date)}T\d{{2}}:\d{{2}}:\d{{2}}\.\d{{9}}Z$")
     if not requests:
         errors.append("archive contains no request directories")
     for directory, request in sorted(requests.items()):
-        errors.extend(validate_request_metadata(directory, request, expected_time, provider_code))
+        errors.extend(validate_request_metadata(directory, request, provider_code))
     if errors:
         raise ValueError("Protocol validation failed: " + "; ".join(errors))
 
 
-def validate_request_metadata(directory, request, expected_time, provider_code):
-    """索引完成后校验直属协议文件，保持 ID、日期、实体和响应模式的失败边界。"""
+def validate_request_metadata(directory, request, provider_code):
+    """校验真实源 ID 与秒级时间，不要求目录等于 ID，也不把来源日期改成交付日期。"""
     errors = []
     files, metadata = request["files"], request["metadata"]
-    if not REQUEST_ID_RE.fullmatch(directory):
-        return [directory + ": directory is not a 39-character requestId"]
     if not isinstance(metadata, dict):
         return [directory + ": missing or invalid metadata.json"]
     if "biz_request.json" not in files:
         errors.append(directory + ": missing biz_request.json")
-    if metadata.get("requestId") != directory:
-        errors.append(directory + ": requestId does not match directory")
-    if not expected_time.fullmatch(str(metadata.get("requestTime") or "")):
-        errors.append(directory + ": requestTime does not match ISO UTC nanoseconds")
+    try:
+        source_request_id(metadata)
+        value = metadata.get("requestTime")
+        if not REQUEST_TIME_RE.fullmatch(str(value or "")) or normalize_request_time(value) != value:
+            raise ValueError("requestTime must use yyyy-MM-dd HH:mm:ss")
+    except ValueError as error:
+        errors.append(directory + ": " + str(error))
     if metadata.get("providerCode") != provider_code:
         errors.append(directory + ": providerCode mismatch")
     mode = metadata.get("requestMode")

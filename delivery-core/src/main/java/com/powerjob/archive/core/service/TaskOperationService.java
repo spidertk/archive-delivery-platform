@@ -47,6 +47,8 @@ public class TaskOperationService {
         requireReason(reason);
         transactions.executeWithoutResult(status -> {
             DeliveryTask task = tasks.findById(taskId).orElseThrow();
+            // 运维状态修改与 Worker 完成结果采用同一父批次→任务→投影顺序。
+            projections.lockBatch(task.deliveryId());
             if (!List.of("RETRY_WAIT", "BLOCKED").contains(task.executionStatus()) || task.fence() != expectedFence) {
                 throw new ResumeConflictException("Task fence or retry state does not match");
             }
@@ -63,6 +65,7 @@ public class TaskOperationService {
     public int pause(long deliveryId, String reason, String operator) {
         requireReason(reason);
         return transactions.execute(status -> {
+            projections.lockBatch(deliveryId);
             jdbc.queryForObject("SELECT delivery_id FROM delivery_submit WHERE delivery_id=? FOR UPDATE", Long.class, deliveryId);
             List<DeliveryTask> active = tasks.byDelivery(deliveryId).stream()
                     .filter(task -> !List.of("SUCCEEDED", "EXPIRED", "CANCELLED", "PAUSED").contains(task.executionStatus())).toList();
@@ -90,6 +93,7 @@ public class TaskOperationService {
         if (selected.isEmpty()) throw new ResumeConflictException("No active tasks matched resume request");
         for (DeliveryTask task : selected) {
             transactions.executeWithoutResult(status -> {
+                projections.lockBatch(deliveryId);
                 if (List.of("RUNNING", "SUCCEEDED", "EXPIRED", "CANCELLED").contains(task.executionStatus())
                         || !task.currentNodeId().equals(fromNode)) throw new ResumeConflictException("Task is not resumable from " + fromNode);
                 SourceData source = sources.byTaskId(task.taskId()).stream().findFirst().orElseThrow();

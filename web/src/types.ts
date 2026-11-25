@@ -124,3 +124,95 @@ export interface CreateDeliveryBatch {
   deliveryDate: string
   deliveryBatch: string
 }
+
+export interface IngestChannel {
+  sourceId: number
+  sourceIds: number[]
+  channelKey: string
+  bucket: string
+  channelCode: string
+  ossUri: string
+  availability: string
+  phase: string
+  observedAt?: string
+  continuousSince?: string
+  lastGrowthAt?: string
+  objectCount?: number
+  sizeBytes?: number
+  lastErrorCode?: string
+  pendingNotifications: number
+  monitoringSince?: string
+  incomingTotalBytes: number
+  incomingTodayBytes: number
+  deliveryTotalBytes: number
+  deliveryTodayBytes: number
+  destinations: IngestDestination[]
+  costEstimate: { currency: string; monthlyStorage: number }
+}
+
+export interface IngestDestination {
+  bucket: string
+  files: number
+  totalBytes: number
+  todayFiles: number
+  todayBytes: number
+  lastTransferredAt?: string
+}
+
+export interface MonitorPricing {
+  currency: 'CNY'
+  storagePerGbMonth: number
+  sourceCurrency: 'USD'
+  sourceStoragePerGbMonth: number
+  usdCnyRate: number
+  exchangeRateDate: string
+  exchangeRateSource: string
+  bytesPerGb: number
+  basis: string
+  region: string
+  storageClass: string
+  sourceUrl: string
+  verifiedOn: string
+}
+
+export interface BucketCost {
+  bucket: string
+  storedBytes: number
+  deliveredBytes: number
+  monthlyStorage: number
+  currency: string
+}
+
+export interface IngestMonitorStatus {
+  enabled: boolean
+  pollIntervalSeconds: number
+  continuousPeriodSeconds: number
+  reportIntervalSeconds: number
+  dailyTimezone: string
+  channels: IngestChannel[]
+  statisticsDate: string
+  pricing: MonitorPricing
+  bucketCosts: BucketCost[]
+  storageSummary: { currency: 'CNY'; storedBytes: number; monthlyStorage: number; periodMonths: number }
+}
+
+export interface IngestTrend {
+  hour: string
+  objectCount: number
+  sizeBytes: number
+  addedObjects: number
+  addedBytes: number
+  changedObjects: number
+  changedBytes: number
+  removedObjects: number
+  removedBytes: number
+}
+
+export interface IngestChange {
+  directory: string
+  addedObjects: number
+  addedBytes: number
+  changedObjects: number
+  changedBytes: number
+  observedAt: string
+}

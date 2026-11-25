@@ -24,7 +24,7 @@ class ArchiveProtocolTest(unittest.TestCase):
         with tarfile.open(self.artifact, 'w:gz') as archive:
             for index in [2, 1]:
                 request_id = '20261121123456' + f'{index:025d}'
-                metadata = {'requestId': request_id, 'requestTime': '2026-11-21T12:34:56.000000000Z',
+                metadata = {'requestId': request_id, 'requestTime': '2026-11-21 12:34:56',
                             'providerCode': 'jun-2', 'requestMode': 'SYNC'}
                 metadata.update(changes or {})
                 for name, value in [('biz_response.json', b'x' * 4096), ('metadata.json', json.dumps(metadata).encode()), ('biz_request.json', b'{}')]:
@@ -39,22 +39,27 @@ class ArchiveProtocolTest(unittest.TestCase):
     def test_shuffled_requests_validate_without_random_member_lookup(self):
         self.archive()
         with patch.object(tarfile.TarFile, 'getmembers', side_effect=AssertionError('gzip random lookup forbidden')):
-            verify_output(self.artifact, '2026-11-21', 'jun-2')
+            verify_output(self.artifact, 'jun-2')
 
     def test_id_date_provider_and_mode_checks_remain_enforced(self):
-        for field, value in [('requestId', 'wrong'), ('requestTime', '2026-11-22T00:00:00.000000000Z'),
+        for field, value in [('requestId', ''), ('requestTime', '2026-11-22T00:00:00.000000000Z'),
+                             ('requestTime', '2026-02-30 12:34:56'),
                              ('providerCode', 'wrong'), ('requestMode', 'STREAM'), ('requestMode', None)]:
             with self.subTest(field=field, value=value):
                 self.archive(changes={field: value})
                 with self.assertRaisesRegex(ValueError, 'Protocol validation failed'):
-                    verify_output(self.artifact, '2026-11-21', 'jun-2')
+                    verify_output(self.artifact, 'jun-2')
+
+    def test_original_directory_and_id_are_independent_source_facts(self):
+        self.archive(changes={'requestId': 'b3cbcd69-611f-4789-9282-0013597cc31c'})
+        verify_output(self.artifact, 'jun-2')
 
     def test_required_protocol_files_cannot_be_missing(self):
         for name in ['metadata.json', 'biz_request.json', 'biz_response.json']:
             with self.subTest(name=name):
                 self.archive(missing=name)
                 with self.assertRaisesRegex(ValueError, 'Protocol validation failed'):
-                    verify_output(self.artifact, '2026-11-21', 'jun-2')
+                    verify_output(self.artifact, 'jun-2')
 
     def test_links_and_unsafe_members_are_rejected(self):
         for name in ['../outside', '/absolute', 'safe/link']:
@@ -64,13 +69,13 @@ class ArchiveProtocolTest(unittest.TestCase):
                 member.linkname = '/outside'
             self.archive(extra=member)
             with self.assertRaisesRegex(ValueError, 'unsafe archive member'):
-                verify_output(self.artifact, '2026-11-21', 'jun-2')
+                verify_output(self.artifact, 'jun-2')
 
     def test_empty_archive_is_not_a_valid_delivery(self):
         with tarfile.open(self.artifact, 'w:gz'):
             pass
         with self.assertRaisesRegex(ValueError, 'no request directories'):
-            verify_output(self.artifact, '2026-11-21', 'jun-2')
+            verify_output(self.artifact, 'jun-2')
 
 
 if __name__ == '__main__':

@@ -2,7 +2,7 @@
 
 ## 1. 当前范围与事实
 
-当前生产实体为 `alibaba/jun`，主交付机运行 4 个 group1 Worker 和隔离 FTP 容器。archive-batch 全量下载来源 OSS，按不超过 100 MiB 顺序规划批次包并按 entityWorkers 容量分配实体与实际 Worker，不设置合并包下限，剩余小尾包正常交付；archive-delivery 每次按 targetCount 消费未分配包。gzip 级别为 5，业务时区 Asia/Shanghai，截止时间为 deliveryDate 次日 02:00。
+本手册保留 `alibaba/jun` 的历史交付示例；当前 jun-2 的生产 Compose 为 8 个同机 group1 Worker，组内并发 8，资源档见 [jun-2-capacity.md](jun-2-capacity.md)。archive-batch 全量下载来源 OSS，按不超过 100 MiB 顺序规划批次包并按 entityWorkers 容量分配实体与实际 Worker，不设置合并包下限，剩余小尾包正常交付；archive-delivery 每次按 targetCount 消费未分配包。gzip 级别为 5，业务时区 Asia/Shanghai，截止时间为 deliveryDate 次日 02:00。
 
 当前验证来源：
 
@@ -13,8 +13,8 @@ oss://sg-storage-20261013-6vmlk/internal/gpt-sse-wire-fix-20261112-v1/products/
 目标路径：
 
 ```text
-OSS: june/<deliveryDate>-<deliveryBatch>-june/batch_NNNNN.tar.gz
-FTP: /srv/maas-sftp/maasData/archive/june/<deliveryDate>/batch_NNNNN.tar.gz
+OSS: june/<deliveryDate>-<deliveryBatch>-june/batch_NNNNNNN.tar.gz
+FTP: /srv/maas-sftp/maasData/archive/june/<deliveryDate>/batch_NNNNNNN.tar.gz
 ```
 
 包号在 BATCH_CREATE 内连续。同一批次每次 BATCH_SUBMIT 创建不同 deliveryId 并领取不同包，不能重复消费或重名覆盖。FTP 路径只保留 deliveryDate，同日不同批次会共享目录，必须保持包名唯一；同名不同 SHA 会阻断而不是覆盖。BATCH_CREATE 只有在全部规划包交付后才为 DELIVERED；只消费部分包时保持 PROCESSING。

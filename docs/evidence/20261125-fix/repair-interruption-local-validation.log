@@ -1,0 +1,561 @@
+Validated 2 Markdown pipelines and their local/golden verification contracts.
+test_empty_archive_is_not_a_valid_delivery (test_archive_protocol.ArchiveProtocolTest) ... ok
+test_id_date_provider_and_mode_checks_remain_enforced (test_archive_protocol.ArchiveProtocolTest) ... ok
+test_links_and_unsafe_members_are_rejected (test_archive_protocol.ArchiveProtocolTest) ... ok
+test_original_directory_and_id_are_independent_source_facts (test_archive_protocol.ArchiveProtocolTest) ... ok
+test_required_protocol_files_cannot_be_missing (test_archive_protocol.ArchiveProtocolTest) ... ok
+test_shuffled_requests_validate_without_random_member_lookup (test_archive_protocol.ArchiveProtocolTest) ... ok
+test_all_concatenated_tar_and_gzip_segments_keep_content_ids_and_directories (test_archive_repair.ArchiveRepairTest) ... ok
+test_concurrent_retries_wait_before_cleaning_shared_staging (test_archive_repair.ArchiveRepairTest) ... ok
+test_corrupt_later_concatenated_segment_cannot_publish_partial_workspace (test_archive_repair.ArchiveRepairTest) ... ok
+test_duplicate_valid_request_ids_are_rejected_without_renumbering (test_archive_repair.ArchiveRepairTest) ... ok
+test_gzip_level_is_bounded_and_changes_only_compression (test_archive_repair.ArchiveRepairTest) ... ok
+test_inspect_and_production_repair_preserve_source_request_ids (test_archive_repair.ArchiveRepairTest) ... ok
+test_invalid_source_calendar_and_missing_time_are_rejected (test_archive_repair.ArchiveRepairTest) ... ok
+test_merge_rejects_duplicate_original_directories_and_legacy_ids (test_archive_repair.ArchiveRepairTest) ... ok
+test_missing_protocol_files_do_not_publish_output_or_temp_files (test_archive_repair.ArchiveRepairTest) ... ok
+test_missing_request_id_or_time_is_rejected_without_fabrication (test_archive_repair.ArchiveRepairTest) ... ok
+test_null_request_mode_uses_request_stream_flag_or_response_file (test_archive_repair.ArchiveRepairTest) ... ok
+test_original_snake_case_id_is_preserved_without_adding_an_alias (test_archive_repair.ArchiveRepairTest) ... ok
+test_root_file_cannot_be_silently_discarded_during_merge (test_archive_repair.ArchiveRepairTest) ... ok
+test_three_sources_merge_into_one_repaired_artifact_without_intermediate_tar (test_archive_repair.ArchiveRepairTest) ... ok
+test_unsafe_archive_member_is_rejected (test_archive_repair.ArchiveRepairTest) ... ok
+test_cleanup_preserves_current_date_and_non_date_directories (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+FTP_DATE_CLEANUP {"deliveryDate": "2026-11-21", "removedDates": ["2026-11-19", "2026-11-22"]}
+FTP_UPLOAD_VERIFIED remotePath=/2026-11-21/batch_0000001.tar.gz size=22 sha256=74e79ddd5e5b690dbfb0995c1af7c4a86feaeff0b5f5b8d667fc2cda3360a489
+ok
+test_disabled_retention_and_read_only_preflight_never_delete (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+FTP_UPLOAD_VERIFIED remotePath=/2026-11-21/batch_0000001.tar.gz size=22 sha256=74e79ddd5e5b690dbfb0995c1af7c4a86feaeff0b5f5b8d667fc2cda3360a489
+ok
+test_independent_verification_cannot_repair_a_missing_remote_file (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+ok
+test_independent_verification_rejects_same_size_corruption (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+ok
+test_independent_verification_streams_bytes_without_local_archive (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+ok
+test_interrupted_upload_does_not_publish_final_or_leave_partial (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+ok
+test_new_date_waits_for_transfer_and_old_retry_cannot_delete_it (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+ok
+test_same_date_retry_cleans_late_other_date_directory (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+FTP_UPLOAD_VERIFIED remotePath=/2026-11-21/batch_0000001.tar.gz size=22 sha256=74e79ddd5e5b690dbfb0995c1af7c4a86feaeff0b5f5b8d667fc2cda3360a489
+FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+FTP_DATE_CLEANUP {"deliveryDate": "2026-11-21", "removedDates": ["2026-11-19"]}
+ok
+test_same_name_different_sha_is_never_overwritten (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+ok
+test_symlink_aborts_cleanup_without_following_target (test_ftp_download_verify.FtpNodeTest) ... FTP_CONNECTED host=ftp-test rootPath=/ remotePath=/2026-11-21/batch_0000001.tar.gz
+ok
+test_unsafe_date_or_path_cannot_trigger_cleanup (test_ftp_download_verify.FtpNodeTest) ... ok
+
+----------------------------------------------------------------------
+Ran 32 tests in 4.221s
+
+OK
+test_case_environment_contains_target_and_unique_batch (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+test_current_markdown_pipelines_have_complete_contracts (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+test_duplicate_case_id_is_rejected (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+test_missing_external_evidence_is_rejected (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.013s
+
+OK
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile.test
+#1 transferring dockerfile: 188B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/maven:3.9-eclipse-temurin-17
+#2 DONE 0.1s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/2] FROM docker.io/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584
+#4 resolve docker.io/library/maven:3.9-eclipse-temurin-17@sha256:1a352420f7aba21f5ad08df31bab55f74c013fb491f1ae8ab1dd7ff9ed698584 0.0s done
+#4 DONE 0.0s
+
+#5 [2/2] RUN apt-get update && apt-get install -y --no-install-recommends python3     && rm -rf /var/lib/apt/lists/*
+#5 CACHED
+
+#6 exporting to image
+#6 exporting layers done
+#6 exporting manifest sha256:cd3207aa54996d1278f3a22d6ead31d96c2e3cfe02a4acafcc87240d67f6875b done
+#6 exporting config sha256:44f7ebc97ceec576e5edd7cdb234d2964854ac2eef23c0a03e701135dc0bbca3 done
+#6 exporting attestation manifest sha256:dab419b2ada5543d88f4c197e304665bc2fbd9eb11487468147ac6985ba0e65b 0.0s done
+#6 exporting manifest list sha256:7b694107f7fc53601171c85842a5ee9007de6911109aad20b5be26291d5f8a47 done
+#6 naming to docker.io/library/archive-delivery-maven:test done
+#6 unpacking to docker.io/library/archive-delivery-maven:test done
+#6 DONE 0.1s
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/reb25ht0vn6xyx356bjqzs088
+Picked up JAVA_TOOL_OPTIONS: -Dapi.version=1.44
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] archive-delivery-platform                                          [pom]
+[INFO] delivery-core                                                      [jar]
+[INFO] delivery-worker                                                    [jar]
+[INFO] delivery-server                                                    [jar]
+[INFO] 
+[INFO] -----------< com.powerjob.archive:archive-delivery-platform >-----------
+[INFO] Building archive-delivery-platform 1.0.0-SNAPSHOT                  [1/4]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ archive-delivery-platform ---
+[INFO] 
+[INFO] -----------------< com.powerjob.archive:delivery-core >-----------------
+[INFO] Building delivery-core 1.0.0-SNAPSHOT                              [2/4]
+[INFO]   from delivery-core/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ delivery-core ---
+[INFO] Deleting /workspace/delivery-core/target
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ delivery-core ---
+[INFO] Copying 5 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ delivery-core ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 63 source files with javac [debug release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ delivery-core ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ delivery-core ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 11 source files with javac [debug release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ delivery-core ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -Dapi.version=1.44
+[INFO] Running com.powerjob.archive.core.pipeline.PipelineNodeConfigTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.420 s -- in com.powerjob.archive.core.pipeline.PipelineNodeConfigTest
+[INFO] Running com.powerjob.archive.core.pipeline.PipelineRepositoryTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 s -- in com.powerjob.archive.core.pipeline.PipelineRepositoryTest
+[INFO] Running com.powerjob.archive.core.config.JacksonConfigurationTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.081 s -- in com.powerjob.archive.core.config.JacksonConfigurationTest
+[INFO] Running com.powerjob.archive.core.node.ManifestQualifyNodeTest
+01:57:29.722 INFO  c.p.a.core.node.ManifestQualifyNode - Manifest qualification succeeded deliveryId=8 taskId=7 processId=100 entityCode=jun sourceCount=2 requestCount=3 sizeBytes=14 sha256=f940abcd9e6c3a56758e388e3825dbbce8077b55a8ea45055eb9767889c19d2b
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.347 s -- in com.powerjob.archive.core.node.ManifestQualifyNodeTest
+[INFO] Running com.powerjob.archive.core.node.ProcessSupportTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.093 s -- in com.powerjob.archive.core.node.ProcessSupportTest
+[INFO] Running com.powerjob.archive.core.node.OssDownloadNodeTest
+01:57:32.847 INFO  c.p.a.core.node.OssDownloadNode - Source download node started deliveryId=8 taskId=7 processId=100 entityCode=jun sourceCount=1
+01:57:32.848 INFO  c.p.a.core.node.OssDownloadNode - Source download started deliveryId=8 taskId=7 processId=100 dataId=11 uri=oss://bucket/prefix/source.tar.gz expectedSize=25 expectedSha256=dfa89d92a442552d76024c396f2472460def7073e43c66df5bc29066864c2813 target=/tmp/junit509060412884531677/delivery-8/task-7/sources/data-11/source.tar.gz
+01:57:32.852 INFO  c.p.a.core.node.OssDownloadNode - Source download succeeded deliveryId=8 taskId=7 processId=100 dataId=11 cacheHit=true sizeBytes=25 sha256=dfa89d92a442552d76024c396f2472460def7073e43c66df5bc29066864c2813 localPath=/tmp/junit509060412884531677/delivery-8/task-7/sources/data-11/source.tar.gz
+01:57:32.852 INFO  c.p.a.core.node.OssDownloadNode - Source download node succeeded deliveryId=8 taskId=7 processId=100 sourceCount=1 cacheHits=1
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.017 s -- in com.powerjob.archive.core.node.OssDownloadNodeTest
+[INFO] Running com.powerjob.archive.core.service.RemotePathServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.022 s -- in com.powerjob.archive.core.service.RemotePathServiceTest
+01:57:33.865 INFO  o.t.d.DockerClientProviderStrategy - Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+01:57:33.877 INFO  o.testcontainers.DockerClientFactory - Docker host IP address is host.docker.internal
+01:57:33.906 INFO  o.testcontainers.DockerClientFactory - Connected to docker: 
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 7937 MB
+01:57:33.911 WARN  o.t.utility.ResourceReaper - 
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+01:57:33.915 INFO  o.testcontainers.DockerClientFactory - Checking the system...
+01:57:33.916 INFO  o.testcontainers.DockerClientFactory - ✔︎ Docker server version should be at least 1.6.0
+[INFO] Running com.powerjob.archive.core.service.ArchiveModelIntegrationTest
+01:57:33.938 INFO  org.testcontainers.images.PullPolicy - Image pull policy will be performed by: DefaultPullPolicy()
+01:57:33.943 INFO  o.t.utility.ImageNameSubstitutor - Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+01:57:34.230 INFO  tc.postgres:16-alpine - Creating container for image: postgres:16-alpine
+01:57:34.239 INFO  o.t.utility.RegistryAuthLocator - Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: postgres:16-alpine, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+01:57:34.471 INFO  tc.postgres:16-alpine - Container postgres:16-alpine is starting: 78ef128df5b919c6377c51f2d8576033bb75513f6494e7c5ed33bf33da5eb16d
+01:57:36.408 INFO  tc.postgres:16-alpine - Container postgres:16-alpine started in PT2.178224227S
+01:57:36.409 INFO  tc.postgres:16-alpine - Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:52943/archive_delivery?loggerLevel=OFF)
+01:57:36.479 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:57:36.479 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:57:36.479 INFO  o.f.c.i.license.VersionPrinter - 
+01:57:36.495 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+01:57:36.769 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+01:57:36.790 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:52943/archive_delivery (PostgreSQL 16.15)
+01:57:36.808 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:57:36.859 INFO  o.f.c.internal.database.base.Schema - Creating schema "archive_delivery" ...
+01:57:36.867 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "archive_delivery"."flyway_schema_history" ...
+01:57:36.972 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": null
+01:57:37.114 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "25 - batch delivery baseline"
+01:57:37.123 WARN  o.f.c.i.s.DefaultSqlScriptExecutor - DB: schema "archive_delivery" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+01:57:37.481 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "26 - ingest channel monitor"
+01:57:37.581 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "27 - compact channel reports"
+01:57:37.713 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "28 - minimal ingest monitor"
+01:57:37.836 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "29 - unified monitor records"
+01:57:37.914 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 5 migrations to schema "archive_delivery", now at version v29 (execution time 00:00.964s)
+01:57:38.536 INFO  c.p.a.c.s.DeliveryPreparationService - Batch delivery prepared deliveryId=1 batchDeliveryId=1007 taskCount=2 sourceCount=2
+01:57:38.595 INFO  c.p.a.c.s.DeliveryPreparationService - Batch delivery prepared deliveryId=2 batchDeliveryId=1007 taskCount=2 sourceCount=2
+01:57:39.883 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:57:39.883 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:57:39.883 INFO  o.f.c.i.license.VersionPrinter - 
+01:57:39.890 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:52943/archive_delivery (PostgreSQL 16.15)
+01:57:39.896 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:57:39.916 INFO  o.f.core.internal.command.DbValidate - Successfully validated 6 migrations (execution time 00:00.017s)
+01:57:39.925 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": 29
+01:57:39.927 INFO  o.f.core.internal.command.DbMigrate - Schema "archive_delivery" is up to date. No migration necessary.
+01:57:40.309 INFO  c.p.a.c.service.TaskExecutionService - Delivery node started deliveryId=1022 taskId=21 processId=4 node=sourceDownload sourceCount=1 sourceDataIds=[50] entityId=1021 vendorCode=VENDOR-1021 workerGroup=interrupt1021
+01:57:40.344 WARN  c.p.a.c.service.TaskExecutionService - Delivery node failed deliveryId=1022 taskId=21 processId=4 node=sourceDownload errorCode=InterruptedException retryCount=1 nextRetrySeconds=5 detail=Local data-plane interrupted
+01:57:40.350 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+01:57:40.354 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.751 s -- in com.powerjob.archive.core.service.ArchiveModelIntegrationTest
+[INFO] Running com.powerjob.archive.core.service.FileTransferServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.powerjob.archive.core.service.FileTransferServiceTest
+[INFO] Running com.powerjob.archive.core.service.RetryPolicyTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.007 s -- in com.powerjob.archive.core.service.RetryPolicyTest
+[INFO] Running com.powerjob.archive.core.service.BatchPlanningServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.026 s -- in com.powerjob.archive.core.service.BatchPlanningServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 32, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] ----------------< com.powerjob.archive:delivery-worker >----------------
+[INFO] Building delivery-worker 1.0.0-SNAPSHOT                            [3/4]
+[INFO]   from delivery-worker/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ delivery-worker ---
+[INFO] Deleting /workspace/delivery-worker/target
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ delivery-worker ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ delivery-worker ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 4 source files with javac [debug release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ delivery-worker ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ delivery-worker ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 2 source files with javac [debug release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ delivery-worker ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -Dapi.version=1.44
+[INFO] Running com.powerjob.archive.worker.RealExternalVerificationTest
+[WARNING] Tests run: 3, Failures: 0, Errors: 0, Skipped: 3, Time elapsed: 0.635 s -- in com.powerjob.archive.worker.RealExternalVerificationTest
+01:57:47.452 INFO  o.t.d.DockerClientProviderStrategy - Loaded org.testcontainers.dockerclient.UnixSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+01:57:48.151 INFO  o.t.d.DockerClientProviderStrategy - Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+01:57:48.154 INFO  o.testcontainers.DockerClientFactory - Docker host IP address is host.docker.internal
+01:57:48.179 INFO  o.testcontainers.DockerClientFactory - Connected to docker: 
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 7937 MB
+01:57:48.183 WARN  o.t.utility.ResourceReaper - 
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+01:57:48.193 INFO  o.testcontainers.DockerClientFactory - Checking the system...
+01:57:48.194 INFO  o.testcontainers.DockerClientFactory - ✔︎ Docker server version should be at least 1.6.0
+[INFO] Running com.powerjob.archive.worker.GoldenPipelineDefinitionTest
+01:57:48.345 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.powerjob.archive.worker.GoldenPipelineDefinitionTest], using SpringBootContextLoader
+01:57:48.355 INFO  o.s.t.c.s.AbstractContextLoader - Could not detect default resource locations for test class [com.powerjob.archive.worker.GoldenPipelineDefinitionTest]: no resource found for suffixes {-context.xml, Context.groovy}.
+01:57:48.356 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.powerjob.archive.worker.GoldenPipelineDefinitionTest]: GoldenPipelineDefinitionTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+01:57:48.580 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.powerjob.archive.worker.ArchiveWorkerApplication for test class com.powerjob.archive.worker.GoldenPipelineDefinitionTest
+01:57:48.761 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+01:57:48.790 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@173797f0, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@3c35c345, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@3681037, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@2459319c, org.springframework.test.context.support.DirtiesContextTestExecutionListener@ffaaaf0, org.springframework.test.context.transaction.TransactionalTestExecutionListener@1dc76fa1, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@5eed2d86, org.springframework.test.context.event.EventPublishingTestExecutionListener@33d53216, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@69a2b3b6, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@4f3e7344, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@7808f638, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@62d73ead, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@1e141e42, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@228cea97]
+01:57:48.813 INFO  org.testcontainers.images.PullPolicy - Image pull policy will be performed by: DefaultPullPolicy()
+01:57:48.817 INFO  o.t.utility.ImageNameSubstitutor - Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+01:57:49.119 INFO  tc.postgres:16-alpine - Creating container for image: postgres:16-alpine
+01:57:49.127 INFO  o.t.utility.RegistryAuthLocator - Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: postgres:16-alpine, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+01:57:49.344 INFO  tc.postgres:16-alpine - Container postgres:16-alpine is starting: c961124199c6e2ba7d82d0a3957f0f875c770cbaa9517b6d47f1271a88fc4497
+01:57:51.449 INFO  tc.postgres:16-alpine - Container postgres:16-alpine started in PT2.33048251S
+01:57:51.450 INFO  tc.postgres:16-alpine - Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:52975/archive_delivery?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.18)
+
+01:57:52.031 INFO  c.p.a.w.GoldenPipelineDefinitionTest - Starting GoldenPipelineDefinitionTest using Java 17.0.20.1 on dd7005286155 with PID 168 (started by root in /workspace/delivery-worker)
+01:57:52.032 INFO  c.p.a.w.GoldenPipelineDefinitionTest - No active profile set, falling back to 1 default profile: "default"
+01:57:53.648 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:57:53.648 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:57:53.649 INFO  o.f.c.i.license.VersionPrinter - 
+01:57:53.666 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+01:57:54.049 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+01:57:54.077 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:52975/archive_delivery (PostgreSQL 16.15)
+01:57:54.099 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:57:54.160 INFO  o.f.c.internal.database.base.Schema - Creating schema "archive_delivery" ...
+01:57:54.175 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "archive_delivery"."flyway_schema_history" ...
+01:57:54.286 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": null
+01:57:54.431 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "25 - batch delivery baseline"
+01:57:54.443 WARN  o.f.c.i.s.DefaultSqlScriptExecutor - DB: schema "archive_delivery" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+01:57:54.804 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "26 - ingest channel monitor"
+01:57:54.927 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "27 - compact channel reports"
+01:57:55.065 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "28 - minimal ingest monitor"
+01:57:55.199 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "29 - unified monitor records"
+01:57:55.276 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 5 migrations to schema "archive_delivery", now at version v29 (execution time 00:01.014s)
+01:57:56.429 INFO  c.p.a.w.GoldenPipelineDefinitionTest - Started GoldenPipelineDefinitionTest in 4.913 seconds (JVM running for 11.626)
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.747 s -- in com.powerjob.archive.worker.GoldenPipelineDefinitionTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[WARNING] Tests run: 5, Failures: 0, Errors: 0, Skipped: 3
+[INFO] 
+[INFO] 
+[INFO] ----------------< com.powerjob.archive:delivery-server >----------------
+[INFO] Building delivery-server 1.0.0-SNAPSHOT                            [4/4]
+[INFO]   from delivery-server/pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.2.0:clean (default-clean) @ delivery-server ---
+[INFO] Deleting /workspace/delivery-server/target
+[INFO] 
+[INFO] --- resources:3.4.0:resources (default-resources) @ delivery-server ---
+[INFO] Copying 1 resource from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ delivery-server ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 21 source files with javac [debug release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.4.0:testResources (default-testResources) @ delivery-server ---
+[INFO] Copying 1 resource from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ delivery-server ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 6 source files with javac [debug release 17] to target/test-classes
+[INFO] /workspace/delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/WeComNotifierTest.java: /workspace/delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/WeComNotifierTest.java uses unchecked or unsafe operations.
+[INFO] /workspace/delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/WeComNotifierTest.java: Recompile with -Xlint:unchecked for details.
+[INFO] 
+[INFO] --- surefire:3.2.5:test (default-test) @ delivery-server ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+Picked up JAVA_TOOL_OPTIONS: -Dapi.version=1.44
+01:58:03.730 INFO  o.t.d.DockerClientProviderStrategy - Loaded org.testcontainers.dockerclient.UnixSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+01:58:04.470 INFO  o.t.d.DockerClientProviderStrategy - Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+01:58:04.473 INFO  o.testcontainers.DockerClientFactory - Docker host IP address is host.docker.internal
+01:58:04.505 INFO  o.testcontainers.DockerClientFactory - Connected to docker: 
+  Server Version: 29.9.2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 7937 MB
+01:58:04.509 WARN  o.t.utility.ResourceReaper - 
+********************************************************************************
+Ryuk has been disabled. This can cause unexpected behavior in your environment.
+********************************************************************************
+01:58:04.515 INFO  o.testcontainers.DockerClientFactory - Checking the system...
+01:58:04.516 INFO  o.testcontainers.DockerClientFactory - ✔︎ Docker server version should be at least 1.6.0
+[INFO] Running com.powerjob.archive.server.service.ingestmonitor.IngestMonitorIntegrationTest
+01:58:04.560 INFO  org.testcontainers.images.PullPolicy - Image pull policy will be performed by: DefaultPullPolicy()
+01:58:04.565 INFO  o.t.utility.ImageNameSubstitutor - Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+01:58:04.857 INFO  tc.postgres:16-alpine - Creating container for image: postgres:16-alpine
+01:58:04.865 INFO  o.t.utility.RegistryAuthLocator - Failure when attempting to lookup auth config. Please ignore if you don't have images in an authenticated registry. Details: (dockerImageName: postgres:16-alpine, configFile: /root/.docker/config.json, configEnv: DOCKER_AUTH_CONFIG). Falling back to docker-java default behaviour. Exception message: Status 404: No config supplied. Checked in order: /root/.docker/config.json (file not found), DOCKER_AUTH_CONFIG (not set)
+01:58:05.116 INFO  tc.postgres:16-alpine - Container postgres:16-alpine is starting: f84817c6f4293e0cea895f7047b76b1a046e2fb016ab0d9c6b68021e4e3eba28
+01:58:07.295 INFO  tc.postgres:16-alpine - Container postgres:16-alpine started in PT2.43799672S
+01:58:07.297 INFO  tc.postgres:16-alpine - Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:53010/archive_delivery?loggerLevel=OFF)
+01:58:07.385 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:58:07.385 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:58:07.385 INFO  o.f.c.i.license.VersionPrinter - 
+01:58:07.407 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+01:58:07.770 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+01:58:07.800 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:53010/archive_delivery (PostgreSQL 16.15)
+01:58:07.820 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:58:07.892 INFO  o.f.c.internal.database.base.Schema - Creating schema "archive_delivery" ...
+01:58:07.904 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "archive_delivery"."flyway_schema_history" ...
+01:58:08.009 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": null
+01:58:08.162 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "25 - batch delivery baseline"
+01:58:08.181 WARN  o.f.c.i.s.DefaultSqlScriptExecutor - DB: schema "archive_delivery" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+01:58:08.577 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "26 - ingest channel monitor"
+01:58:08.685 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "27 - compact channel reports"
+01:58:08.820 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 3 migrations to schema "archive_delivery", now at version v27 (execution time 00:00.833s)
+01:58:09.008 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:58:09.008 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:58:09.008 INFO  o.f.c.i.license.VersionPrinter - 
+01:58:09.013 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:53010/archive_delivery (PostgreSQL 16.15)
+01:58:09.019 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:58:09.041 INFO  o.f.core.internal.command.DbValidate - Successfully validated 6 migrations (execution time 00:00.020s)
+01:58:09.052 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": 27
+01:58:09.059 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "28 - minimal ingest monitor"
+01:58:09.179 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 1 migration to schema "archive_delivery", now at version v28 (execution time 00:00.133s)
+01:58:09.192 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:58:09.192 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:58:09.192 INFO  o.f.c.i.license.VersionPrinter - 
+01:58:09.200 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:53010/archive_delivery (PostgreSQL 16.15)
+01:58:09.206 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:58:09.223 INFO  o.f.core.internal.command.DbValidate - Successfully validated 6 migrations (execution time 00:00.015s)
+01:58:09.231 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": 28
+01:58:09.241 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "29 - unified monitor records"
+01:58:09.317 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 1 migration to schema "archive_delivery", now at version v29 (execution time 00:00.090s)
+01:58:09.320 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:58:09.320 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:58:09.320 INFO  o.f.c.i.license.VersionPrinter - 
+01:58:09.329 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:58:09.350 INFO  o.f.core.internal.command.DbValidate - Successfully validated 6 migrations (execution time 00:00.018s)
+01:58:09.357 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": 29
+01:58:09.359 INFO  o.f.core.internal.command.DbMigrate - Schema "archive_delivery" is up to date. No migration necessary.
+01:58:32.902 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+01:58:32.907 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 28.72 s -- in com.powerjob.archive.server.service.ingestmonitor.IngestMonitorIntegrationTest
+[INFO] Running com.powerjob.archive.server.service.ingestmonitor.OssSourceScannerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.091 s -- in com.powerjob.archive.server.service.ingestmonitor.OssSourceScannerTest
+[INFO] Running com.powerjob.archive.server.service.ingestmonitor.WeComNotifierTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.065 s -- in com.powerjob.archive.server.service.ingestmonitor.WeComNotifierTest
+[INFO] Running com.powerjob.archive.server.service.ingestmonitor.OssCostServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.powerjob.archive.server.service.ingestmonitor.OssCostServiceTest
+[INFO] Running com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest
+01:58:34.524 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Neither @ContextConfiguration nor @ContextHierarchy found for test class [com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest], using SpringBootContextLoader
+01:58:34.528 INFO  o.s.t.c.s.AbstractContextLoader - Could not detect default resource locations for test class [com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest]: no resource found for suffixes {-context.xml, Context.groovy}.
+01:58:34.530 INFO  o.s.t.c.s.AnnotationConfigContextLoaderUtils - Could not detect default configuration classes for test class [com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest]: IngestMonitorApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+01:58:34.779 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Found @SpringBootConfiguration com.powerjob.archive.server.ArchiveServerApplication for test class com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest
+01:58:34.924 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Loaded default TestExecutionListener class names from location [META-INF/spring.factories]: [org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener, org.springframework.test.context.web.ServletTestExecutionListener, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener, org.springframework.test.context.event.ApplicationEventsTestExecutionListener, org.springframework.test.context.support.DependencyInjectionTestExecutionListener, org.springframework.test.context.support.DirtiesContextTestExecutionListener, org.springframework.test.context.transaction.TransactionalTestExecutionListener, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener, org.springframework.test.context.event.EventPublishingTestExecutionListener]
+01:58:34.952 INFO  o.s.b.t.c.SpringBootTestContextBootstrapper - Using TestExecutionListeners: [org.springframework.test.context.web.ServletTestExecutionListener@5831989d, org.springframework.test.context.support.DirtiesContextBeforeModesTestExecutionListener@608f310a, org.springframework.test.context.event.ApplicationEventsTestExecutionListener@3a7d914c, org.springframework.boot.test.mock.mockito.MockitoTestExecutionListener@515940af, org.springframework.boot.test.autoconfigure.SpringBootDependencyInjectionTestExecutionListener@5f8df69, org.springframework.test.context.support.DirtiesContextTestExecutionListener@1ce6a9bd, org.springframework.test.context.transaction.TransactionalTestExecutionListener@4a47bc9c, org.springframework.test.context.jdbc.SqlScriptsTestExecutionListener@5100c143, org.springframework.test.context.event.EventPublishingTestExecutionListener@12404f9d, org.springframework.boot.test.mock.mockito.ResetMocksTestExecutionListener@3b42b729, org.springframework.boot.test.autoconfigure.restdocs.RestDocsTestExecutionListener@4c164f81, org.springframework.boot.test.autoconfigure.web.client.MockRestServiceServerResetTestExecutionListener@1bcb8599, org.springframework.boot.test.autoconfigure.web.servlet.MockMvcPrintOnlyOnFailureTestExecutionListener@b671dda, org.springframework.boot.test.autoconfigure.web.servlet.WebDriverTestExecutionListener@25b20860, org.springframework.boot.test.autoconfigure.webservices.client.MockWebServiceServerTestExecutionListener@5ba63110]
+01:58:34.959 INFO  tc.postgres:16-alpine - Creating container for image: postgres:16-alpine
+01:58:35.094 INFO  tc.postgres:16-alpine - Container postgres:16-alpine is starting: c57278bb85eed23a7d86a4cf676ba7f9d799004193894b11b9c9f90b5fddf9df
+01:58:37.093 INFO  tc.postgres:16-alpine - Container postgres:16-alpine started in PT2.134173688S
+01:58:37.094 INFO  tc.postgres:16-alpine - Container is started (JDBC URL: jdbc:postgresql://host.docker.internal:53078/archive_delivery?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::               (v2.7.18)
+
+01:58:37.642 INFO  c.p.a.s.s.i.IngestMonitorApiTest - Starting IngestMonitorApiTest using Java 17.0.20.1 on dd7005286155 with PID 230 (started by root in /workspace/delivery-server)
+01:58:37.643 INFO  c.p.a.s.s.i.IngestMonitorApiTest - No active profile set, falling back to 1 default profile: "default"
+01:58:37.690 INFO  o.h.validator.internal.util.Version - HV000001: Hibernate Validator 6.2.5.Final
+01:58:40.953 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port(s): 0 (http)
+01:58:40.966 INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-0.0.0.0-auto-1"]
+01:58:40.969 INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+01:58:40.969 INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.83]
+01:58:41.245 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+01:58:41.245 INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3568 ms
+01:58:42.341 INFO  o.f.c.i.license.VersionPrinter - Flyway Community Edition 8.5.13 by Redgate
+01:58:42.342 INFO  o.f.c.i.license.VersionPrinter - See what's new here: https://flywaydb.org/documentation/learnmore/releaseNotes#8.5.13
+01:58:42.342 INFO  o.f.c.i.license.VersionPrinter - 
+01:58:42.348 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Starting...
+01:58:42.403 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-2 - Start completed.
+01:58:42.406 INFO  o.f.c.i.d.base.BaseDatabaseType - Database: jdbc:postgresql://host.docker.internal:53078/archive_delivery (PostgreSQL 16.15)
+01:58:42.413 WARN  o.f.c.i.database.base.Database - Flyway upgrade recommended: PostgreSQL 16.15 is newer than this version of Flyway and support has not been tested. The latest supported version of PostgreSQL is 14.
+01:58:42.440 INFO  o.f.c.internal.database.base.Schema - Creating schema "archive_delivery" ...
+01:58:42.447 INFO  o.f.c.i.s.JdbcTableSchemaHistory - Creating Schema History table "archive_delivery"."flyway_schema_history" ...
+01:58:42.486 INFO  o.f.core.internal.command.DbMigrate - Current version of schema "archive_delivery": null
+01:58:42.526 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "25 - batch delivery baseline"
+01:58:42.531 WARN  o.f.c.i.s.DefaultSqlScriptExecutor - DB: schema "archive_delivery" already exists, skipping (SQL State: 42P06 - Error Code: 0)
+01:58:42.997 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "26 - ingest channel monitor"
+01:58:43.117 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "27 - compact channel reports"
+01:58:43.277 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "28 - minimal ingest monitor"
+01:58:43.422 INFO  o.f.core.internal.command.DbMigrate - Migrating schema "archive_delivery" to version "29 - unified monitor records"
+01:58:43.510 INFO  o.f.core.internal.command.DbMigrate - Successfully applied 5 migrations to schema "archive_delivery", now at version v29 (execution time 00:01.032s)
+01:58:47.072 INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 1 endpoint(s) beneath base path '/actuator'
+01:58:47.647 INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-0.0.0.0-auto-1"]
+01:58:47.677 INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port(s): 38499 (http) with context path ''
+01:58:47.720 INFO  c.p.a.s.s.i.IngestMonitorApiTest - Started IngestMonitorApiTest in 10.57 seconds (JVM running for 46.255)
+01:58:48.089 INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+01:58:48.089 INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+01:58:48.091 INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+01:58:48.675 INFO  c.p.a.s.s.i.IngestMonitorService - Ingest card acknowledged notificationId=1 httpStatus=200 businessCode=0
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 14.75 s -- in com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest
+[INFO] Running com.powerjob.archive.server.service.ingestmonitor.IngestMessageRendererTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.072 s -- in com.powerjob.archive.server.service.ingestmonitor.IngestMessageRendererTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 27, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for archive-delivery-platform 1.0.0-SNAPSHOT:
+[INFO] 
+[INFO] archive-delivery-platform .......................... SUCCESS [  0.198 s]
+[INFO] delivery-core ...................................... SUCCESS [ 21.525 s]
+[INFO] delivery-worker .................................... SUCCESS [ 17.066 s]
+[INFO] delivery-server .................................... SUCCESS [ 51.446 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:30 min
+[INFO] Finished at: 2026-11-25T01:58:49Z
+[INFO] ------------------------------------------------------------------------
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'abbrev@5.0.0',
+npm warn EBADENGINE   required: { node: '^22.22.2 || ^24.15.0 || >=26.0.0' },
+npm warn EBADENGINE   current: { node: 'v24.13.0', npm: '11.6.2' }
+npm warn EBADENGINE }
+npm warn EBADENGINE Unsupported engine {
+npm warn EBADENGINE   package: 'nopt@10.0.1',
+npm warn EBADENGINE   required: { node: '^22.22.2 || ^24.15.0 || >=26.0.0' },
+npm warn EBADENGINE   current: { node: 'v24.13.0', npm: '11.6.2' }
+npm warn EBADENGINE }
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 164 packages, and audited 165 packages in 7s
+
+31 packages are looking for funding
+  run `npm fund` for details
+
+10 vulnerabilities (8 moderate, 2 critical)
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> archive-delivery-dashboard@1.0.0 test
+> vitest run
+
+
+ RUN  v3.2.7 /Users/kai/Documents/IdeaProjects/archive-delivery-platform/web
+
+ ✓ src/monitor-entry.spec.ts (1 test) 272ms
+ ✓ src/components/IngestMonitorPanel.spec.ts (1 test) 84ms
+ ✓ src/views/DashboardView.spec.ts (1 test) 357ms
+   ✓ DashboardView > renders delivery targets and retains the last successful facts on refresh failure  356ms
+
+ Test Files  3 passed (3)
+      Tests  3 passed (3)
+   Start at  09:58:59
+   Duration  3.13s (transform 597ms, setup 0ms, collect 2.97s, tests 713ms, environment 1.62s, prepare 749ms)
+
+
+> archive-delivery-dashboard@1.0.0 build
+> vue-tsc --noEmit && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 1615 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                0.55 kB │ gzip:   0.34 kB
+dist/monitor.html                              1.18 kB │ gzip:   0.81 kB
+dist/assets/IngestMonitorPanel-COkqJ3GB.css    6.74 kB │ gzip:   1.71 kB
+dist/assets/main-Dck5eiw-.css                361.92 kB │ gzip:  48.40 kB
+dist/assets/monitor-4XBjBy0j.js                0.08 kB │ gzip:   0.10 kB
+dist/assets/IngestMonitorPanel-EMjDGCop.js    97.76 kB │ gzip:  38.89 kB
+dist/assets/main-D7tigVtu.js                 951.16 kB │ gzip: 306.53 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 4.86s

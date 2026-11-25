@@ -112,7 +112,7 @@ import json, os, sys
 uri = os.environ.get("PROD_OSS_URI", "")
 if not uri.startswith("oss://"):
     raise SystemExit("PROD_OSS_URI is required because source location belongs to the submission")
-json.dump({"ossUri": uri, "channelCode": "ARCHIVE_SOURCE", "ossType": "ALIBABA_CLOUD"}, open(sys.argv[1], "w"))
+json.dump({"ossUri": uri, "ossType": "ALIBABA_CLOUD"}, open(sys.argv[1], "w"))
 PY
 curl -fsS --connect-timeout 5 --max-time 15 "$API/ingest-sources" -o "$TEMP/sources.json"
 SOURCE_ID="$(python3 - "$TEMP" <<'PY'

@@ -1,0 +1,17 @@
+{
+  "collectedAt": "2026-11-22T12:15:39.907746+00:00",
+  "containers": {
+    "archive-server": {
+      "image": "sha256:4c742fa8ee550dd2903a5f6c5ad501728b777c10c407c74ccd05053267a1b3f1",
+      "health": "healthy",
+      "oomKilled": false,
+      "restartCount": 0
+    },
+    "monitor-web": {
+      "image": "sha256:a8b39bd9cf0f83869a2162827a0caf6137ddf759d50a171451b335cecc87d236",
+      "health": "healthy",
+      "oomKilled": false,
+      "restartCount": 0
+    }
+  }
+}

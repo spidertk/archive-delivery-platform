@@ -1,0 +1,57 @@
+{
+  "verifiedAt": "2026-11-22T09:29:18.191953+00:00",
+  "httpStatus": 200,
+  "errcode": 0,
+  "messageKind": "ACTUAL_CHANNEL_STATS_CONFIGURATION_CHANGE",
+  "channels": [
+    {
+      "sourceId": 4,
+      "ossUri": "oss://sg-oss-external-channel-source/Jayden-incoming-2.0/",
+      "channelCode": "Jayden-incoming-2.0",
+      "availability": "AVAILABLE",
+      "phase": "IDLE",
+      "sessionId": "62e3ea95-2941-4d71-8e2c-889061eca093",
+      "startedAt": "2026-11-22T09:03:58.736560Z",
+      "lastChangeAt": "2026-11-22T09:12:49.625858Z",
+      "observedAt": "2026-11-22T09:27:52.242600Z",
+      "objectCount": 361506,
+      "sizeBytes": 6137079584256,
+      "lastErrorCode": null,
+      "failedAt": null,
+      "pendingNotifications": 0
+    },
+    {
+      "sourceId": 5,
+      "ossUri": "oss://sg-oss-external-channel-source/jayden-incoming/",
+      "channelCode": "jayden-incoming",
+      "availability": "AVAILABLE",
+      "phase": "IDLE",
+      "sessionId": "1552a738-9041-459f-aa4a-fd53f1ed10a8",
+      "startedAt": "2026-11-22T09:04:41.488445Z",
+      "lastChangeAt": "2026-11-22T09:13:24.400200Z",
+      "observedAt": "2026-11-22T09:28:27.541989Z",
+      "objectCount": 429936,
+      "sizeBytes": 10489031441209,
+      "lastErrorCode": null,
+      "failedAt": null,
+      "pendingNotifications": 0
+    },
+    {
+      "sourceId": 6,
+      "ossUri": "oss://sg-oss-external-channel-source/incoming/temp-20260825-1007a693ea2acd68/",
+      "channelCode": "incoming/temp-20260825-1007a693ea2acd68",
+      "availability": "AVAILABLE",
+      "phase": "IDLE",
+      "sessionId": "c8883030-2046-42f3-9323-300bda8e75fe",
+      "startedAt": "2026-11-22T09:04:52.780039Z",
+      "lastChangeAt": "2026-11-22T09:13:27.270945Z",
+      "observedAt": "2026-11-22T09:28:30.418102Z",
+      "objectCount": 10013,
+      "sizeBytes": 7781090133857,
+      "lastErrorCode": null,
+      "failedAt": null,
+      "pendingNotifications": 0
+    }
+  ],
+  "content": "## 渠道监控通知地址已更新\n以下为切换时最近成功扫描的实际统计：\n\n渠道：Jayden-incoming-2.0\n目录：oss://sg-oss-external-channel-source/Jayden-incoming-2.0/\n当前文件：361506 个；容量：6137079584256 bytes\n最近成功扫描：2026-11-22T09:27:52.242600Z\n状态：静默\n\n渠道：jayden-incoming\n目录：oss://sg-oss-external-channel-source/jayden-incoming/\n当前文件：429936 个；容量：10489031441209 bytes\n最近成功扫描：2026-11-22T09:28:27.541989Z\n状态：静默\n\n渠道：incoming/temp-20260825-1007a693ea2acd68\n目录：oss://sg-oss-external-channel-source/incoming/temp-20260825-1007a693ea2acd68/\n当前文件：10013 个；容量：7781090133857 bytes\n最近成功扫描：2026-11-22T09:28:30.418102Z\n状态：静默\n\n后续接收开始及连续静默 10 分钟后的完整汇总将发送到当前群。此条为通知配置切换确认，不是新数据到达事件。"
+}

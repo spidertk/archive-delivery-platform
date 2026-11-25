@@ -31,6 +31,10 @@ class PipelineRegistryTest(unittest.TestCase):
         batch = pipeline_registry.select("archive-batch-jun", self.root)
         self.assertEqual(batch["definition"]["config"]["assignment"]["maxPackageBytes"], 104857600)
         self.assertEqual(batch["definition"]["config"]["assignment"]["entityWorkers"][0]["workers"][0]["maxPackagesPerRound"], 6000)
+        extension = next(item for item in batch["definition"]["config"]["assignment"]["entityWorkers"]
+                         if item["entityCode"] == "jun")
+        self.assertEqual(extension["vendorCode"], "alibaba")
+        self.assertEqual(extension["workers"], [{"workerGroup": "group2", "maxPackagesPerRound": 100}])
 
     def test_missing_external_evidence_is_rejected(self):
         path = self.root / "deploy" / "pipelines" / "archive-delivery-jun.md"

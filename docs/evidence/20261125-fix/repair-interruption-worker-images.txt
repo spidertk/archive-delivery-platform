@@ -1,0 +1,8 @@
+/archive_delivery_production-worker-1-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0
+/archive_delivery_production-worker-2-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0
+/archive_delivery_production-worker-3-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0
+/archive_delivery_production-worker-4-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0
+/archive_delivery_production-worker-5-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0
+/archive_delivery_production-worker-6-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0
+/archive_delivery_production-worker-7-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0
+/archive_delivery_production-worker-8-1 image=sha256:41824761aa332c25d01b651688df43dda5117f8951c88d94fcd13d0ebaf23eaf status=running OOM=false restarts=0

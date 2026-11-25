@@ -17,4 +17,8 @@ deploy/backups/
 deploy/pipeline-v3.local.json
 deploy/pipeline-v4.local.json
 deploy/pipeline-sg-ftp.local.json
+# 机器配置可能含有地址、账户或 Secret；仅纳入脱敏的通用扩展手册。
 /docs/服务器信息/
+!/docs/服务器信息/
+/docs/服务器信息/*
+!/docs/服务器信息/任务机扩展部署.md

@@ -2,6 +2,8 @@ package com.powerjob.archive.core.service;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Propagation;
 
 import java.util.Map;
 
@@ -11,15 +13,27 @@ public class DeliveryProjectionService {
 
     public DeliveryProjectionService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
 
+    /** 调用方必须已开启短事务，并在改任务/包/提交之前统一锁父批次，避免反向等待。 */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void lockBatch(long deliveryId) {
+        jdbc.queryForObject("SELECT b.delivery_id FROM delivery_submit s JOIN delivery_submit b " +
+                "ON b.delivery_id=COALESCE(s.batch_delivery_id,s.delivery_id) WHERE s.delivery_id=? FOR UPDATE OF b",
+                Long.class, deliveryId);
+    }
+
+    /** 同批次的短事务投影共用父单行锁；禁止并发重写包状态产生锁顺序反转。 */
+    @Transactional
     public void refresh(long deliveryId) {
+        // 独立刷新也按同一顺序加锁；节点推进调用方已在写任务前持有此锁。
+        lockBatch(deliveryId);
         Map<String, Object> identity = jdbc.queryForMap("SELECT submission_type,batch_delivery_id FROM delivery_submit WHERE delivery_id=?", deliveryId);
+        Object batchId = identity.get("batch_delivery_id");
         if ("BATCH_CREATE".equals(identity.get("submission_type"))) {
             refreshBatch(deliveryId);
             return;
         }
         synchronizeBatchItems(deliveryId);
         refreshSubmission(deliveryId);
-        Object batchId = identity.get("batch_delivery_id");
         if (batchId != null) refreshBatch(((Number) batchId).longValue());
     }
 
@@ -64,7 +78,9 @@ public class DeliveryProjectionService {
                 "FROM delivery_task WHERE delivery_id=? AND execution_status NOT IN('EXPIRED','CANCELLED') GROUP BY delivery_id,new_file_name) " +
                 "UPDATE delivery_batch b SET status=p.batch_status," +
                 "completed_at=CASE WHEN p.batch_status='DELIVERED' THEN COALESCE(b.completed_at,now()) ELSE NULL END " +
-                "FROM package_state p WHERE b.delivery_id=p.delivery_id AND b.new_file_name=p.new_file_name", deliveryId);
+                // 已一致的包不重复写入，降低并发节点推进时的锁、WAL 和无效行版本。
+                "FROM package_state p WHERE b.delivery_id=p.delivery_id AND b.new_file_name=p.new_file_name " +
+                "AND b.status IS DISTINCT FROM p.batch_status", deliveryId);
     }
 
     private void refreshBatch(long batchDeliveryId) {

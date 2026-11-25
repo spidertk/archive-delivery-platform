@@ -1,0 +1,36 @@
+{
+  "mode": "production-read-only",
+  "check": "LIST_OK",
+  "sources": [
+    {
+      "uri": "oss://sg-oss-external-channel-source/Jayden-incoming-2.0/",
+      "objects": 361506,
+      "bytes": 6137079584256,
+      "pages": 362
+    },
+    {
+      "uri": "oss://sg-oss-external-channel-source/jayden-incoming/",
+      "objects": 429936,
+      "bytes": 10489031441209,
+      "pages": 430
+    },
+    {
+      "uri": "oss://sg-oss-external-channel-source/incoming/temp-20260825-1007a693ea2acd68/",
+      "objects": 10013,
+      "bytes": 7781090133857,
+      "pages": 11
+    },
+    {
+      "uri": "oss://sg-storage-20261013-6vmlk/internal/gpt-jayden-response-sse-fixed-20261117-v1/products/",
+      "objects": 40184,
+      "bytes": 875113968794,
+      "pages": 41
+    },
+    {
+      "uri": "oss://sg-storage-20261013-6vmlk/internal/archive-delivery-migrations/DO_20261117_00001/remaining-343/products/",
+      "objects": 343,
+      "bytes": 6507105830,
+      "pages": 1
+    }
+  ]
+}

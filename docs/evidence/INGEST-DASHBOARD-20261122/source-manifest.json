@@ -1,0 +1,214 @@
+{
+  "migration": "29",
+  "tables": [
+    "ingest_monitor_record",
+    "ingest_monitor_notification"
+  ],
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "378eec7420311d67839921e1c2341fc052d8a897a97066bd8615d0a118f70832"
+    },
+    {
+      "path": "delivery-core/AGENTS.md",
+      "sha256": "5e5fea4fc790d53f7492ed22cf0f65fd2374f0f2920f6e45242f5a47cbcbdcb5"
+    },
+    {
+      "path": "delivery-core/src/main/resources/db/migration/V29__unified_monitor_records.sql",
+      "sha256": "21c72846d638c094fd088287045f9a752ae286c4240631b76323e573b46b23b5"
+    },
+    {
+      "path": "delivery-core/src/test/java/com/powerjob/archive/core/service/ArchiveModelIntegrationTest.java",
+      "sha256": "1216e080ed6af2c5ffb9d34740d34f8d4854ede906e3a5f645ad95e1ae08fb72"
+    },
+    {
+      "path": "delivery-server/AGENTS.md",
+      "sha256": "78246433aa474c6b0dae8c9b67fa72aa988f856d50f0bb0d647ce7a0c10982bf"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/IngestMessageRenderer.java",
+      "sha256": "ff30dcc2a0e9b181152a599b2a9574b398cc2e7ed0dc26c89bd36ba1da9004a6"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/IngestMonitorService.java",
+      "sha256": "423c597f0fc4071894e2e80689128c31966ca3ff4d9c86e5b1bd5e343442c09a"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/IngestReportService.java",
+      "sha256": "67cc307c1c3c71df8fcbf4e578e59764ebbfe655cc3f06f23879cbceb7079244"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/MonitorDashboardService.java",
+      "sha256": "b4b266f30aee0620453a682d88e18ed5b5d884b3ec8eb2fcdc8cbff963a16368"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/MonitorNoticeStore.java",
+      "sha256": "56026677153297536b036620c8467e86bd2a669b58741fbb0fc76a256b239908"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/MonitorScheduling.java",
+      "sha256": "aaf76e72d193b387591f37a6f0608110e41cad5c53f1d12764da98dee104e318"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/MonitorSettings.java",
+      "sha256": "cf6c51247dd0a2c37e67f722fde2840a5e353a655937b7d352aadb7467409908"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/MonitorStore.java",
+      "sha256": "960f39554418e8d97a61fa8543cd0a0b3bf31fc57d5915ae008fc0cb7cfbbc7b"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/OssCostService.java",
+      "sha256": "3dab515f8ae277a2d48320e7091ce0bff7b90b2d80a40b350800b777ca40d05d"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/OssSourceScanner.java",
+      "sha256": "976a98822a1eaf88565b92dc35cdab75fdb2722136480f4f7a94a14b152619ba"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/SourceSnapshot.java",
+      "sha256": "aa3eea23c92577a18eeee953aafa42273f02f682a14ee4f09eeeafa4bfb73e5e"
+    },
+    {
+      "path": "delivery-server/src/main/java/com/powerjob/archive/server/service/ingestmonitor/WeComNotifier.java",
+      "sha256": "c681c20b09c9a2db35f9e2803e7e1c2b8957bdd5a863d802a425cd0c7bcf926b"
+    },
+    {
+      "path": "delivery-server/src/main/resources/application.yml",
+      "sha256": "1d626bef9a828075e53ad933b4e65048604c6899ba341625205c2db9a55ea07d"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/IngestMessageRendererTest.java",
+      "sha256": "7a7ee2263a178daa1baa18a80f1a3db0ae338534cda8ea4b7cbbb25cb50f3b80"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/IngestMonitorApiTest.java",
+      "sha256": "3fd310ada6ba4b9c8ad01297aaf6fa206862e2935989e5fa02878a86a4447c67"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/IngestMonitorIntegrationTest.java",
+      "sha256": "d067c5ebe0ecd4294344262381b80b161638d0c95f5d165cdf4a21c6362b6cda"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/OssCostServiceTest.java",
+      "sha256": "39dbb5f44175220837b2f3a2f2de4842ea30c3b3fbc791ce01018d6bb06adf9b"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/OssSourceScannerTest.java",
+      "sha256": "700f3292be40f7525787cc6bb64712cfb40231b8ce854cc057206229f8a0ed67"
+    },
+    {
+      "path": "delivery-server/src/test/java/com/powerjob/archive/server/service/ingestmonitor/WeComNotifierTest.java",
+      "sha256": "969503af05943745aa8f8f7904a01b47b1932bcd4c59b604413a44f02cc7779e"
+    },
+    {
+      "path": "delivery-server/src/test/resources/logback-test.xml",
+      "sha256": "03e8642c6fd602a7eacf3a16a0bc82045a9debfb377df2d3f9d572215c7300d8"
+    },
+    {
+      "path": "deploy/AGENTS.md",
+      "sha256": "20a08adfbb4440559b1defe4a89144a9efd72f7d924520fbf867c0a7f7753d50"
+    },
+    {
+      "path": "deploy/docker-compose.production.yml",
+      "sha256": "70cf1a022d3bac706eb1e5b91237f37da5686bf03d884ad596148b8e16c3145c"
+    },
+    {
+      "path": "deploy/env.production.example",
+      "sha256": "0369f8d30e067b12f041954fe1010eb74649d752a2b9c90c9a0725cbce36e3c6"
+    },
+    {
+      "path": "deploy/monitor.nginx.conf",
+      "sha256": "3d804c42668ba1a70adaea98e0bc5fa01dc054e348f74315fafc96075a540abf"
+    },
+    {
+      "path": "docs/AGENTS.md",
+      "sha256": "f76c854aab2dcae8ef45dace4afb44971a110104d47e81c3c5e3899aec299400"
+    },
+    {
+      "path": "docs/deploy.md",
+      "sha256": "d659de1e03e93c8d1fafdc0e41662f61bbb24f51fa880107a72152716c1d51b0"
+    },
+    {
+      "path": "docs/ingest-channel-monitor.md",
+      "sha256": "30e9bf6016fb91396e30ecc7f78357bf6e1264486d9dff8912ef1a7fc89e28a3"
+    },
+    {
+      "path": "docs/production-operations.md",
+      "sha256": "fda56ba8105d19d7a5f00c39b18ce35a63add7d389a9a2fecad9c25c570da2c1"
+    },
+    {
+      "path": "docs/schemas/ingest-monitor-card.schema.json",
+      "sha256": "3dda6031edb1c3b6e495ded2b7d211c7108ab4003d202c41a1cecf8f63421090"
+    },
+    {
+      "path": "scripts/AGENTS.md",
+      "sha256": "0915ba7573c73f52ac6b2b28e052ebc90dac458df355835ab854f742aa4c2ea5"
+    },
+    {
+      "path": "scripts/production-pipeline.sh",
+      "sha256": "3016691818335a5321b488b8415b2c326fec6c6080072e91d6e19fb2e1cf6069"
+    },
+    {
+      "path": "web/AGENTS.md",
+      "sha256": "de6047f89baf03a2b94d13ed0fe18836dc5dd44a4ed8499940486902aa223bce"
+    },
+    {
+      "path": "web/monitor.html",
+      "sha256": "7b92a8592ddc3e36a5f095f73dbf37bb6afc621c4abc4761c26a40c260909710"
+    },
+    {
+      "path": "web/src/App.vue",
+      "sha256": "9265e9ad3a88140b7bae2035c804da649aca6034b9503567e6aad60c25ec68e8"
+    },
+    {
+      "path": "web/src/components/IngestMonitorPanel.spec.ts",
+      "sha256": "d8fefdbcf738501559b60160a490df0eaaf04dcba9c2df5f728e261cb2447ab7"
+    },
+    {
+      "path": "web/src/components/IngestMonitorPanel.vue",
+      "sha256": "645e7ffa9a87ccedbd304e3392776529d419dd72049428cfb3953a03fb88dbba"
+    },
+    {
+      "path": "web/src/monitor-entry.spec.ts",
+      "sha256": "e6016a3e9cdc82ede2ef59793b3594158029a1aaa05c20580de9060403111ddd"
+    },
+    {
+      "path": "web/src/monitor-main.ts",
+      "sha256": "74a4d834636515a1e3bf0769a6cb8da4351c81b13b75d4e51a422ed80912b3ce"
+    },
+    {
+      "path": "web/src/types.ts",
+      "sha256": "a055569c76828916ae7fb4f0b634f2223cccea9744b248de26a9e7d1094add6a"
+    },
+    {
+      "path": "web/vite.config.ts",
+      "sha256": "018c329d324840a07b971fc0ec9dba27549db6a00fec59aa021817981e8c2592"
+    }
+  ],
+  "checks": {
+    "V29": "PASS",
+    "twoTablesOnly": "PASS",
+    "noCompatibilityViews": "PASS",
+    "healthy": "PASS",
+    "inventoryPreserved": "PASS",
+    "tasksPreserved": "PASS",
+    "submitsPreserved": "PASS",
+    "pipelineVersionsPreserved": "PASS",
+    "sourcesPreserved": "PASS",
+    "sampleFactsPreserved": "PASS",
+    "historicalACKsPreserved": "PASS",
+    "channelNames": "PASS",
+    "noFakeArrival": "PASS",
+    "realDestination": "PASS",
+    "oneCard": "PASS",
+    "ownDashboardLink": "PASS",
+    "trueWeComACK": "PASS",
+    "officialStoragePrice": "PASS",
+    "financialArithmetic": "PASS",
+    "publicReadonly": "PASS"
+  },
+  "image": "sha256:4c742fa8ee550dd2903a5f6c5ad501728b777c10c407c74ccd05053267a1b3f1",
+  "initialImage": "sha256:279fc2fae52340cfb17a512c7d761c0aa382d6db2843fde4c60092c30ad291d2",
+  "deployedSourceHashesVerified": true
+}

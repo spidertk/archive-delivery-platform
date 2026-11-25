@@ -7,7 +7,7 @@
 - `python/`：源 tar 安全解包、请求目录合并、repair、最终封包、token/SHA 和 FTP 验证。
 - `shell/`：仅必要的受控本地辅助脚本；禁止 SSH 跳板机中继。
 
-所有节点由 Pipeline 和 Java Worker 调用，不能自行发现任务、决定顺序、修改 PG 或绕过编号服务。核心链路是源 OSS 直下载、本地目录合并、一次修复封包、交付 OSS 上传和本地 FTP 下载验证。
+所有节点由 Pipeline 和 Java Worker 调用，不能自行发现任务、决定顺序、修改 PG 或改变来源请求 ID。核心链路是源 OSS 直下载、本地目录合并、一次修复封包、交付 OSS 上传和本地 FTP 下载验证。
 
 ## 共同边界
 
@@ -22,8 +22,12 @@
 
 archive_merge.py 按 delivery_batch.source_seq 解包并汇聚请求目录，输出 workspacePath；不再生成中间 tar/gzip。archive_repair.py 直接消费该目录并只封存最终交付包一次。merge/repair 临时目录和 .tmp 必须在重试前及异常后清理，日志不得包含 Secret。
 
+Java 中断或超时必须回收数据面进程子树并有界等待退出；repair 使用任务私有 `.repair.lock` 串行化旧尝试与重试，持锁后才能清理 staging/.tmp 或写最终包。锁文件不作为缓存删除，业务内容、目录和 ID 的保留约束不变。
+
 ## 授权日期保留例外
 
 仅 FTP 节点显式 cleanupOtherDeliveryDates=true 时按任务日期保留直属 FTP 日期目录，使用同机文件锁等待传输边界；不清理非日期目录、OSS、PG 或工作目录。默认禁止清历史的边界继续适用于未启用此策略的节点。
 
-2026-11-21 性能优化：merge 使用 r|gz 顺序安全解包一次；最终协议校验按 TAR 流建立直属文件与 metadata 索引，单次解压，禁止 getmembers 后逐请求 gzip 回卷。完整保留 requestId、UTC 纳秒时间、providerCode、模式及必需文件检查，并拒绝空包、重复成员、路径穿越和链接。
+merge 通过 gzip/TAR 流完整读取拼接 gzip 成员和拼接 TAR 段，只跨越合法结束零块，坏头、截断和非请求顶层文件必须失败；每个源包只解包一次。最终协议校验按 TAR 流建立直属文件与 metadata 索引，禁止 getmembers 后逐请求 gzip 回卷。保留独立的原始目录名和 requestId/request_id 字段及值；requestTime 保留源日期和时分秒，格式为 `yyyy-MM-dd HH:mm:ss`。缺失或冲突 ID、重复目录、非法时间、空包、重复文件、路径穿越和链接均拒绝交付。
+
+生产独立 FTP `--verify-only` 流式读取真实远端字节并核对 size/SHA，不产生第二份本地包；正常交付节点仍执行 STOR/RETR 和本地原子封存。

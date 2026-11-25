@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "at": "2026-11-25T01:23:36.313004+00:00",
+  "batchDeliveryId": 8,
+  "evictVerifiedSourceCache": true,
+  "disk": {
+    "total": 528046399488,
+    "used": 414962057216,
+    "free": 91398463488
+  },
+  "audits": [
+    {
+      "file": "local-copies-9-1795568913344400897.json",
+      "deliveryId": 9,
+      "removedFileCount": 9,
+      "sourceBytes": 174979623,
+      "ftpVerificationBytes": 163156309,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-9-1795569627051377619.json",
+      "deliveryId": 9,
+      "removedFileCount": 0,
+      "sourceBytes": 0,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-10-1795569001907850391.json",
+      "deliveryId": 10,
+      "removedFileCount": 272,
+      "sourceBytes": 8426448091,
+      "ftpVerificationBytes": 8081181761,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-10-1795569627319143870.json",
+      "deliveryId": 10,
+      "removedFileCount": 0,
+      "sourceBytes": 0,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-11-1795569050495114423.json",
+      "deliveryId": 11,
+      "removedFileCount": 195,
+      "sourceBytes": 8821756331,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-11-1795569627606783903.json",
+      "deliveryId": 11,
+      "removedFileCount": 0,
+      "sourceBytes": 0,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-12-1795569097627374860.json",
+      "deliveryId": 12,
+      "removedFileCount": 189,
+      "sourceBytes": 8783825079,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-12-1795569627889674357.json",
+      "deliveryId": 12,
+      "removedFileCount": 0,
+      "sourceBytes": 0,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-13-1795569143292108934.json",
+      "deliveryId": 13,
+      "removedFileCount": 214,
+      "sourceBytes": 8533080798,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-13-1795569628167737294.json",
+      "deliveryId": 13,
+      "removedFileCount": 0,
+      "sourceBytes": 0,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-14-1795569676744837677.json",
+      "deliveryId": 14,
+      "removedFileCount": 211,
+      "sourceBytes": 8771859309,
+      "ftpVerificationBytes": 0,
+      "skippedFileCount": 0
+    },
+    {
+      "file": "local-copies-15-1795569760221004266.json",
+      "deliveryId": 15,
+      "removedFileCount": 203,
+      "sourceBytes": 8294881050,
+      "ftpVerificationBytes": 8080986951,
+      "skippedFileCount": 0
+    }
+  ],
+  "removedSourceBytes": 51806830281,
+  "removedFtpVerificationBytes": 16325325021,
+  "removedFileCount": 1293
+}

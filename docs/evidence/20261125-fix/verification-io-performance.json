@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "status": "OBSERVED",
+  "baselineAvgIoWaitPercent": 42.96882879933786,
+  "baselineAvgNodeTransitionWaitSeconds": 0.28,
+  "tmpfsLimitBytes": 2147483648,
+  "samples": [
+    {
+      "deliveryId": 11,
+      "tasks": 100,
+      "sources": 195,
+      "verificationTestSeconds": 166.370072,
+      "verificationProcessSeconds": 177.3360719680786,
+      "tmpfs": false,
+      "logSha256": "494249bf9adb58396045a187c2b6393a46f4c9f03abfab995733f54277f8a4f8"
+    },
+    {
+      "deliveryId": 12,
+      "tasks": 100,
+      "sources": 189,
+      "verificationTestSeconds": 108.032838,
+      "verificationProcessSeconds": 118.93483805656433,
+      "tmpfs": false,
+      "logSha256": "e08ece78cd3767aba8b837e54d020a63b6f9db2ae25c24e5a2013994d3d3a69a"
+    },
+    {
+      "deliveryId": 13,
+      "tasks": 100,
+      "sources": 214,
+      "verificationTestSeconds": 93.759976,
+      "verificationProcessSeconds": 102.16797590255737,
+      "tmpfs": false,
+      "logSha256": "21974a37032a21dbf9381dbe973e84112d50e09ea680faa80a26c49bbb6fc37d"
+    },
+    {
+      "deliveryId": 14,
+      "tasks": 100,
+      "sources": 211,
+      "verificationTestSeconds": 100.002255,
+      "verificationProcessSeconds": 108.72025489807129,
+      "tmpfs": false,
+      "logSha256": "4b396c05fab0928f32e4d47e576cf694f44026638ec7bfa18d9cd95d111d9a1e"
+    },
+    {
+      "deliveryId": 15,
+      "tasks": 100,
+      "sources": 103,
+      "verificationTestSeconds": 106.052417,
+      "verificationProcessSeconds": 111.51841688156128,
+      "tmpfs": false,
+      "logSha256": "3a110828817b0862664b7fc33ae62026de2b67c8b1dcf284d1d2989cd559c8a0"
+    },
+    {
+      "deliveryId": 16,
+      "tasks": 100,
+      "sources": 232,
+      "verificationTestSeconds": 43.155257,
+      "verificationProcessSeconds": 48.425256967544556,
+      "tmpfs": true,
+      "logSha256": "739da53aaafa47cc3bcd663f6130158e545db178ccbe23c3694d38b034762e0e"
+    }
+  ],
+  "limitation": "One tmpfs wave observed; source sizes and filesystem cache differ. Test timing excludes container startup; process timing includes it. Not a controlled end-to-end throughput claim."
+}

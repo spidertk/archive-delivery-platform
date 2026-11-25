@@ -1,0 +1,20 @@
+test_all_concatenated_tar_and_gzip_segments_keep_content_ids_and_directories (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_concurrent_retries_wait_before_cleaning_shared_staging (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_corrupt_later_concatenated_segment_cannot_publish_partial_workspace (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_duplicate_valid_request_ids_are_rejected_without_renumbering (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_gzip_level_is_bounded_and_changes_only_compression (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_inspect_and_production_repair_preserve_source_request_ids (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_invalid_source_calendar_and_missing_time_are_rejected (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_merge_rejects_duplicate_original_directories_and_legacy_ids (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_missing_protocol_files_do_not_publish_output_or_temp_files (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_missing_request_id_or_time_is_rejected_without_fabrication (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_null_request_mode_uses_request_stream_flag_or_response_file (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_original_snake_case_id_is_preserved_without_adding_an_alias (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_root_file_cannot_be_silently_discarded_during_merge (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_three_sources_merge_into_one_repaired_artifact_without_intermediate_tar (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+test_unsafe_archive_member_is_rejected (nodes.python.test_archive_repair.ArchiveRepairTest) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 4.103s
+
+OK

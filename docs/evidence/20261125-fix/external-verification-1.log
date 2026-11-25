@@ -1,0 +1,7 @@
+00:00:11.107 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+00:00:11.231 INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+00:00:13.073 INFO  c.p.a.c.service.OssTransferService - OSS GET completed bucket=sg-storage-20261013-6vmlk key=root/2026-11-25-20261125-fix-root/batch_0000001.tar.gz path=/tmp/junit2987823773547900211/target-181.tar.gz sizeBytes=71233013 sha256=e8e76cbc342569c82d5c8eb8eab4a593e7aabb6742d13173d41887bd3a50ff97
+REAL VERIFIED deliveryId=9 taskId=181 sources=3 size=71233013 sha256=e8e76cbc342569c82d5c8eb8eab4a593e7aabb6742d13173d41887bd3a50ff97
+00:00:13.845 INFO  c.p.a.c.service.OssTransferService - OSS GET completed bucket=sg-storage-20261013-6vmlk key=root/2026-11-25-20261125-fix-root/batch_0000002.tar.gz path=/tmp/junit2987823773547900211/target-182.tar.gz sizeBytes=91923296 sha256=4514077745f7ae5781cca7c62cabfb3652ef88f0cda142831c756e5771deefb0
+REAL VERIFIED deliveryId=9 taskId=182 sources=4 size=91923296 sha256=4514077745f7ae5781cca7c62cabfb3652ef88f0cda142831c756e5771deefb0
+REAL E2E PASSED deliveryId=9 tasks=2 sources=7 maxPackageBytes=104857600

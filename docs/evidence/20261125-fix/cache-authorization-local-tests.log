@@ -1,0 +1,32 @@
+test_blocked_summary_stops_without_creating_another_submission (scripts.test_production_remaining.ProductionRemainingTest) ... ok
+test_cleanup_removes_only_listed_verified_local_files (scripts.test_production_remaining.ProductionRemainingTest) ... FULL VERIFIED deliveryId=6 freedBytes=21
+ok
+test_delivered_without_external_receipt_cannot_delete_local_copy (scripts.test_production_remaining.ProductionRemainingTest) ... ok
+test_explicit_eviction_permission_is_recorded_with_exact_file_audit (scripts.test_production_remaining.ProductionRemainingTest) ... FULL VERIFIED deliveryId=6 freedBytes=21
+ok
+test_failed_or_running_submission_cannot_remove_cache (scripts.test_production_remaining.ProductionRemainingTest) ... ok
+test_full_run_resumes_trial_and_submits_the_small_tail_once (scripts.test_production_remaining.ProductionRemainingTest) ... FULL SUBMITTED deliveryId=7 targetCount=3 remaining=3
+FULL BATCH PASSED batchDeliveryId=5 submissions=2
+ok
+test_paths_cannot_escape_cache_or_cross_delivery (scripts.test_production_remaining.ProductionRemainingTest) ... ok
+test_same_size_wrong_sha_is_never_deleted (scripts.test_production_remaining.ProductionRemainingTest) ... ok
+test_skipped_external_test_does_not_create_receipt (scripts.test_production_remaining.ProductionRemainingTest) ... ok
+test_source_newly_referenced_by_active_task_is_preserved (scripts.test_production_remaining.ProductionRemainingTest) ... FULL VERIFIED deliveryId=6 freedBytes=0
+ok
+test_symlink_cannot_redirect_cache_cleanup (scripts.test_production_remaining.ProductionRemainingTest) ... ok
+test_changed_directory_cannot_pass (scripts.test_verify_archive_content.VerifyArchiveContentTest) ... ok
+test_changed_response_or_request_id_cannot_pass (scripts.test_verify_archive_content.VerifyArchiveContentTest) ... ok
+test_concatenated_source_is_read_completely_and_independent_names_are_preserved (scripts.test_verify_archive_content.VerifyArchiveContentTest) ... ok
+test_duplicate_archive_file_is_rejected (scripts.test_verify_archive_content.VerifyArchiveContentTest) ... ok
+test_first_segment_only_cannot_pass (scripts.test_verify_archive_content.VerifyArchiveContentTest) ... ok
+test_invalid_source_calendar_and_timezone_are_rejected (scripts.test_verify_archive_content.VerifyArchiveContentTest) ... ok
+test_snake_case_id_field_and_independent_directory_are_preserved (scripts.test_verify_archive_content.VerifyArchiveContentTest) ... ok
+test_case_environment_contains_target_and_unique_batch (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+test_current_markdown_pipelines_have_complete_contracts (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+test_duplicate_case_id_is_rejected (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+test_missing_external_evidence_is_rejected (scripts.test_pipeline_registry.PipelineRegistryTest) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.088s
+
+OK

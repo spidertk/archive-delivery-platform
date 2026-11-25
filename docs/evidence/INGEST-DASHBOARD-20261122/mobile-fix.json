@@ -1,0 +1,54 @@
+{
+  "collectedAt": "2026-11-22T12:14:26.924115+00:00",
+  "page": {
+    "path": "/monitor?view=mobile",
+    "status": 200,
+    "encoding": "gzip",
+    "wireBytes": 797,
+    "bytes": 1177,
+    "sha256": "252f439f1b995d5cb5e38a9b139cb524aec987ecd9d96d31adc3ee5e805ba8ac",
+    "cacheControl": "no-store"
+  },
+  "assets": [
+    {
+      "path": "/assets/monitor-BXtHMmoI.js",
+      "status": 200,
+      "encoding": null,
+      "wireBytes": 82,
+      "bytes": 82,
+      "sha256": "858609ad9e754b2c4273e4e9bb8fa9e7111db60a48b691aaccb9518fb500041c",
+      "cacheControl": null
+    },
+    {
+      "path": "/assets/IngestMonitorPanel-4yK_Ps-i.js",
+      "status": 200,
+      "encoding": "gzip",
+      "wireBytes": 38439,
+      "bytes": 96536,
+      "sha256": "4bec61e9e0a16a6270dfd9a0966c40578ff96e84d11e026c2da03773b037abe5",
+      "cacheControl": null
+    },
+    {
+      "path": "/assets/IngestMonitorPanel-D21HQ9fG.css",
+      "status": 200,
+      "encoding": "gzip",
+      "wireBytes": 1608,
+      "bytes": 6030,
+      "sha256": "0a6f174653ee15d9f4a351bfe7424b41a5edf1da24b1c98e1c972b57a3049baf",
+      "cacheControl": null
+    }
+  ],
+  "api": {
+    "path": "/api/v1/ingest-sources/monitor",
+    "status": 200,
+    "encoding": "gzip",
+    "wireBytes": 1185,
+    "bytes": 3765,
+    "sha256": "f480456a5b3f7f64eed75c3a25dad7de4b5c7fa3fe3623400fb4082c9fd74a29",
+    "cacheControl": null
+  },
+  "oldJavascriptBytes": 1045890,
+  "newTotalAssetWireBytes": 40129,
+  "result": "PASS",
+  "entryBootTest": "PASS; no global component library required"
+}

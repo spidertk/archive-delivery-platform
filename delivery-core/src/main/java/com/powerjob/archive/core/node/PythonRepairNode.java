@@ -11,7 +11,6 @@ import com.powerjob.archive.core.pipeline.PipelineNodeConfig;
 import com.powerjob.archive.core.pipeline.SourceDataPatch;
 import com.powerjob.archive.core.repository.DeliveryRepository;
 import com.powerjob.archive.core.service.BatchPlanningService;
-import com.powerjob.archive.core.service.RequestIdAllocationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -26,16 +25,14 @@ import java.util.List;
 public class PythonRepairNode implements NodeHandler {
     private static final Logger log = LoggerFactory.getLogger(PythonRepairNode.class);
     private final ArchiveProperties properties;
-    private final RequestIdAllocationService numbers;
     private final DeliveryRepository deliveries;
     private final BatchPlanningService planning;
     private final PipelineNodeConfig configs;
     private final ObjectMapper mapper;
 
-    public PythonRepairNode(ArchiveProperties properties, RequestIdAllocationService numbers, DeliveryRepository deliveries,
+    public PythonRepairNode(ArchiveProperties properties, DeliveryRepository deliveries,
                             BatchPlanningService planning, PipelineNodeConfig configs, ObjectMapper mapper) {
         this.properties = properties;
-        this.numbers = numbers;
         this.deliveries = deliveries;
         this.planning = planning;
         this.configs = configs;
@@ -49,8 +46,7 @@ public class PythonRepairNode implements NodeHandler {
         Path source = Path.of(mergedOutput.required("workspacePath").asText());
         int count = mergedOutput.required("requestCount").asInt();
         String namespace = deliveries.find(context.task().deliveryId()).orElseThrow().deliveryBatch();
-        String requestKey = context.task().deliveryId() + ":" + context.task().newFileName();
-        RequestIdAllocationService.NumberRange range = numbers.reserve(context.source().dataId(), Math.multiplyExact(count, 2), namespace, requestKey);
+        // 请求目录和 ID 属于原始来源事实；修复不再领取号段或为 UUID 等原值重新编号。
         Path target = Path.of(properties.getWorkRoot(), "delivery-" + context.task().deliveryId(),
                 "task-" + context.task().taskId(), "repair");
         Path manifestPath = target.resolve("repair-result.json");
@@ -64,7 +60,7 @@ public class PythonRepairNode implements NodeHandler {
                 NodeSupport.script(configs, context.node()), "--source", source.toString(), "--target", target.toString(),
                 "--delivery-date", context.task().deliveryDate().toString(),
                 "--entity-code", context.entity().entityCode(),
-                "--start-number", Long.toString(range.start()), "--max-bytes", Long.toString(maxPackageBytes),
+                "--max-bytes", Long.toString(maxPackageBytes),
                 "--output-name", context.task().newFileName(), "--original-name", context.task().originalFileName(),
                 "--merge-manifest", mergedOutput.required("manifestPath").asText(),
                 "--manifest", manifestPath.toString(), "--gzip-level", Integer.toString(gzipLevel)));

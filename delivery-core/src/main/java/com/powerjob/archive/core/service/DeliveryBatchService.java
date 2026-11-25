@@ -127,7 +127,7 @@ public class DeliveryBatchService {
         transactions.executeWithoutResult(status -> {
             Map<String, Integer> distribution = new LinkedHashMap<>();
             for (int packageIndex = 0; packageIndex < assignments.size(); packageIndex++) {
-                String newFileName = String.format("batch_%05d.tar.gz", packageIndex + 1);
+                String newFileName = String.format("batch_%07d.tar.gz", packageIndex + 1);
                 BatchPlanningService.PlanningSlot slot = slots.get(packageIndex);
                 String distributionKey = slot.entity().entityCode() + "/" + slot.workerGroup();
                 distribution.merge(distributionKey, 1, Integer::sum);

@@ -3,6 +3,7 @@ package com.powerjob.archive.core.service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.powerjob.archive.core.domain.BatchPackage;
 import com.powerjob.archive.core.domain.DeliverySubmit;
+import com.powerjob.archive.core.domain.DeliveryTask;
 import com.powerjob.archive.core.domain.SourceData;
 import com.powerjob.archive.core.pipeline.PipelineRepository;
 import com.powerjob.archive.core.repository.DeliveryBatchRepository;
@@ -59,7 +60,7 @@ class ArchiveModelIntegrationTest {
     @Test void currentBaselineIsIdempotentAndContainsOnlyBatchLineage() {
         int before = jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery'", Integer.class);
         Flyway.configure().dataSource(dataSource).schemas("archive_delivery").defaultSchema("archive_delivery").load().migrate();
-        assertEquals("25", jdbc.queryForObject("SELECT max(version) FROM archive_delivery.flyway_schema_history WHERE success", String.class));
+        assertEquals("29", jdbc.queryForObject("SELECT max(version) FROM archive_delivery.flyway_schema_history WHERE success", String.class));
         assertEquals(before, jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery'", Integer.class));
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery' " +
                 "AND table_name='delivery_mapping'", Integer.class));
@@ -101,7 +102,7 @@ class ArchiveModelIntegrationTest {
         DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
         for (int sequence = 1; sequence <= 4; sequence++) {
             SourceData source = sources.findById(insertSource(batchId, "two-submit-" + sequence, 10)).orElseThrow();
-            String name = String.format("batch_%05d.tar.gz", sequence);
+            String name = String.format("batch_%07d.tar.gz", sequence);
             batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), name, 1,
                     entityId, "jun", sequence <= 2 ? "group1" : "group2");
         }
@@ -118,9 +119,9 @@ class ArchiveModelIntegrationTest {
                 tasks, new DeliveryEventRepository(jdbc, mapper), new DeliveryProjectionService(jdbc), new PipelineRepository(mapper));
         preparation.prepare(first);
         preparation.prepare(second);
-        assertEquals(List.of("batch_00001.tar.gz", "batch_00002.tar.gz"), tasks.byDelivery(first).stream()
+        assertEquals(List.of("batch_0000001.tar.gz", "batch_0000002.tar.gz"), tasks.byDelivery(first).stream()
                 .map(task -> task.newFileName()).toList());
-        assertEquals(List.of("batch_00003.tar.gz", "batch_00004.tar.gz"), tasks.byDelivery(second).stream()
+        assertEquals(List.of("batch_0000003.tar.gz", "batch_0000004.tar.gz"), tasks.byDelivery(second).stream()
                 .map(task -> task.newFileName()).toList());
         assertEquals("group2", tasks.byDelivery(second).get(0).workerGroup());
         for (long deliveryId : List.of(first, second)) {
@@ -164,10 +165,10 @@ class ArchiveModelIntegrationTest {
         DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
         long submitId = insertSubmission(batchId, entityId, 1);
         SourceData source = sources.findById(insertSource(batchId, "operations", 10)).orElseThrow();
-        batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), "batch_00001.tar.gz", 1,
+        batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), "batch_0000001.tar.gz", 1,
                 entityId, "jun", "group1");
         long taskId = tasks.createPlanned(deliveries.find(submitId).orElseThrow(),
-                new BatchPackage("batch_00001.tar.gz", "group1", 1, 10), deliveries.entity(entityId), "sourceDownload");
+                new BatchPackage("batch_0000001.tar.gz", "group1", 1, 10), deliveries.entity(entityId), "sourceDownload");
         jdbc.update("UPDATE delivery_submit SET discovery_completed_at=now() WHERE delivery_id=?", submitId);
         DeliveryProjectionService projections = new DeliveryProjectionService(jdbc);
         DeliveryEventRepository events = new DeliveryEventRepository(jdbc, mapper);
@@ -179,8 +180,8 @@ class ArchiveModelIntegrationTest {
         projections.refresh(submitId);
         assertEquals("PROCESSING", jdbc.queryForObject("SELECT status FROM delivery_batch WHERE delivery_id=?", String.class, submitId));
         jdbc.update("INSERT INTO delivery_node(delivery_id,task_id,original_file_name,new_file_name,node_id,node_type,stage_code,attempt,fence,status,output_locator) " +
-                        "VALUES(?,?,'operations.tar.gz','batch_00001.tar.gz','repair','python.repair','REPAIR',1,0,'SUCCEEDED',?::jsonb)",
-                submitId, taskId, "{\"nodeId\":\"repair\",\"localPath\":\"/tmp/batch_00001.tar.gz\",\"sha256\":\"" + "a".repeat(64) + "\"}");
+                        "VALUES(?,?,'operations.tar.gz','batch_0000001.tar.gz','repair','python.repair','REPAIR',1,0,'SUCCEEDED',?::jsonb)",
+                submitId, taskId, "{\"nodeId\":\"repair\",\"localPath\":\"/tmp/batch_0000001.tar.gz\",\"sha256\":\"" + "a".repeat(64) + "\"}");
         DeliveryRolloverService rollovers = new DeliveryRolloverService(jdbc, transactions, tasks, events, projections,
                 new PipelineRepository(mapper), mapper);
         LocalDate original = jdbc.queryForObject("SELECT delivery_date FROM delivery_submit WHERE delivery_id=?", LocalDate.class, submitId);
@@ -188,7 +189,7 @@ class ArchiveModelIntegrationTest {
         long newTask = jdbc.queryForObject("SELECT (payload->>'newTaskId')::bigint FROM delivery_event WHERE delivery_id=? AND event_type='TASK_EXPIRED'",
                 Long.class, submitId);
         assertEquals(List.of(source.dataId()), sources.byTaskId(newTask).stream().map(SourceData::dataId).toList());
-        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM delivery_batch WHERE delivery_id=? AND new_file_name='batch_00001.tar.gz'",
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM delivery_batch WHERE delivery_id=? AND new_file_name='batch_0000001.tar.gz'",
                 Integer.class, submitId));
         jdbc.update("UPDATE delivery_task SET cutoff_at=now()-interval '1 minute' WHERE task_id=?", newTask);
         assertEquals(1, rollovers.rolloverDue());
@@ -208,37 +209,37 @@ class ArchiveModelIntegrationTest {
             SourceData source = sources.findById(insertSource(batchId, "overflow-" + index, index * 10L)).orElseThrow();
             planned.add(source);
             batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(),
-                    "batch_00001.tar.gz", index, entityId, "jun", "group1");
+                    "batch_0000001.tar.gz", index, entityId, "jun", "group1");
         }
         long taskId = tasks.createPlanned(deliveries.find(submitId).orElseThrow(),
-                new BatchPackage("batch_00001.tar.gz", "group1", 4, 100), deliveries.entity(entityId), "sourceDownload");
+                new BatchPackage("batch_0000001.tar.gz", "group1", 4, 100), deliveries.entity(entityId), "sourceDownload");
         jdbc.update("UPDATE delivery_task SET execution_status='RUNNING',lease_owner='worker',lease_until=now()+interval '1 minute' WHERE task_id=?", taskId);
         var result = new BatchReplanService(jdbc, tasks, sources, deliveries, mapper)
                 .moveLastSourceToNewPackage(taskId, 0, "worker");
         assertEquals(List.of(planned.get(2).dataId(), planned.get(3).dataId()), result.dataIds());
-        assertEquals("batch_00002.tar.gz", result.newFileName());
+        assertEquals("batch_0000002.tar.gz", result.newFileName());
         assertEquals("READY", tasks.findById(taskId).orElseThrow().executionStatus());
         assertEquals(2, tasks.findById(taskId).orElseThrow().artifacts().size());
         assertEquals(30, tasks.findById(taskId).orElseThrow().sizeBytes());
-        assertEquals("PLANNED", jdbc.queryForObject("SELECT DISTINCT status FROM delivery_batch WHERE batch_delivery_id=? AND new_file_name='batch_00002.tar.gz'",
+        assertEquals("PLANNED", jdbc.queryForObject("SELECT DISTINCT status FROM delivery_batch WHERE batch_delivery_id=? AND new_file_name='batch_0000002.tar.gz'",
                 String.class, batchId));
-        assertEquals(2, jdbc.queryForObject("SELECT count(*) FROM delivery_batch WHERE batch_delivery_id=? AND new_file_name='batch_00002.tar.gz'",
+        assertEquals(2, jdbc.queryForObject("SELECT count(*) FROM delivery_batch WHERE batch_delivery_id=? AND new_file_name='batch_0000002.tar.gz'",
                 Integer.class, batchId));
         assertEquals(List.of(1, 2), jdbc.queryForList("SELECT source_seq FROM delivery_batch WHERE batch_delivery_id=? " +
-                "AND new_file_name='batch_00002.tar.gz' ORDER BY source_seq", Integer.class, batchId));
+                "AND new_file_name='batch_0000002.tar.gz' ORDER BY source_seq", Integer.class, batchId));
     }
 
     @Test void requestAllocationUsesSharedBatchNamespace() {
         long batchId = insertBatch();
         long dataId = insertSource(batchId, "numbering", 10);
         RequestIdAllocationService allocations = new RequestIdAllocationService(jdbc, transactions);
-        var first = allocations.reserve(dataId, 3, "BATCH-" + batchId, "1:batch_00001.tar.gz");
-        var second = allocations.reserve(dataId, 3, "BATCH-" + batchId, "1:batch_00001.tar.gz");
+        var first = allocations.reserve(dataId, 3, "BATCH-" + batchId, "1:batch_0000001.tar.gz");
+        var second = allocations.reserve(dataId, 3, "BATCH-" + batchId, "1:batch_0000001.tar.gz");
         assertEquals(first, second);
-        var expanded = allocations.reserve(dataId, 5, "BATCH-" + batchId, "1:batch_00001.tar.gz");
+        var expanded = allocations.reserve(dataId, 5, "BATCH-" + batchId, "1:batch_0000001.tar.gz");
         assertEquals(first.allocationId(), expanded.allocationId());
         assertEquals(5, expanded.count());
-        var otherPackage = allocations.reserve(dataId, 3, "BATCH-" + batchId, "1:batch_00002.tar.gz");
+        var otherPackage = allocations.reserve(dataId, 3, "BATCH-" + batchId, "1:batch_0000002.tar.gz");
         assertNotEquals(first.allocationId(), otherPackage.allocationId());
     }
 
@@ -255,7 +256,7 @@ class ArchiveModelIntegrationTest {
         long submitId = insertSubmission(batchId, entityId, 4);
         for (int index = 1; index <= 4; index++) {
             SourceData source = sources.findById(insertSource(batchId, "capacity-" + index, 10)).orElseThrow();
-            String name = String.format("batch_%05d.tar.gz", index);
+            String name = String.format("batch_%07d.tar.gz", index);
             batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), name,
                     1, entityId, "jun", group);
             tasks.createPlanned(deliveries.find(submitId).orElseThrow(), new BatchPackage(name, group, 1, 10),
@@ -280,6 +281,112 @@ class ArchiveModelIntegrationTest {
             executor.shutdownNow();
             jdbc.update("UPDATE delivery_task SET execution_status='PAUSED' WHERE delivery_id=?", submitId);
         }
+    }
+
+    @Test void concurrentNodeTransitionsKeepPackageAndParentProjectionsConsistent() throws Exception {
+        // 八个真实事务模拟两个提交的节点同时结束；每包含多个来源，复现生产聚合更新的锁竞争。
+        long batchId = insertBatch();
+        long entityId = ids.incrementAndGet();
+        insertEntity(entityId, "VENDOR-" + entityId, "jun");
+        DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
+        SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
+        DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        DeliveryProjectionService projections = new DeliveryProjectionService(jdbc);
+        List<Long> submits = List.of(insertSubmission(batchId, entityId, 4), insertSubmission(batchId, entityId, 4));
+        var planned = new java.util.ArrayList<com.powerjob.archive.core.domain.DeliveryTask>();
+        for (int index = 0; index < 8; index++) {
+            String name = String.format("batch_%07d.tar.gz", index + 1);
+            for (int sequence = 1; sequence <= 4; sequence++) {
+                SourceData source = sources.findById(insertSource(batchId, "projection-" + index + "-" + sequence, 10)).orElseThrow();
+                batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), name,
+                        sequence, entityId, "jun", "group1");
+            }
+            long submitId = submits.get(index / 4);
+            long taskId = tasks.createPlanned(deliveries.find(submitId).orElseThrow(),
+                    new BatchPackage(name, "group1", 4, 40), deliveries.entity(entityId), "sourceDownload");
+            planned.add(tasks.findById(taskId).orElseThrow());
+        }
+        markBatchPlanned(batchId);
+        for (long submitId : submits) jdbc.update("UPDATE delivery_submit SET discovery_completed_at=now() WHERE delivery_id=?", submitId);
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(8);
+        try {
+            // 处理、重试和完成三个阶段都必须得到一致聚合，不能靠应用侧串行运行节点规避八路并发。
+            for (String state : List.of("READY", "RETRY_WAIT", "READY", "SUCCEEDED")) {
+                var start = new java.util.concurrent.CountDownLatch(1);
+                var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
+                for (var task : planned) futures.add(executor.submit(() -> {
+                    start.await();
+                    transactions.executeWithoutResult(status -> {
+                        jdbc.execute("SET LOCAL lock_timeout='5s'");
+                        projections.lockBatch(task.deliveryId());
+                        jdbc.update("UPDATE delivery_task SET execution_status=? WHERE task_id=?", state, task.taskId());
+                        projections.refresh(task.deliveryId());
+                    });
+                    return null;
+                }));
+                start.countDown();
+                for (var future : futures) future.get(15, java.util.concurrent.TimeUnit.SECONDS);
+                String packageState = "SUCCEEDED".equals(state) ? "DELIVERED" : "RETRY_WAIT".equals(state) ? "RETRYING" : "PROCESSING";
+                assertEquals(32, jdbc.queryForObject("SELECT count(*) FROM delivery_batch WHERE batch_delivery_id=? AND status=?",
+                        Integer.class, batchId, packageState));
+                for (long submitId : submits) assertEquals(packageState, status(submitId));
+                assertEquals("SUCCEEDED".equals(state) ? "DELIVERED" : "PROCESSING", status(batchId));
+            }
+            assertEquals(8, jdbc.queryForObject("SELECT (batch_extension->>'packageCount')::int FROM delivery_submit WHERE delivery_id=?",
+                    Integer.class, batchId));
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test void interruptedNodeRecordsRetryBeforeRestoringThreadInterrupt() {
+        // 真实 PG 事务验证：子进程回收后的中断标记不能使失败提交丢失并遗留 RUNNING 租约。
+        long batchId = insertBatch();
+        long entityId = ids.incrementAndGet();
+        insertEntity(entityId, "VENDOR-" + entityId, "jun");
+        String group = "interrupt" + entityId;
+        DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
+        SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
+        DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        long submitId = insertSubmission(batchId, entityId, 1);
+        SourceData source = sources.findById(insertSource(batchId, "interrupted", 10)).orElseThrow();
+        batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), "batch_0000001.tar.gz",
+                1, entityId, "jun", group);
+        long taskId = tasks.createPlanned(deliveries.find(submitId).orElseThrow(),
+                new BatchPackage("batch_0000001.tar.gz", group, 1, 10), deliveries.entity(entityId), "sourceDownload");
+        markBatchPlanned(batchId);
+        jdbc.update("UPDATE delivery_submit SET discovery_completed_at=now() WHERE delivery_id=?", submitId);
+        var handler = new com.powerjob.archive.core.pipeline.NodeHandler() {
+            @Override public String type() { return "oss.download"; }
+            @Override public com.powerjob.archive.core.pipeline.NodeResult execute(com.powerjob.archive.core.pipeline.NodeContext context)
+                    throws Exception {
+                Thread.currentThread().interrupt();
+                throw new InterruptedException("Local data-plane interrupted");
+            }
+        };
+        var properties = new com.powerjob.archive.core.config.ArchiveProperties();
+        properties.setWorkerGroup(group);
+        properties.setMaxRunningTasks(1);
+        var projections = new DeliveryProjectionService(jdbc);
+        var execution = new TaskExecutionService(jdbc, transactions, tasks, sources, deliveries,
+                new DeliveryNodeRepository(jdbc, mapper), new DeliveryEventRepository(jdbc, mapper), projections,
+                new PipelineRepository(mapper), new com.powerjob.archive.core.pipeline.PipelineEngine(List.of(handler)),
+                new RetryPolicy(), new BatchReplanService(jdbc, tasks, sources, deliveries, mapper), properties, mapper);
+        try {
+            assertEquals(1, execution.executeNext("interrupt-worker"));
+            assertTrue(Thread.currentThread().isInterrupted());
+        } finally {
+            Thread.interrupted();
+        }
+        DeliveryTask task = tasks.findById(taskId).orElseThrow();
+        assertEquals("RETRY_WAIT", task.executionStatus());
+        assertEquals("InterruptedException", task.lastErrorCode());
+        assertNull(task.leaseOwner());
+        assertNull(task.leaseUntil());
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM delivery_node WHERE task_id=? AND status='FAILED' " +
+                "AND error_code='InterruptedException'", Integer.class, taskId));
     }
 
     private long insertBatch() {

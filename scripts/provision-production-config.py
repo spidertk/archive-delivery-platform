@@ -36,13 +36,16 @@ def main():
         if line and not line.startswith("#") and "=" in line:
             key, value = line.split("=", 1)
             values[key] = value
-    # 非 Secret 生产定位可以安全补齐；已有值不覆盖，初始管理员密码随后由 bootstrap 轮换。
+    # 新部署按 jun-2 的 8 核 16G 补齐资源；已有容量和 Secret 不覆盖，扩容需明确修改受控配置。
     defaults = {
         "COMPOSE_PROJECT_NAME": "archive_delivery_production",
         "COMPOSE_PROFILES": "embedded-ftp",
         "ARCHIVE_WORKER_GROUP": "group1",
-        "ARCHIVE_MAX_RUNNING_TASKS": "4",
-        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "8",
+        "ARCHIVE_MAX_RUNNING_TASKS": "8",
+        "ARCHIVE_WORKER_DB_POOL_SIZE": "4",
+        "ARCHIVE_WORKER_JAVA_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_SERVER_JAVA_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16",
         "ARCHIVE_TASK_LEASE_SECONDS": "900",
         "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
         "ARCHIVE_PG_BIND_ADDRESS": "0.0.0.0",

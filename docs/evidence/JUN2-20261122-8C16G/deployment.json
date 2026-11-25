@@ -1,0 +1,41 @@
+{
+  "at": "2026-11-22T00:01:27.570190+08:00",
+  "preflight": {
+    "activeNodes": 0,
+    "pendingTasks": 0,
+    "pendingPreparation": 0,
+    "migration": 25
+  },
+  "privateBackup": "/root/archive-delivery-backups/jun2-8c16g-20261122-000127",
+  "workerImage": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+  "serverImage": "sha256:63c82de54be071efbc1ecbb29c0fa8c04a7b1c5c071840d1cd319890b9690531",
+  "resources": {
+    "workers": 8,
+    "maxRunningTasks": 8,
+    "downloadThreads": 16,
+    "workerHeapMiB": 512,
+    "serverHeapMiB": 512,
+    "workerDbPoolSize": 4
+  },
+  "fileSha256": {
+    "AGENTS.md": "8d75c60a59e39624d6d13914e88832c08ec843752158088099879a9eabbe998d",
+    "deploy/AGENTS.md": "9e2ff88c35c29e08f55f6a51661b4a01285b7cdf75170ef0b90b0a33e9c5987d",
+    "deploy/docker-compose.production.yml": "7debc35ca48032f2f118d670df1cd6c6dc993e8ddd949d3b28777a80742311da",
+    "deploy/env.production.example": "9dc4a124760265e89e73aa3328990e0c5d0e4c6c31ea7da0f3535a9ae6499c21",
+    "deploy/pipelines/archive-batch-jun.md": "ceb2de22f09485b2a08c3802610a976e8490ee6a0a9a50d74d3da348e3c203c0",
+    "deploy/pipelines/archive-delivery-jun.md": "f3953be594de0ddb33a023347f78a895656201e5207127e0bb17f8325067eb17",
+    "scripts/AGENTS.md": "7721574de254be88bcc47e8ba28cac3dd98b5e190989a430df690f807d0da3d8",
+    "scripts/provision-production-config.py": "508aa1df84c39bc06226dc96d312a2481c1b920927a7c64718d266efeae2e1d3",
+    "docs/AGENTS.md": "5026b2b948d4ebe7d0fe31ad7b8c0a3e5922a884e1a27475f066244703929ccc",
+    "docs/production-operations.md": "16aa2e8d53b4a0d5e0f01155a871b44e4aa3884842a31c52db6875c20726b8ac",
+    "docs/jun-2-capacity.md": "8d3ce4ea77121fc331cf45dea68c8403463af6d7534567efc5921ca7779959c6",
+    "docs/production-jun-runbook.md": "91b295ba51f4907f27d970b20c3a86d339d5a110e678aff6ab6e602394933a4f",
+    "docs/evidence/JUN2-20261122-8C16G/configuration-report.md": "734755a79648ecbf7fa5a87f57e0a9b4fb0009aef0cd32c90451de3cf7732764",
+    "docs/evidence/JUN2-20261122-8C16G/local-checks.log": "2bff5b87e1c921b416a1a51b0c9c8c2a5a22ab1f26f60f99d35ece47d64e3979"
+  },
+  "newDeliveryCreated": false,
+  "externalDeliveryVerification": "NOT_RUN",
+  "poolLimitAppliedAt": "2026-11-22T00:07:19.952655+08:00",
+  "finalizedAt": "2026-11-22T00:10:15.636744+08:00",
+  "localChecks": "PASSED; 3 external verification tests intentionally not executed in local mode"
+}

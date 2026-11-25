@@ -1,0 +1,10 @@
+{
+  "url": "https://www.alibabacloud.com/en/product/oss/pricing?_p_lc=1",
+  "verifiedOn": "2026-11-22",
+  "region": "ap-southeast-1 / Singapore",
+  "storageClass": "Standard Storage(LRS)",
+  "unitPriceUsdPerGbMonth": "0.0170",
+  "billingGbBytes": 1073741824,
+  "fetchedPageSha256": "4ce983b5c0485b2f5f2ba3028d4e66b7237b7d3577a8e630973250cc5923a4e4",
+  "scope": "Current monitored capacity projected for one month; excludes free quota, plans, discounts and non-storage charges."
+}

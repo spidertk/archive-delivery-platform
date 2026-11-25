@@ -1,4 +1,4 @@
-import type { CreateDeliveryBatch, DeliveryTask, SubmitDelivery, Summary, Timeline } from './types'
+import type { CreateDeliveryBatch, DeliveryTask, SubmitDelivery, Summary, Timeline, IngestMonitorStatus, IngestTrend, IngestChange } from './types'
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`/api/v1${path}`, {
@@ -22,3 +22,8 @@ export const submitDelivery = (delivery: SubmitDelivery) =>
   request<{ deliveryId: number }>('/deliveries', { method: 'POST', body: JSON.stringify(delivery) })
 export const createDeliveryBatch = (batch: CreateDeliveryBatch) =>
   request<{ deliveryId: number }>('/delivery-batches', { method: 'POST', body: JSON.stringify(batch) })
+export const getIngestMonitor = () => request<IngestMonitorStatus>('/ingest-sources/monitor')
+export const getIngestTrend = (sourceId: number, hours: number) =>
+  request<IngestTrend[]>(`/ingest-sources/${sourceId}/trend?hours=${hours}`)
+
+export const getIngestChanges = (sourceId: number, hours: number) => request<IngestChange[]>(`/ingest-sources/${sourceId}/changes?hours=${hours}&limit=200`)

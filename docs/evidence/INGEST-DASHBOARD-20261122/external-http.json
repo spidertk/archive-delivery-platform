@@ -1,0 +1,84 @@
+{
+  "collectedAt": "2026-11-22T12:17:23.001014+00:00",
+  "base": "http://8.222.228.188",
+  "checks": [
+    {
+      "path": "/monitor",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 1177
+    },
+    {
+      "path": "/assets/monitor-BXtHMmoI.js",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 82
+    },
+    {
+      "path": "/assets/IngestMonitorPanel-4yK_Ps-i.js",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 96536
+    },
+    {
+      "path": "/assets/IngestMonitorPanel-D21HQ9fG.css",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 6030
+    },
+    {
+      "path": "/api/v1/ingest-sources/monitor",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 3765
+    },
+    {
+      "path": "/api/v1/ingest-sources/monitor",
+      "method": "POST",
+      "httpStatus": 403,
+      "bytes": 146
+    },
+    {
+      "path": "/api/v1/deliveries/3",
+      "method": "GET",
+      "httpStatus": 404,
+      "bytes": 146
+    },
+    {
+      "path": "/api/v1/pipelines",
+      "method": "GET",
+      "httpStatus": 404,
+      "bytes": 146
+    },
+    {
+      "path": "/api/v1/ingest-sources",
+      "method": "GET",
+      "httpStatus": 404,
+      "bytes": 146
+    },
+    {
+      "path": "/actuator/health",
+      "method": "GET",
+      "httpStatus": 404,
+      "bytes": 146
+    },
+    {
+      "path": "/api/v1/deliveries",
+      "method": "POST",
+      "httpStatus": 404,
+      "bytes": 146
+    },
+    {
+      "path": "/api/v1/ingest-sources/1/trend?hours=24",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 725
+    },
+    {
+      "path": "/api/v1/ingest-sources/1/changes?hours=24",
+      "method": "GET",
+      "httpStatus": 200,
+      "bytes": 2
+    }
+  ]
+}

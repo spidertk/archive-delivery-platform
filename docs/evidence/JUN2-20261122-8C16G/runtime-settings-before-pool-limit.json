@@ -1,0 +1,311 @@
+{
+  "at": "2026-11-22T00:05:35.371348+08:00",
+  "cpuCount": 8,
+  "memory": {
+    "MemTotal": 16064147456,
+    "MemAvailable": 10852663296,
+    "SwapTotal": 2147479552,
+    "SwapFree": 2147479552
+  },
+  "disk": {
+    "total": 528046399488,
+    "used": 97955012608,
+    "free": 408405508096
+  },
+  "apiHealth": {
+    "status": "UP"
+  },
+  "dashboardHttp": 200,
+  "assets": {
+    "/assets/index-Bv4TVcxY.js": 200,
+    "/assets/index-ytFs9m4Y.css": 200
+  },
+  "services": [
+    {
+      "service": "archive-server",
+      "image": "sha256:63c82de54be071efbc1ecbb29c0fa8c04a7b1c5c071840d1cd319890b9690531",
+      "running": true,
+      "health": "healthy",
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m"
+      }
+    },
+    {
+      "service": "ftp-june",
+      "image": "sha256:b104f3379827737933ce4c4e04231a392e0390a9fc7696ad37aaa5536d6d32f5",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {}
+    },
+    {
+      "service": "mysql",
+      "image": "sha256:a532724022429812ec797c285c1b540a644c15e248579c6bfdf12a8fbaab4964",
+      "running": true,
+      "health": "healthy",
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {}
+    },
+    {
+      "service": "postgres",
+      "image": "sha256:1d5b02d3a9941fbd52437db4107f8c52d6297dac553ca1e5c299ebb3756b4857",
+      "running": true,
+      "health": "healthy",
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {}
+    },
+    {
+      "service": "powerjob-server",
+      "image": "sha256:2b1f7e86cc500668c39d870b1bfac40dbd795258736de2e4e7142766bf836d73",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {}
+    },
+    {
+      "service": "worker-1",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "ARCHIVE_MAX_RUNNING_TASKS": "8",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.9"
+    },
+    {
+      "service": "worker-2",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_MAX_RUNNING_TASKS": "8"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.8"
+    },
+    {
+      "service": "worker-3",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
+        "ARCHIVE_MAX_RUNNING_TASKS": "8",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16",
+        "ARCHIVE_WORKER_GROUP": "group1"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.10"
+    },
+    {
+      "service": "worker-4",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_MAX_RUNNING_TASKS": "8",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.12"
+    },
+    {
+      "service": "worker-5",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
+        "ARCHIVE_MAX_RUNNING_TASKS": "8"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.11"
+    },
+    {
+      "service": "worker-6",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_MAX_RUNNING_TASKS": "8",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.13"
+    },
+    {
+      "service": "worker-7",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_MAX_RUNNING_TASKS": "8",
+        "ARCHIVE_WORKER_GROUP": "group1"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.7"
+    },
+    {
+      "service": "worker-8",
+      "image": "sha256:0d4328fbbb34d936495eb3dafa0d51ee8fe2464f800a404cfb41a820a24a219e",
+      "running": true,
+      "health": null,
+      "oomKilled": false,
+      "restartCount": 0,
+      "settings": {
+        "ARCHIVE_MAX_RUNNING_TASKS": "8",
+        "ARCHIVE_PREPARATION_DOWNLOAD_THREADS": "16",
+        "JAVA_TOOL_OPTIONS": "-Xms128m -Xmx512m",
+        "ARCHIVE_WORKER_GROUP": "group1",
+        "ARCHIVE_TASK_LEASE_SECONDS": "900",
+        "ARCHIVE_CLEANUP_WORK_AFTER_VERIFY": "true"
+      },
+      "applicationReady": true,
+      "maxHeapBytes": 536870912,
+      "composeAddress": "172.18.0.14"
+    }
+  ],
+  "powerjobWorkers": [
+    {
+      "address": "172.18.0.12:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:26",
+      "tag": "N/A"
+    },
+    {
+      "address": "172.18.0.7:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:24",
+      "tag": "N/A"
+    },
+    {
+      "address": "172.18.0.14:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:24",
+      "tag": "N/A"
+    },
+    {
+      "address": "172.18.0.9:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:25",
+      "tag": "N/A"
+    },
+    {
+      "address": "172.18.0.10:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:24",
+      "tag": "N/A"
+    },
+    {
+      "address": "172.18.0.11:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:24",
+      "tag": "N/A"
+    },
+    {
+      "address": "172.18.0.8:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:25",
+      "tag": "N/A"
+    },
+    {
+      "address": "172.18.0.13:27777",
+      "status": 1,
+      "lastActiveTime": "2026-11-22 00:05:25",
+      "tag": "N/A"
+    }
+  ],
+  "powerjobWorkerCount": 8,
+  "database": {
+    "deliveries": [
+      {
+        "delivery_id": 3,
+        "submission_type": "BATCH_CREATE",
+        "status": "DELIVERED",
+        "pipeline_version_id": 5
+      },
+      {
+        "delivery_id": 4,
+        "submission_type": "BATCH_SUBMIT",
+        "status": "DELIVERED",
+        "pipeline_version_id": 6
+      }
+    ],
+    "tasks": [
+      {
+        "execution_status": "SUCCEEDED",
+        "count": 89
+      }
+    ],
+    "nodeCounts": [
+      {
+        "status": "SUCCEEDED",
+        "count": 534
+      }
+    ],
+    "expiredLeases": 0,
+    "pgDeadlocks": 0,
+    "pgConnections": 96,
+    "pgMaxConnections": "100",
+    "migration": 25
+  },
+  "newDeliveryCreated": false,
+  "externalDeliveryVerification": "NOT_RUN",
+  "throughputBenchmark": "NOT_RUN"
+}

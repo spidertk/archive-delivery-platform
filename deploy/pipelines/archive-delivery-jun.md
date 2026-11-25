@@ -59,7 +59,7 @@
     "assignment": {
       "strategySource": "SUBMIT_TARGETS"
     },
-    "concurrency": {"maxRunningTasks": 4},
+    "concurrency": {"maxRunningTasks": 8},
     "retry": {"maxAttempts": 5}
   },
   "nodes": [

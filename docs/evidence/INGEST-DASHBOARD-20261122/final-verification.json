@@ -1,0 +1,15 @@
+{
+  "collectedAt": "2026-11-22T12:17:55.831563+00:00",
+  "deployedSourceHashesVerified": 45,
+  "nginxConfig": "PASS",
+  "state": {
+    "tables": [
+      "ingest_monitor_notification",
+      "ingest_monitor_record"
+    ],
+    "currentNotificationIds": [
+      13
+    ],
+    "ackCount": 1
+  }
+}

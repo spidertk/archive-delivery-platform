@@ -75,7 +75,9 @@ def transfer(request, verify_only=False):
         with retain_delivery_date(ftp, request) as removed:
             if removed:
                 print("FTP_DATE_CLEANUP " + json.dumps({"deliveryDate": request["deliveryDate"], "removedDates": removed}), flush=True)
-            return transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed, verify_only)
+            if verify_only:
+                return verify_existing(ftp, request, remote_full)
+            return transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed)
     finally:
         try:
             ftp.quit()
@@ -83,7 +85,31 @@ def transfer(request, verify_only=False):
             ftp.close()
 
 
-def transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed, verify_only):
+def verify_existing(ftp, request, remote_full):
+    """独立回验完整读取远端字节，仅累计 size/SHA；不写本地副本或修复任何远端文件。"""
+    try:
+        size = ftp.size(remote_full)
+    except ftplib.error_perm as error:
+        raise ValueError("FTP artifact is missing during read-only verification") from error
+    if size != request["expectedSize"]:
+        raise ValueError("FTP remote exists with different size or SHA")
+    digest = hashlib.sha256()
+    received = 0
+
+    # RETR 回调只处理真实收到的块，截断、错误 SHA 和断连都不能形成成功证据。
+    def consume(block):
+        nonlocal received
+        digest.update(block)
+        received += len(block)
+
+    ftp.retrbinary("RETR " + remote_full, consume, blocksize=1024 * 1024)
+    if received != size or digest.hexdigest() != request["expectedSha256"]:
+        raise ValueError("FTP download size/SHA mismatch")
+    return {"uri": "ftp://" + request["host"] + remote_full,
+            "sizeBytes": received, "sha256": digest.hexdigest(), "removedDates": []}
+
+
+def transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed):
     """一次 RETR 同时完成远端 SHA 与本地回验，只有完整文件才原子发布。"""
     try:
         existing_size = ftp.size(remote_full)
@@ -91,8 +117,6 @@ def transfer_verified(ftp, request, source, remote, root, remote_full, download,
         if not str(error).startswith("550"):
             raise
         existing_size = None
-    if verify_only and existing_size is None:
-        raise ValueError("FTP artifact is missing during read-only verification")
     if existing_size is not None and existing_size != request["expectedSize"]:
         raise ValueError("FTP remote exists with different size or SHA")
     remote_partial = remote_full + ".partial"

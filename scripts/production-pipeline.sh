@@ -16,6 +16,9 @@ CLI_OVERRIDES=(
   "PROD_DELIVERY_BATCH=${PROD_DELIVERY_BATCH:-}"
   "PROD_DELIVERY_DATE=${PROD_DELIVERY_DATE:-}"
   "PROD_SUBMISSION_COUNT=${PROD_SUBMISSION_COUNT:-}"
+  "PROD_DELIVER_ALL=${PROD_DELIVER_ALL:-}"
+  "PROD_BATCH_WAVE_SIZE=${PROD_BATCH_WAVE_SIZE:-}"
+  "PROD_EVICT_VERIFIED_SOURCE_CACHE=${PROD_EVICT_VERIFIED_SOURCE_CACHE:-}"
   "PROD_VERIFY_ALLOW_CLEANED_WORK=${PROD_VERIFY_ALLOW_CLEANED_WORK:-}"
   "PROD_PIPELINE_OBSERVATION_SECONDS=${PROD_PIPELINE_OBSERVATION_SECONDS:-}"
 )
@@ -63,7 +66,9 @@ wait_flyway() {
 run_external_test() {
   local mode="$1" delivery_id="${2:-}" expected_tasks="${4:-$PROD_TARGET_COUNT}"
   docker build -t archive-delivery-maven:test -f deploy/Dockerfile.test deploy >/dev/null
-  docker run --rm --network "$NETWORK" \
+  # 独立验收的目标 OSS 副本只需短期供 FTP 校验读取；有界 tmpfs 避免反复写业务根盘。
+  # jun-2 八路验收最多同时持有八个 100 MiB 包，2 GiB 包含运行临时文件余量，不改变真实 GET/SHA。
+  docker run --rm --network "$NETWORK" --tmpfs /tmp:rw,nosuid,nodev,exec,size=2g \
     -e ARCHIVE_VERIFICATION_PROFILE=production \
     -e ARCHIVE_VERIFY_EXPECTED_TASKS="$expected_tasks" \
     -e ARCHIVE_VERIFY_EXPECTED_ENTITIES="${PROD_ENTITY_COUNT:-1}" \
@@ -78,6 +83,13 @@ run_external_test() {
     "-Dtest=RealExternalVerificationTest#$3" test
 }
 
+if [[ "${PROD_USE_PUBLISHED_PIPELINES:-false}" == "true" ]]; then
+  # 已规划批次的运维续跑复用运行服务和已发布版本，仍要求健康、迁移与真实外部预检。
+  wait_api
+  wait_flyway 29
+  curl -fsSI --connect-timeout 3 --max-time 5 http://127.0.0.1:7700 >/dev/null
+  python3 scripts/pipeline_registry.py materialize archive-delivery-jun
+else
 "${COMPOSE[@]}" up -d postgres
 for attempt in $(seq 1 45); do
   if "${COMPOSE[@]}" exec -T postgres pg_isready -U "$ARCHIVE_DB_USER" -d archive_delivery >/dev/null 2>&1; then break; fi
@@ -89,7 +101,7 @@ if [[ "${PROD_REUSE_SERVICES:-false}" == "true" ]]; then
 else
   "${COMPOSE[@]}" up -d --build --remove-orphans
 fi
-wait_flyway 25
+wait_flyway 29
 "${COMPOSE[@]}" up -d --no-build
 wait_api
 if [[ "${ARCHIVE_BOOTSTRAP_POWERJOB:-true}" == "true" ]]; then
@@ -102,6 +114,7 @@ python3 scripts/pipeline_registry.py materialize archive-batch-jun
 ./scripts/configure-production-pipeline.sh
 python3 scripts/pipeline_registry.py materialize archive-delivery-jun
 ./scripts/configure-production-pipeline.sh
+fi
 run_external_test ARCHIVE_PREFLIGHT "" preflight "$PROD_TARGET_COUNT"
 
 DELIVERY_DATE="${PROD_DELIVERY_DATE:-$(date +%F)}"
@@ -137,6 +150,15 @@ if ((PACKAGES < EXPECTED_TOTAL)); then
   exit 1
 fi
 curl -fsS --connect-timeout 5 --max-time 20 "$API/delivery-batches/$BATCH_ID/packages" -o "$EVIDENCE_DIR/batch-packages-planned.json"
+
+# 全量续跑仍经过同一生产发布和真实预检；逐批外部验收后仅回收本批已验证的可重建副本。
+if [[ "${PROD_DELIVER_ALL:-false}" == "true" ]]; then
+  export ROOT NETWORK DATA_VOLUME
+  export PROD_DELIVERY_DATE="$DELIVERY_DATE" PROD_DELIVERY_BATCH="$DELIVERY_BATCH"
+  export -f run_external_test
+  python3 scripts/production-remaining.py "$BATCH_ID" "$EVIDENCE_DIR/full" --wave-size "${PROD_BATCH_WAVE_SIZE:-100}"
+  exit 0
+fi
 
 for ((SUBMISSION=1; SUBMISSION<=SUBMISSION_COUNT; SUBMISSION++)); do
   SUBMIT_JSON="$EVIDENCE_DIR/submit-${SUBMISSION}.json"

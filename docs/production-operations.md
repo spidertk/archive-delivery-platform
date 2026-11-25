@@ -1,6 +1,21 @@
 # 生产日常运维与排查手册
 
+## 授权后的全量批次续跑
+
+同一批次的试跑独立外部核验通过后，可通过同一生产入口继续消费全部剩余包；真实预检仍必跑，已有提交先检查/核验，不重复 POST。`PROD_DELIVER_ALL=true` 启用此行为，`PROD_BATCH_WAVE_SIZE=100` 限制每轮最多 100 个包，最后的小尾批按实际剩余数提交。每轮内部保持实际 Worker 组的并发配置。
+
+```bash
+PROD_REUSE_SERVICES=true PROD_DELIVER_ALL=true PROD_BATCH_WAVE_SIZE=100 \
+PROD_DELIVERY_BATCH=<原批次号> PROD_DELIVERY_DATE=<原业务日期> \
+PROD_TARGET_COUNT=2 PROD_SUBMISSION_COUNT=1 PROD_OSS_URI='<原OSS URI>' \
+./scripts/production-registry.sh archive-batch-jun
+```
+
+全量续跑在每个提交 DELIVERED 且 SOURCE_GET、TARGET_GET、FTP_GET、SIZE_SHA、NO_PARTIAL 独立验收通过后，仅在可用空间低于 75 GiB 时回收可重建副本：先记录文件白名单，再按实际 size/SHA 回收源缓存和该提交的本地 FTP 回验文件。默认保护所有未交付规划引用；取得用户低磁盘清理授权后，以 `PROD_EVICT_VERIFIED_SOURCE_CACHE=true` 显式允许忽略其他批次未消费的规划引用，保护本批次未交付包和所有已建未完成任务使用的来源。删除前复查引用，新增引用跳过并留证；缺缓存时按原 URI/版本/size/SHA 从 OSS 重新下载，不改事实定位。空间充足时保留缓存。只操作当前 Docker 数据卷内的精确文件，不清空目录，不删除 manifest、最终 OSS/FTP、数据库事实或租约；验收日志摘要、回收计划、实际删除与跳过项保留在 `<evidence>/full/`。BLOCKED、缺失收据、SHA 不符、回收后空间仍不足 30 GiB 或跨组包会停止新增提交。修复后从同入口恢复，禁止伪造收据或将未执行/跳过记作通过。2026-11-25 用户已明确授权本次 jun-2 批次 8 使用该回收方式，优先保障当天交付。
+
 ## 1. 组件和事实源
+
+jun-2 的独立外部验收容器使用最大 2 GiB 的 `/tmp` tmpfs，目标 OSS 临时包留在内存，容器结束即释放。八路、每包不超过 100 MiB 的并行验收预留主机内存；不把 Worker 的 merge/repair 工作目录搬入内存，也不缩减真实 GET 与 SHA 验证。低于规定资源档的机器须先核对内存容量；吞吐变化以完整轮次和独立验收的实际耗时记录。
 
 生产 Compose 文件为 `deploy/docker-compose.production.yml`。PostgreSQL 是业务事实源；PowerJob 只触发准备、节点推进和跨日扫描。交付是否完成必须看 `delivery_submit`、`delivery_task`、`delivery_node` 和外部 OSS/FTP 文件，不能只看容器或 PowerJob 状态。
 
@@ -18,6 +33,8 @@ docker compose -f "$COMPOSE_FILE" --env-file deploy/.env logs --since 1h postgre
 # 仅 embedded-ftp 模式执行：
 docker compose -f "$COMPOSE_FILE" --env-file deploy/.env logs --since 1h ftp-june
 ```
+
+重建 archive-server 后，现有 monitor-web 可能仍使用旧容器 IP；重载 `docker compose -f "$COMPOSE_FILE" --env-file deploy/.env exec -T monitor-web nginx -s reload`，再确认 `/monitor` 和限定 GET 监控查询正常。只读页面返回 502 不能当作业务交付失败或空桶。
 
 不要执行 `docker compose down -v`、`reset-test-data.sh`、`docker system prune -a` 或清空 OSS/FTP 目录。普通停止使用 `docker compose ... stop`，不删除卷。
 
@@ -57,6 +74,8 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env lo
 ```
 
 ## 3. 磁盘不足
+
+repair 若在中断后重试时出现清理 `.archive_repair_*` 的 FileNotFoundError，先查旧 Python 是否仍在运行，不能通过忽略异常或修改业务状态掩盖竞争。ProcessSupport 必须在中断/超时时回收进程子树，repair 必须持任务目录 `.repair.lock` 后才清理残留与封包。确认测试、发布和旧进程退出后，只通过 retry/resume 恢复原任务，再执行完整外部验收；不得改名、补 ID、删除租约或放宽上限。
 
 先确认是容量还是 inode，并区分数据库、Docker 镜像和业务文件：
 
@@ -116,7 +135,7 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env lo
 
 ### 任务一直 READY
 
-检查 worker-1/2/3/4 是否在线、实体和任务是否都是 group1、组内 RUNNING 是否达到 4、任务是否 PAUSED/WAITING/RETRY_WAIT。不要用 SQL 改 lease_owner 或 execution_status。
+检查 worker-1 至 worker-8 是否在线、实体和任务是否都是 group1、组内 RUNNING 是否达到受控配置的 ARCHIVE_MAX_RUNNING_TASKS（jun-2 的 8 核 16G 档为 8）、任务是否 PAUSED/WAITING/RETRY_WAIT。每次广播每个 Worker 只推进一个节点，需要实例数与组内上限同时匹配。不要用 SQL 改 lease_owner 或 execution_status。当前资源档和发布边界见 [jun-2-capacity.md](jun-2-capacity.md)。
 
 ### BLOCKED 后重试
 
@@ -149,7 +168,7 @@ docker compose -f deploy/docker-compose.production.yml --env-file deploy/.env \
 ```
 
 - 升级前备份 PostgreSQL 和 PowerJob MySQL，并记录当前镜像和 PipelineVersion。
-- 当前迁移为 V25 批次基线。已有 V24 的任务来源关系迁入 delivery_batch，最终删除 delivery_mapping 和 metadata_ids；升级失败时停止交付并先排查，不清库。
+- 批次模型为 V25 基线，最新 V29 增加来源监控事实。已有 V24 的任务来源关系迁入 delivery_batch，最终删除 delivery_mapping 和 metadata_ids；升级失败时停止交付并先排查，不清库。
 - 升级先停止新提交并等待 RUNNING 节点结束，再构建启动；不得删除租约或修改历史任务 worker_group。
 - 回退应用版本时保留数据库和外部文件。已发布 PipelineVersion 不可原地修改，新配置必须发布新版本。
 
@@ -175,3 +194,10 @@ find "$FTP_DIR" -maxdepth 1 -type f -name '*.partial' -print
 jun-2 的不可变 FTP 节点显式启用 `cleanupOtherDeliveryDates=true` 时，在每次上传下载前检查并删除直属根目录下其他合法日期目录；当前日期和非日期目录保留。启用要求专属 FTP 根、无符号链接、MLSD 及删除/改名权限，内置 FTP 设置 `FTP_ALLOW_DATE_CLEANUP=true`。同组 Worker 必须共享 `/data/ftp-verify/.retention`，在途传输持共享锁，日期切换取独占锁；日期一旦前进，旧日期重试拒绝清理，需按正常跨日流程处理。独立验收不清理目录。
 
 2026-11-21 的清空 jun-2 FTP 和旧测试流水属于用户一次性授权；必须先确认无 RUNNING、备份业务流水并保存文件清单，不得推广为日常重置。6000 为 jun-2/group1 每轮分配容量，并发仍由机器资源和 Worker 配置限制。
+
+## 来源渠道监控
+
+渠道目录登记、微信群播报和趋势查询见 [ingest-channel-monitor.md](ingest-channel-monitor.md)。最新 V29 只新增观察事实，V25 的批次交付模型不变。监控故障不能作为空桶或交付停止的依据。
+
+
+V29 公网看板通过独立 monitor-web 网关访问 `/monitor`，只代理静态资源与限定 GET 监控查询；管理 API 8080 仍绑定回环。生产明确设置 ARCHIVE_MONITOR_BIND_ADDRESS/PORT 和 ARCHIVE_INGEST_MONITOR_DASHBOARD_URL，并从外部验证页面、资源及拒绝管理/写请求。监控永久表最终仅 record/notification；旧 object/sample 不保留为表或视图。存储预估采用新加坡标准 LRS 官方价，详情与口径见监控文档。

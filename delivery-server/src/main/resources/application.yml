@@ -24,3 +24,13 @@ management:
     web:
       exposure:
         include: health
+archive:
+  ingest-monitor:
+    enabled: ${ARCHIVE_INGEST_MONITOR_ENABLED:false}
+    poll-interval-ms: ${ARCHIVE_INGEST_MONITOR_POLL_INTERVAL_MS:60000}
+    continuous-period: ${ARCHIVE_INGEST_MONITOR_CONTINUOUS_PERIOD:PT30M}
+    report-interval: ${ARCHIVE_INGEST_MONITOR_REPORT_INTERVAL:PT1H}
+    pipeline-code: ${ARCHIVE_INGEST_MONITOR_PIPELINE_CODE:archive-batch}
+    webhook-url: ${ARCHIVE_INGEST_MONITOR_WEBHOOK_URL:}
+    max-objects: ${ARCHIVE_INGEST_MONITOR_MAX_OBJECTS:1000000}
+    dashboard-url: ${ARCHIVE_INGEST_MONITOR_DASHBOARD_URL:}

@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /><title>渠道数据看板</title>
+    <style>body{margin:0;background:#f7faf8;color:#254638;font-family:-apple-system,BlinkMacSystemFont,sans-serif}.boot{max-width:620px;margin:15vh auto;padding:24px}.boot h1{font-size:25px}.boot p{font-size:14px;line-height:1.8;color:#70867a}.boot a{display:inline-block;margin-top:16px;color:#26765b}</style>
+  </head>
+  <body><div id="app"><main class="boot"><h1>渠道数据看板</h1><p id="boot-message">正在加载桶容量、渠道进数与存储预估…</p><a href="/monitor">重新加载</a></main></div>
+    <script>window.addEventListener('error',function(){var m=document.getElementById('boot-message');if(m)m.textContent='页面资源加载失败，请点击重新加载，或稍后重试。';},true);</script>
+    <script type="module" src="/src/monitor-main.ts"></script>
+  </body>
+</html>

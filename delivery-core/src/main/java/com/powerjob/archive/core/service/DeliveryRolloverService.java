@@ -58,6 +58,8 @@ public class DeliveryRolloverService {
     }
 
     private int rollover(long deliveryId, LocalDate expectedDate, LocalDate requestedDate, boolean dueOnly, String operator) {
+        // 跨日也先锁父批次，不能先持有提交/任务锁再等待并发节点投影。
+        projections.lockBatch(deliveryId);
         jdbc.queryForObject("SELECT delivery_id FROM delivery_submit WHERE delivery_id=? FOR UPDATE", Long.class, deliveryId);
         PipelineDefinition pipeline = pipeline(deliveryId);
         String sql = "SELECT task_id FROM delivery_task WHERE delivery_id=? AND execution_status NOT IN('SUCCEEDED','EXPIRED','CANCELLED')";

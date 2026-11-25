@@ -1,0 +1,58 @@
+{
+  "serverAndCoreCommand": "./scripts/maven-test.sh -pl delivery-server -am test",
+  "coreTests": 28,
+  "serverTests": 26,
+  "result": "PASS",
+  "additionalRendererTests": 4,
+  "currentServerSuiteTotal": 27,
+  "frontend": {
+    "command": "npm run test && npm run build",
+    "tests": 3,
+    "result": "PASS"
+  },
+  "suites": [
+    {
+      "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMonitorApiTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.powerjob.archive.server.service.ingestmonitor.OssCostServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.powerjob.archive.server.service.ingestmonitor.OssSourceScannerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.powerjob.archive.server.service.ingestmonitor.WeComNotifierTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMessageRendererTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.powerjob.archive.server.service.ingestmonitor.IngestMonitorIntegrationTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "scope": "Storage CNY arithmetic, total across all monitored capacity, native card totals including quiet channels, component/entry display and typecheck/build. No external OSS/FTP delivery test or forced group message."
+}

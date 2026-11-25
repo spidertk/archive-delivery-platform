@@ -1,0 +1,27 @@
+{
+  "at": "2026-11-22T00:03:05.118471+08:00",
+  "pipelines": [
+    {
+      "pipelineCode": "archive-batch",
+      "previousVersionId": 5,
+      "pipelineVersionId": 7,
+      "version": 4,
+      "status": "PUBLISHED",
+      "definitionSha256": "077d9db193623d908fa13073f02bfd65a5a7e66b2ec271ab051547f1d9d44128",
+      "historicalVersionUnchanged": true,
+      "maxRunningTasks": 8
+    },
+    {
+      "pipelineCode": "archive-delivery",
+      "previousVersionId": 6,
+      "pipelineVersionId": 8,
+      "version": 4,
+      "status": "PUBLISHED",
+      "definitionSha256": "74032a9ea7383ab0ab3bb8f22ba2d4bef81bacbfe5ee093ec27bf9ed3c43636a",
+      "historicalVersionUnchanged": true,
+      "maxRunningTasks": 8
+    }
+  ],
+  "newDeliveryCreated": false,
+  "externalDeliveryVerification": "NOT_RUN"
+}

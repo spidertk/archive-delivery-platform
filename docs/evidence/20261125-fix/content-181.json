@@ -1,0 +1,49 @@
+{
+  "status": "PASSED",
+  "schemaVersion": 1,
+  "entityCode": "jun-2",
+  "sources": [
+    {
+      "fileName": "001afc6a2ceeeddc9e3a39f69f00aab918f1bf069eeb9f4b17b7f19e6ac5e512-part0001-of0001.tar.gz",
+      "compressedBytes": 2730366,
+      "sha256": "a32878fc70068068a4b7d6afb25a06575ec87850b20a57e1bd288335804a1ba6",
+      "requestCount": 13,
+      "fileCount": 39,
+      "contentBytes": 8262034
+    },
+    {
+      "fileName": "0025aab41ea64d595a29d9ed074423092a6273e48cadb188f8befedb1ad0afd1-part0001-of0001.tar.gz",
+      "compressedBytes": 20808858,
+      "sha256": "a50c07bbc8a5e0854436c6d20388e966ce7134ccfaaad3a9fbd8082fda6e6ad1",
+      "requestCount": 9,
+      "fileCount": 27,
+      "contentBytes": 56820427
+    },
+    {
+      "fileName": "003acb90b030a2cc7d3b0ff13147e374d0f96ecaa52d595ff17bdc68155e0eab-part0001-of0001.tar.gz",
+      "compressedBytes": 53116990,
+      "sha256": "162034f529d29ad6d26f346f7771d0249dd2f33ca3ebc85dbfa1954b590add71",
+      "requestCount": 126,
+      "fileCount": 378,
+      "contentBytes": 101378321
+    }
+  ],
+  "sourceArchiveCount": 3,
+  "requestCount": 148,
+  "sourceFileCount": 444,
+  "artifactFileCount": 444,
+  "sourceContentBytes": 166460782,
+  "artifactContentBytes": 166461988,
+  "artifact": {
+    "fileName": "batch_0000001.tar.gz",
+    "compressedBytes": 71233013,
+    "sha256": "e8e76cbc342569c82d5c8eb8eab4a593e7aabb6742d13173d41887bd3a50ff97"
+  },
+  "preservedContentSha256": "29aa9398bbba9c07c7dad48b7639c7649c3c9171ebba23b98bc49248d56495ad",
+  "directoryNamesPreserved": true,
+  "requestIdsPreserved": true,
+  "requestTimesNormalized": true,
+  "nonMetadataContentPreserved": true,
+  "deliveryId": 9,
+  "taskId": 181
+}

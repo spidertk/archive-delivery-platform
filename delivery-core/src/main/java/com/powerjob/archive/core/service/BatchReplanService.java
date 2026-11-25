@@ -55,7 +55,7 @@ public class BatchReplanService {
         String previous = jdbc.queryForObject("SELECT max(new_file_name) FROM delivery_batch WHERE batch_delivery_id=?",
                 String.class, submit.batchDeliveryId());
         int sequence = Integer.parseInt(previous.replaceFirst("^batch_", "").replaceFirst("\\.tar\\.gz$", "")) + 1;
-        String newFileName = String.format("batch_%05d.tar.gz", sequence);
+        String newFileName = String.format("batch_%07d.tar.gz", sequence);
         List<SourceData> moved = taskSources.subList(taskSources.size() - moveCount, taskSources.size());
         for (int index = 0; index < moved.size(); index++) {
             SourceData source = moved.get(index);
