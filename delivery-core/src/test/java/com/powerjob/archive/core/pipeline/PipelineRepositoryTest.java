@@ -26,6 +26,24 @@ class PipelineRepositoryTest {
         assertThrows(IllegalArgumentException.class, definition::validateProduction);
     }
 
+    @Test void sharedFtpNameRequiresOssUploadDuringRollover() throws Exception {
+        // 跨日会重新领号，重新执行 OSS 上传才能让新 FTP 名称仍对应同名对象。
+        String json = """
+                {"pipelineCode":"archive-delivery","version":1,
+                 "nodeDefinitions":{"oss.upload":{"enabled":true},"manifest.qualify":{"enabled":true}},
+                 "config":{"assignment":{"strategySource":"SUBMIT_TARGETS"},"rolloverStartNode":"%s"},
+                 "nodes":[{"id":"last","type":"manifest.qualify","next":null,"config":{}},
+                          {"id":"upload","type":"oss.upload","next":"last","config":{
+                            "endpoint":"https://oss.example","bucket":"bucket","accessKeyId":"access",
+                            "accessKeySecret":"secret","useFtpFileName":true,
+                            "prefix":"{deliveryDate}/{providerCode}/{entityCode}"}}]}
+                """;
+        var valid = repository.read(mapper.readTree(json.formatted("upload")));
+        valid.validateProduction();
+        var invalid = repository.read(mapper.readTree(json.formatted("last")));
+        assertThrows(IllegalArgumentException.class, invalid::validateProduction);
+    }
+
     @Test void redundantRuleAndSelectionConfigurationIsRejected() throws Exception {
         String prefix = "{\"pipelineCode\":\"archive-delivery\",\"version\":1,\"nodeDefinitions\":{},";
         String suffix = "\"nodes\":[]}";

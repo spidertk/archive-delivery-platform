@@ -38,3 +38,5 @@ skipped、fake、PowerJob 绿色实例和数据库直写均不算交付通过。
 生产入口的独立验收容器使用上限 2 GiB 的 `/tmp` tmpfs，容纳八路各不超过 100 MiB 的目标 OSS 临时副本，降低根盘 IO；TARGET_GET 仍真实完整下载、核对 size/SHA，再由 FTP 只读独立回验。Worker 节点工作目录和成品位置不变，性能提升以本次完整验收耗时实测为准。
 
 当用户授权低磁盘优先保障当日交付时，生产入口显式启用 PROD_EVICT_VERIFIED_SOURCE_CACHE=true，可回收本次已验收、无已建未完成任务引用的源缓存，即使旧批次还有未消费规划引用；本批次未交付来源仍保护。Worker 缺缓存按原事实回退真实 OSS，size/SHA 约束不变，回收不修改 locator 或租约。
+
+新版 OSS 上传启用 useFtpFileName 时，真实外部验收同时核对目标 OSS 与 FTP 文件名和实际 size/SHA。历史验收按各自 PipelineVersion 执行。

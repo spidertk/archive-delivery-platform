@@ -84,3 +84,5 @@ cd web && npm ci && npm run test && npm run build
 来源监控不改变 V25 批次交付血缘。最新 V29 仅保留 ingest_monitor_record 与 ingest_monitor_notification；record_type=OBJECT 保存当前快照，SAMPLE 保存增量与趋势，以 CHECK 和部分索引隔离。V29 直接删除旧 object 表、将 sample 重命名，不保留旧表或兼容视图；状态仍复用 ingest_source。渠道由桶+第一级目录推导，同渠道登记范围聚合去重且扫描范围保持原 URI。业务集中在 delivery-server/service/ingestmonitor。原生群卡片链接受控 IP 的 /monitor 只读页面，页面展示存量、基线后累计进数、北京时间今日进数与真实成功上传的目标桶；不把存量当成传输量。存储费只按新加坡标准 LRS 官方价 US$0.017/计费GB/月估算，按有日期的参考汇率统一折算人民币，顶部明确标记当前总存储量存放一个月的预估总费用；标明预估与监控范围，不计算下载费。公网入口只放行看板、静态资源与限定 GET 监控查询；管理 API 保持回环。每日一次、持续进数 30 分钟后主动及小时非空增量规则保持，只列实际进数目录。
 
 本次用户授权的群机器人 webhook 是通知专用运行时 Secret，仅保存在 API 受控 .env；OSS/FTP 凭据仍只属于已发布 Pipeline 节点。所有 Secret 均不得进入来源表、观察事实、日志、看板、普通 API、证据或 CI。生产通知只有企业微信 errcode=0 才算成功，不以 HTTP 200 或 outbox 入队代替。
+
+V30 为 FTP 实体与交付日原子预留序号。启用 useFtpFileName 的 PipelineVersion 在 OSS 与 FTP 使用同一个 ftp_file_name，OSS 前缀按日期、厂商与交付实体隔离。内部来源血缘保持 canonical new_file_name。

@@ -43,3 +43,5 @@ python3 scripts/pipeline_registry.py validate
 ## 日期保留验证
 
 local-pipeline.sh 发现并运行全部 nodes/python/test_*.py，包括 FTP 日期保留、一次回验、跨日期锁和失败清理；仍不访问真实业务 FTP/OSS。本次 jun-2 旧测试流水清理仅按 2026-11-21 明确授权执行，先备份和核对无 RUNNING，不新增自动清库入口。
+
+生产登记复用现有服务和部署新服务时都要求 Flyway V30，以提供 FTP 实体日序号。

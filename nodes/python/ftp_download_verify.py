@@ -6,6 +6,7 @@ import os
 import sys
 from pathlib import Path, PurePosixPath
 from ftp_retention import retain_delivery_date
+from ftp_capacity import reserve_capacity
 
 REQUIRED = {"host", "port", "username", "password", "rootPath", "remotePath", "sourcePath",
             "downloadPath", "expectedSize", "expectedSha256", "cleanupOtherDeliveryDates", "deliveryDate", "retentionRoot"}
@@ -77,7 +78,11 @@ def transfer(request, verify_only=False):
                 print("FTP_DATE_CLEANUP " + json.dumps({"deliveryDate": request["deliveryDate"], "removedDates": removed}), flush=True)
             if verify_only:
                 return verify_existing(ftp, request, remote_full)
-            return transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed)
+            # 容量不足是等待事实，不能删除历史文件腾位置或消耗普通错误重试次数。
+            with reserve_capacity(ftp, request) as granted:
+                if not granted:
+                    return {"status": "CAPACITY_WAIT", "retryAfterSeconds": 60}
+                return transfer_verified(ftp, request, source, remote, root, remote_full, download, partial, removed)
     finally:
         try:
             ftp.quit()

@@ -10,7 +10,7 @@ public record DeliveryTask(
         long sizeBytes, long tokenCount, JsonNode artifacts,
         String currentNodeId, String executionStatus, String leaseOwner,
         OffsetDateTime leaseUntil, long fence, int retryCount, OffsetDateTime nextRetryAt,
-        String lastErrorCode, OffsetDateTime completedAt) {
+        String lastErrorCode, OffsetDateTime completedAt, String ftpFileName, Long ftpSequence) {
 
     public String originalFileName() {
         if (artifacts != null && artifacts.isArray() && !artifacts.isEmpty()) {

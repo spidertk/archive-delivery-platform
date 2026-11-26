@@ -40,7 +40,7 @@ class OssDownloadNodeTest {
         FileTransferService files = new FileTransferService();
         OssTransferService transfers = mock(OssTransferService.class);
         PipelineNodeConfig configs = mock(PipelineNodeConfig.class);
-        when(configs.oss(any(), anyBoolean())).thenReturn(new OssNodeConfig("https://oss.example", null, null, "ak", "sk"));
+        when(configs.oss(any(), anyBoolean())).thenReturn(new OssNodeConfig("https://oss.example", null, null, "ak", "sk", false));
         ArchiveProperties properties = new ArchiveProperties();
         properties.setWorkRoot(temp.toString());
         OssDownloadNode handler = new OssDownloadNode(transfers, files, configs, properties, mapper);
@@ -57,7 +57,7 @@ class OssDownloadNodeTest {
         DeliveryTask task = new DeliveryTask(7, 8, 10, "jun", "group1",
                 LocalDate.parse("2026-11-09"), OffsetDateTime.parse("2026-11-09T18:00:00+08:00"),
                 "batch_0000001.tar.gz", size, size, null, "sourceDownload", "READY",
-                null, null, 0, 0, null, null, null);
+                null, null, 0, 0, null, null, null, "batch_0000001.tar.gz", 1L);
         DeliveryEntity entity = new DeliveryEntity(10, "alibaba", "jun", "Local", "FTP", "entity1", "group1", null, true);
         NodeDefinition definition = new NodeDefinition("sourceDownload", "oss.download", "ACQUIRE", "Download", "mergePackages", Map.of());
         NodeDefinition next = new NodeDefinition("mergePackages", "package.merge", "MERGE", "Merge", null, Map.of());

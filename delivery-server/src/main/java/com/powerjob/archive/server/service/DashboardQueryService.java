@@ -129,7 +129,7 @@ public class DashboardQueryService {
         return "SELECT t.task_id AS \"taskId\",t.delivery_id AS \"deliveryId\"," +
                 "t.delivery_entity_id AS \"deliveryEntityId\",t.entity_code AS \"entityCode\",t.worker_group AS \"workerGroup\",e.vendor_code AS \"vendorCode\"," +
                 "e.entity_name AS \"entityName\",e.account_name AS \"accountName\",t.delivery_date AS \"deliveryDate\"," +
-                "t.cutoff_at AS \"cutoffAt\",t.new_file_name AS \"newFileName\",t.size_bytes AS \"sizeBytes\"," +
+                "t.cutoff_at AS \"cutoffAt\",t.new_file_name AS \"newFileName\",t.ftp_file_name AS \"ftpFileName\",t.ftp_sequence AS \"ftpSequence\",t.size_bytes AS \"sizeBytes\"," +
                 "t.token_count AS \"tokenCount\",(SELECT repair_node.output_locator->>'sha256' FROM delivery_node repair_node " +
                 "WHERE repair_node.task_id=t.task_id AND repair_node.node_type='python.repair' AND repair_node.status='SUCCEEDED' " +
                 "ORDER BY repair_node.attempt DESC LIMIT 1) AS sha256," +

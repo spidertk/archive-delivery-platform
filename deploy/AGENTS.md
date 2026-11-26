@@ -42,3 +42,5 @@ archive-batch 的 jun-2/group1 每轮 maxPackagesPerRound=6000，属于分配容
 /monitor 转发独立 monitor.html，不转发完整管理台入口；开启 JS/CSS/JSON gzip，降低手机首屏下载量。页面 no-store，静态资源使用内容哈希。访问日志只记录 URI 路径，不保存企业微信附加的确认查询参数。
 
 V29 合并快照和采样，最终仅两张表；旧 object 迁入 record 后删除，不保留旧表/视图。发布前备份来源/监控和镜像、配置，确认真实 LIST 成功且无在途交付，仅重建 API 和只读网关。V26→V28 已发布迁移不改写。存储预估价随源码注明官方链接、核对日期和地域，不复制云账号凭据或下载计价。
+
+新版 archive-delivery 的 OSS prefix 包含日期及厂商、实体目录，并使用任务已分配的 FTP 日序号。以新的不可变 PipelineVersion 发布，黄金用例增加 OSS_FTP_SAME_NAME。

@@ -41,7 +41,7 @@
     },
     "oss.upload": {
       "enabled": true,
-      "configSchema": {"type": "object", "required": ["endpoint", "bucket", "accessKeyId", "accessKeySecret"]},
+      "configSchema": {"type": "object", "required": ["endpoint", "bucket", "accessKeyId", "accessKeySecret"], "properties": {"useFtpFileName": {"type": "boolean", "description": "使用任务已分配的 FTP 实体日序号作为 OSS 对象名，前缀按日期、厂商和实体隔离"}}},
       "inputContract": {"type": "object"},
       "outputContract": {"type": "object"}
     },
@@ -108,7 +108,8 @@
       "config": {
         "endpoint": "https://oss-ap-southeast-1-internal.aliyuncs.com",
         "bucket": "sg-storage-20261013-6vmlk",
-        "prefix": "{accountName}/{deliveryDate}-{deliveryBatch}-{accountName}",
+        "prefix": "{accountName}/{deliveryDate}-{deliveryBatch}-{accountName}/{providerCode}/{entityCode}",
+        "useFtpFileName": true,
         "accessKeyId": "replace-access-key",
         "accessKeySecret": "replace-secret"
       }
@@ -142,7 +143,7 @@
   "caseId": "archive-delivery-jun",
   "pipelineCode": "archive-delivery",
   "ossUri": "oss://sg-storage-20261013-6vmlk/internal/gpt-sse-wire-fix-20261112-v1/products/",
-  "description": "从 archive-batch 已规划的同名单元消费真实来源包，独立核对源、目标 OSS 和 FTP 文件事实。",
+  "description": "消费 archive-batch 预规划的真实来源包，独立核对两组 OSS 与 FTP 成品同名及实际文件事实。",
   "targets": [
     {
       "targetCount": 100,
@@ -168,7 +169,7 @@
       "oss.upload",
       "ftp.download-verify"
     ],
-    "externalChecks": ["SOURCE_GET", "TARGET_GET", "FTP_GET", "SIZE_SHA", "NO_PARTIAL"]
+    "externalChecks": ["SOURCE_GET", "TARGET_GET", "FTP_GET", "SIZE_SHA", "NO_PARTIAL", "OSS_FTP_SAME_NAME"]
   }
 }
 ```

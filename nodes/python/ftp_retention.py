@@ -7,6 +7,18 @@ import re
 from contextlib import contextmanager
 from pathlib import Path, PurePosixPath
 
+# 当前交付业务固定使用北京时间；清理时窗独立于传输，避免跨日后用户尚未下载即删除旧目录。
+BUSINESS_TIMEZONE = datetime.timezone(datetime.timedelta(hours=8), "Asia/Shanghai")
+CLEANUP_NOT_BEFORE = datetime.time(7)
+
+
+def cleanup_window_open(now=None):
+    """按实际北京时间判断清理时窗；测试可传入有时区的时刻，不接受依赖主机本地时区的输入。"""
+    current = now or datetime.datetime.now(BUSINESS_TIMEZONE)
+    if current.utcoffset() is None:
+        raise ValueError("FTP retention clock must be timezone-aware")
+    return current.astimezone(BUSINESS_TIMEZONE).time() >= CLEANUP_NOT_BEFORE
+
 
 def date_name(value):
     """只识别规范日期目录，其他名称永远不进入自动删除范围。"""
@@ -80,15 +92,17 @@ def retain_delivery_date(ftp, request):
         previous = state.read_text() if state.exists() else ""
         if previous and (not date_name(previous) or previous > delivery_date):
             raise ValueError("FTP retention refuses an older delivery date after a newer date")
-        obsolete = other_date_directories(ftp, request["rootPath"], delivery_date)
+        obsolete = other_date_directories(ftp, request["rootPath"], delivery_date) if cleanup_window_open() else []
         if previous != delivery_date or obsolete:
             fcntl.flock(lock, fcntl.LOCK_UN)
             fcntl.flock(lock, fcntl.LOCK_EX)
             previous = state.read_text() if state.exists() else ""
             if previous and (not date_name(previous) or previous > delivery_date):
                 raise ValueError("FTP retention refuses an older delivery date after a newer date")
+            # 07:00 前仍前移日期水位阻止旧任务回退，但保留旧目录；取得独占锁后重判实际时窗。
             removed = []
-            for name in other_date_directories(ftp, request["rootPath"], delivery_date):
+            obsolete = other_date_directories(ftp, request["rootPath"], delivery_date) if cleanup_window_open() else []
+            for name in obsolete:
                 remove_directory(ftp, str(PurePosixPath(request["rootPath"]) / name))
                 removed.append(name)
             if previous != delivery_date:

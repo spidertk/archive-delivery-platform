@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PipelineNodeConfigTest {
     private final PipelineNodeConfig configs = new PipelineNodeConfig(new ObjectMapper());
@@ -23,6 +25,26 @@ class PipelineNodeConfigTest {
         NodeDefinition node = new NodeDefinition("ftp", "ftp.download-verify", "VERIFY", "ftp", null,
                 Map.of("deliveryEntityFrom", "TASK", "ftpCredential", Map.of("entity1", "replace-password")));
         assertThrows(IllegalArgumentException.class, () -> configs.ftp(node));
+    }
+
+    @Test void sharedFtpNameRequiresAnExplicitModeAndIndependentOssNamespaces() {
+        // 跨实体同序号与跨日编号重置都可产生同名文件，发布时必须拒绝缺少隔离的模板。
+        var fields = new java.util.HashMap<String, Object>(Map.of("endpoint", "https://oss.example", "bucket", "bucket",
+                "accessKeyId", "access", "accessKeySecret", "secret"));
+        for (String prefix : new String[]{"{providerCode}/{entityCode}", "{deliveryDate}/{entityCode}",
+                "{deliveryDate}/{providerCode}/{entityCode}-{accountName}"}) {
+            fields.put("prefix", prefix);
+            fields.put("useFtpFileName", true);
+            NodeDefinition unsafe = new NodeDefinition("target", "oss.upload", "TRANSFER", "target", null, fields);
+            assertThrows(IllegalArgumentException.class, () -> configs.oss(unsafe, false));
+        }
+        fields.put("prefix", "{deliveryDate}/{providerCode}/{entityCode}");
+        NodeDefinition target = new NodeDefinition("target", "oss.upload", "TRANSFER", "target", null, fields);
+        assertTrue(configs.oss(target, false).useFtpFileName());
+        fields.put("useFtpFileName", "true");
+        assertThrows(IllegalArgumentException.class, () -> configs.oss(target, false));
+        fields.remove("useFtpFileName");
+        assertFalse(configs.oss(target, false).useFtpFileName());
     }
 
     @Test void pythonScriptsResolveBelowTheFixedMountedDirectory() {

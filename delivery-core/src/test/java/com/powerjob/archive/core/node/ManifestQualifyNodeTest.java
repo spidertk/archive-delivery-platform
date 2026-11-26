@@ -78,6 +78,6 @@ class ManifestQualifyNodeTest {
     private static DeliveryTask task(ArrayNode artifacts, long size) {
         return new DeliveryTask(7, 8, 10, "jun", "group1", LocalDate.parse("2026-11-09"),
                 OffsetDateTime.parse("2026-11-09T18:00:00+08:00"), "batch_0000001.tar.gz", size, size,
-                artifacts, "qualify", "RUNNING", "worker", null, 1, 0, null, null, null);
+                artifacts, "qualify", "RUNNING", "worker", null, 1, 0, null, null, null, "batch_0000001.tar.gz", 1L);
     }
 }

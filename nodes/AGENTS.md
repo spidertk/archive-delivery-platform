@@ -31,3 +31,5 @@ Java 中断或超时必须回收数据面进程子树并有界等待退出；rep
 merge 通过 gzip/TAR 流完整读取拼接 gzip 成员和拼接 TAR 段，只跨越合法结束零块，坏头、截断和非请求顶层文件必须失败；每个源包只解包一次。最终协议校验按 TAR 流建立直属文件与 metadata 索引，禁止 getmembers 后逐请求 gzip 回卷。保留独立的原始目录名和 requestId/request_id 字段及值；requestTime 保留源日期和时分秒，格式为 `yyyy-MM-dd HH:mm:ss`。缺失或冲突 ID、重复目录、非法时间、空包、重复文件、路径穿越和链接均拒绝交付。
 
 生产独立 FTP `--verify-only` 流式读取真实远端字节并核对 size/SHA，不产生第二份本地包；正常交付节点仍执行 STOR/RETR 和本地原子封存。
+
+FTP 用任务分配的渠道文件名上传和回验。容量和日期清理由实体专用根与同机 retention 锁约束。

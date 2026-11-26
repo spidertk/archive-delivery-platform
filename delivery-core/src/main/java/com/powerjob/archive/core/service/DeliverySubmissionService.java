@@ -47,8 +47,10 @@ public class DeliverySubmissionService {
                 throw new IdempotencyConflictException("OSS batch planning must complete before delivery submission");
             }
             String batchSource = jdbc.queryForObject("SELECT oss_uri FROM ingest_source WHERE source_id=?", String.class, batch.sourceId());
-            if (!batchSource.equals(command.ossUri()) || !batch.deliveryDate().equals(command.deliveryDate())) {
-                throw new IllegalArgumentException("ossUri and deliveryDate must match the created delivery batch");
+            // 来源和规划血缘不变；原截止后允许按后续交付日消费剩余包，禁止提前切日或回退日期。
+            if (!batchSource.equals(command.ossUri()) || command.deliveryDate().isBefore(batch.deliveryDate())
+                    || (command.deliveryDate().isAfter(batch.deliveryDate()) && batch.cutoffAt().isAfter(OffsetDateTime.now()))) {
+                throw new IllegalArgumentException("Source must match the batch; deliveryDate may advance only after its cutoff");
             }
             Resolved resolved = resolve(command);
             for (TargetCommand target : command.targets()) {

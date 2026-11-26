@@ -37,3 +37,5 @@ V26→V28 为已发布的历史迁移。最新 V29 将 object 快照合入原 sa
 ## FTP 与容量边界
 
 FtpNodeConfig.cleanupOtherDeliveryDates 由不可变节点控制，Java 传入任务 deliveryDate 与同机共享 retentionRoot。FTP 上传用 .partial，完整下载 size/SHA 核验后原子改名；旧日期重试不得清理较新日期。claimNext 在同组事务 advisory lock 内检查机器容量并认领，避免多个 Worker 并发超额；锁不替代租约和 fence。
+
+V30 每个 FTP 实体每天独立累计 ftp_file_name 和 ftp_sequence。OSS 上传的 useFtpFileName 要求日期、厂商及实体隔离，跨日重跑 OSS 上传。历史不可变版本沿用原对象键，来源关系与本地包仍使用 canonical 名。

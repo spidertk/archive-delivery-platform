@@ -86,7 +86,7 @@ run_external_test() {
 if [[ "${PROD_USE_PUBLISHED_PIPELINES:-false}" == "true" ]]; then
   # 已规划批次的运维续跑复用运行服务和已发布版本，仍要求健康、迁移与真实外部预检。
   wait_api
-  wait_flyway 29
+  wait_flyway 30
   curl -fsSI --connect-timeout 3 --max-time 5 http://127.0.0.1:7700 >/dev/null
   python3 scripts/pipeline_registry.py materialize archive-delivery-jun
 else
@@ -101,7 +101,7 @@ if [[ "${PROD_REUSE_SERVICES:-false}" == "true" ]]; then
 else
   "${COMPOSE[@]}" up -d --build --remove-orphans
 fi
-wait_flyway 29
+wait_flyway 30
 "${COMPOSE[@]}" up -d --no-build
 wait_api
 if [[ "${ARCHIVE_BOOTSTRAP_POWERJOB:-true}" == "true" ]]; then

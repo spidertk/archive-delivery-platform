@@ -201,3 +201,7 @@ jun-2 的不可变 FTP 节点显式启用 `cleanupOtherDeliveryDates=true` 时�
 
 
 V29 公网看板通过独立 monitor-web 网关访问 `/monitor`，只代理静态资源与限定 GET 监控查询；管理 API 8080 仍绑定回环。生产明确设置 ARCHIVE_MONITOR_BIND_ADDRESS/PORT 和 ARCHIVE_INGEST_MONITOR_DASHBOARD_URL，并从外部验证页面、资源及拒绝管理/写请求。监控永久表最终仅 record/notification；旧 object/sample 不保留为表或视图。存储预估采用新加坡标准 LRS 官方价，详情与口径见监控文档。
+
+## OSS 与 FTP 成品同名
+
+新版 archive-delivery 通过 `useFtpFileName` 使用任务分配的同一外部文件名。OSS prefix 以日期、厂商和交付实体分区。跨日按新日期分配序号并重跑 OSS 上传，独立验收按实际对象 URI 和 FTP 路径校验名称与 size/SHA。历史不可变版本保留原路径算法。

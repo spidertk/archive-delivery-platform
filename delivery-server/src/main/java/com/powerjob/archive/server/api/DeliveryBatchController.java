@@ -1,6 +1,7 @@
 package com.powerjob.archive.server.api;
 
 import com.powerjob.archive.core.service.DeliveryBatchService;
+import com.powerjob.archive.core.service.BatchRedistributionService;
 import com.powerjob.archive.core.service.DeliverySubmissionService;
 import com.powerjob.archive.core.service.IdempotencyConflictException;
 import com.powerjob.archive.server.service.DashboardQueryService;
@@ -28,10 +29,12 @@ import java.util.Map;
 public class DeliveryBatchController {
     private final DeliveryBatchService batches;
     private final DashboardQueryService dashboard;
+    private final BatchRedistributionService redistribution;
 
-    public DeliveryBatchController(DeliveryBatchService batches, DashboardQueryService dashboard) {
+    public DeliveryBatchController(DeliveryBatchService batches, DashboardQueryService dashboard, BatchRedistributionService redistribution) {
         this.batches = batches;
         this.dashboard = dashboard;
+        this.redistribution = redistribution;
     }
 
     @PostMapping
@@ -39,6 +42,11 @@ public class DeliveryBatchController {
     public DeliverySubmissionService.Submission create(@Valid @RequestBody CreateBatchRequest request) {
         return batches.create(new DeliveryBatchService.BatchCommand(request.ossUri(), request.pipelineCode(),
                 request.deliveryDate(), request.deliveryBatch()));
+    }
+
+    @PostMapping("/{deliveryId}/redistribute")
+    public Map<String,Object> redistribute(@PathVariable long deliveryId, @RequestBody BatchRedistributionService.Command request) {
+        return redistribution.redistribute(deliveryId,request);
     }
 
     @GetMapping("/{deliveryId}")

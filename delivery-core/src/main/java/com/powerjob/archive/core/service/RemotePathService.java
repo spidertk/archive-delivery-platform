@@ -8,9 +8,11 @@ import java.util.Map;
 
 @Service
 public class RemotePathService {
-    /** 模板支持厂商、实体业务账户和批次路径；普通前缀保留本地验收的隔离层级。 */
-    public String objectKey(String configuredPrefix, DeliveryTask task, String vendorCode, String accountName, String deliveryBatch) {
-        validatePackageName(task.newFileName());
+    /** 上传节点按不可变版本选择批次包名或已分配的 FTP 日序号名；路径继续隔离实体及交付日。 */
+    public String objectKey(String configuredPrefix, boolean useFtpFileName, DeliveryTask task,
+                            String vendorCode, String accountName, String deliveryBatch) {
+        String fileName = useFtpFileName ? task.ftpFileName() : task.newFileName();
+        validatePackageName(fileName);
         String prefix = configuredPrefix == null ? "" : configuredPrefix.replaceAll("^/+|/+$", "");
         boolean templated = prefix.contains("{");
         validateSegment(deliveryBatch, "deliveryBatch");
@@ -18,14 +20,14 @@ public class RemotePathService {
                 : (prefix.isBlank() ? "" : prefix + "/") + deliveryBatch + "/" + task.deliveryId()
                 + "/entity-" + task.deliveryEntityId() + "/" + task.deliveryDate();
         validateRelative(directory);
-        return directory.isBlank() ? task.newFileName() : directory + "/" + task.newFileName();
+        return directory.isBlank() ? fileName : directory + "/" + fileName;
     }
 
     public String ftpRelativePath(String template, DeliveryTask task, String vendorCode, String accountName, String deliveryBatch) {
-        validatePackageName(task.newFileName());
+        validatePackageName(task.ftpFileName());
         String directory = expand(template, task, vendorCode, accountName, deliveryBatch);
         validateRelative(directory);
-        return directory + "/" + task.newFileName();
+        return directory + "/" + task.ftpFileName();
     }
 
     private String expand(String template, DeliveryTask task, String vendorCode, String accountName, String deliveryBatch) {

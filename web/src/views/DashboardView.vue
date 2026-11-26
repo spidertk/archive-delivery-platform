@@ -40,7 +40,8 @@
         <el-table-column prop="entityCode" label="实体" width="120" />
         <el-table-column prop="vendorCode" label="厂商" width="140" />
         <el-table-column prop="workerGroup" label="执行组" width="100" />
-        <el-table-column prop="newFileName" label="产物" min-width="150" />
+        <el-table-column prop="newFileName" label="批次包" min-width="150" />
+        <el-table-column prop="ftpFileName" label="FTP 包名" min-width="150" />
         <el-table-column prop="deliveryDate" label="交付日" width="110" />
         <el-table-column prop="stageCode" label="Pipeline 阶段" width="130" />
         <el-table-column prop="executionStatus" label="执行状态" width="120" />

@@ -10,6 +10,7 @@ import com.powerjob.archive.core.domain.SourceData;
 import com.powerjob.archive.core.domain.WorkerGroups;
 import com.powerjob.archive.core.pipeline.SourceDataPatch;
 import com.powerjob.archive.core.service.RetryPolicy;
+import com.powerjob.archive.core.service.FtpFileNameAllocator;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
@@ -25,6 +26,7 @@ public class DeliveryTaskRepository {
     private final TransactionTemplate transactions;
     private final DeliveryBatchRepository batches;
     private final SourceDataRepository sources;
+    private final FtpFileNameAllocator ftpNames;
     private final RowMapper<DeliveryTask> mapper = (rs, n) -> new DeliveryTask(
             rs.getLong("task_id"), rs.getLong("delivery_id"), rs.getLong("delivery_entity_id"),
             rs.getString("entity_code"), rs.getString("worker_group"),
@@ -34,40 +36,45 @@ public class DeliveryTaskRepository {
             rs.getString("current_node_id"), rs.getString("execution_status"), rs.getString("lease_owner"),
             rs.getObject("lease_until", java.time.OffsetDateTime.class), rs.getLong("fence"), rs.getInt("retry_count"),
             rs.getObject("next_retry_at", java.time.OffsetDateTime.class), rs.getString("last_error_code"),
-            rs.getObject("completed_at", java.time.OffsetDateTime.class));
+            rs.getObject("completed_at", java.time.OffsetDateTime.class), rs.getString("ftp_file_name"), (Long) rs.getObject("ftp_sequence"));
 
     public DeliveryTaskRepository(JdbcTemplate jdbc, TransactionTemplate transactions,
-                                  DeliveryBatchRepository batches, SourceDataRepository sources) {
+                                  DeliveryBatchRepository batches, SourceDataRepository sources, FtpFileNameAllocator ftpNames) {
         this.jdbc = jdbc;
         this.transactions = transactions;
         this.batches = batches;
         this.sources = sources;
+        this.ftpNames = ftpNames;
     }
 
     public long createPlanned(DeliverySubmit submit, BatchPackage planned, DeliveryEntity entity, String firstNode) {
         if (submit.batchDeliveryId() == null || planned == null || entity.deliveryEntityId() <= 0) {
             throw new IllegalArgumentException("Batch package and target entity are required");
         }
-        List<SourceData> sourceList = sources.byBatchPackage(submit.batchDeliveryId(), planned.newFileName());
-        if (sourceList.size() != planned.sourceCount() || sourceList.isEmpty()) {
-            throw new IllegalStateException("Batch package source facts are incomplete");
-        }
-        ArrayNode artifacts = JSON.createArrayNode();
-        for (SourceData source : sourceList) {
-            var pair = artifacts.addObject();
-            pair.put("dataId", source.dataId());
-            pair.set("sourceArtifact", source.artifact().deepCopy());
-        }
-        String workerGroup = WorkerGroups.requireValid(planned.workerGroup());
         return transactions.execute(status -> {
+            // 重分配和领取使用相同父单锁；读取来源事实必须在锁内，不能沿用锁外旧归属。
+            jdbc.queryForObject("SELECT delivery_id FROM delivery_submit WHERE delivery_id=? FOR UPDATE", Long.class, submit.batchDeliveryId());
+            List<SourceData> sourceList = sources.byBatchPackage(submit.batchDeliveryId(), planned.newFileName());
+            if (sourceList.size() != planned.sourceCount() || sourceList.isEmpty()) {
+                throw new IllegalStateException("Batch package source facts are incomplete");
+            }
+            ArrayNode artifacts = JSON.createArrayNode();
+            for (SourceData source : sourceList) {
+                var pair = artifacts.addObject();
+                pair.put("dataId", source.dataId());
+                pair.set("sourceArtifact", source.artifact().deepCopy());
+            }
+            String workerGroup = WorkerGroups.requireValid(planned.workerGroup());
             int assigned = batches.assign(submit.batchDeliveryId(), planned.newFileName(), submit.deliveryId());
             if (assigned != planned.sourceCount()) throw new IllegalStateException("Batch package was consumed concurrently");
+            // 新 FTP 名称按实际交付日统一预留，不能重用批次内序号作为渠道序号。
+            var ftpName = ftpNames.allocate(submit.deliveryDate(), entity.deliveryEntityId());
             return jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,delivery_entity_id,entity_code,worker_group," +
-                            "delivery_date,cutoff_at,new_file_name,size_bytes,token_count,artifacts,current_node_id) " +
-                            "VALUES(?,?,?,?,?,?,?,?,?,?::jsonb,?) RETURNING task_id", Long.class, submit.deliveryId(),
+                            "delivery_date,cutoff_at,new_file_name,size_bytes,token_count,artifacts,current_node_id,ftp_file_name,ftp_sequence) " +
+                            "VALUES(?,?,?,?,?,?,?,?,?,?::jsonb,?,?,?) RETURNING task_id", Long.class, submit.deliveryId(),
                     entity.deliveryEntityId(), entity.entityCode(), workerGroup, submit.deliveryDate(), submit.cutoffAt(),
                     planned.newFileName(), planned.sourceBytes(), sourceList.stream().mapToLong(SourceData::tokenCount).sum(),
-                    artifacts.toString(), firstNode);
+                    artifacts.toString(), firstNode, ftpName.fileName(), ftpName.sequence());
         });
     }
 

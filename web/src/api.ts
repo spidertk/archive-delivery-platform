@@ -27,3 +27,16 @@ export const getIngestTrend = (sourceId: number, hours: number) =>
   request<IngestTrend[]>(`/ingest-sources/${sourceId}/trend?hours=${hours}`)
 
 export const getIngestChanges = (sourceId: number, hours: number) => request<IngestChange[]>(`/ingest-sources/${sourceId}/changes?hours=${hours}&limit=200`)
+
+type EntityEndpoint = { schemaVersion: 1; host: string; port: number; rootPath: string }
+// 地址修复提交旧值作并发条件；账户和机器组由服务端保护，不从此入口修改。
+export const updateEntityEndpoint = (vendorCode: string, entityCode: string, expectedEndpointLocator: EntityEndpoint, endpointLocator: EntityEndpoint) =>
+  request(`/delivery-entities/${encodeURIComponent(vendorCode)}/${encodeURIComponent(entityCode)}/endpoint`, {
+    method: 'PUT', body: JSON.stringify({ expectedEndpointLocator, endpointLocator })
+  })
+
+// 重分配保持完整包和源顺序，实际执行组由后端发布的 Pipeline 解析。
+export const redistributeBatch = (deliveryId: number, deliveryDate: string, expectedRemainingPackages: number,
+  targets: { vendorCode: string; entityCode: string; targetCount: number }[], reason: string) =>
+  request(`/delivery-batches/${deliveryId}/redistribute`, { method: 'POST',
+    body: JSON.stringify({ deliveryDate, expectedRemainingPackages, targets, reason }) })

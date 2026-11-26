@@ -51,3 +51,5 @@ cd web && npm ci && npm run test && npm run build
 ## 生产看板打包
 
 API Dockerfile 将前端 dist 放入 src/main/resources/static 随服务 jar 发布；生产健康验收同时核对 /actuator/health、根路径 HTTP 200 和实际静态资源。JVM heap 通过 ARCHIVE_SERVER_JAVA_OPTIONS 配置，jun-2 默认 -Xms64m -Xmx256m。
+
+任务看板同时提供批次包名、FTP 文件名和日序号。未领取整包的重分配、经 GET/SHA 复核的历史 FTP 别名及空闲实体地址修正由受控 API 执行。

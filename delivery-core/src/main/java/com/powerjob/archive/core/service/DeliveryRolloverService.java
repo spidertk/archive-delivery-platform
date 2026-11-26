@@ -27,10 +27,11 @@ public class DeliveryRolloverService {
     private final DeliveryProjectionService projections;
     private final PipelineRepository pipelines;
     private final ObjectMapper mapper;
+    private final FtpFileNameAllocator ftpNames;
 
     public DeliveryRolloverService(JdbcTemplate jdbc, TransactionTemplate transactions, DeliveryTaskRepository tasks,
                                    DeliveryEventRepository events, DeliveryProjectionService projections,
-                                   PipelineRepository pipelines, ObjectMapper mapper) {
+                                   PipelineRepository pipelines, ObjectMapper mapper, FtpFileNameAllocator ftpNames) {
         this.jdbc = jdbc;
         this.transactions = transactions;
         this.tasks = tasks;
@@ -38,6 +39,7 @@ public class DeliveryRolloverService {
         this.projections = projections;
         this.pipelines = pipelines;
         this.mapper = mapper;
+        this.ftpNames = ftpNames;
     }
 
     public int rolloverDue() {
@@ -73,17 +75,20 @@ public class DeliveryRolloverService {
         int changed = 0;
         for (DeliveryTask old : due) {
             LocalDate nextDate = requestedDate == null ? old.deliveryDate().plusDays(1) : requestedDate;
-            OffsetDateTime nextCutoff = nextDate.atTime(LocalTime.parse(pipeline.config().getOrDefault("deliveryCutoffTime", "18:00:00").toString()))
+            // 交付日的截止始终在次日；否则 02:00 后新任务会立即再次过期并不断跨日。
+            OffsetDateTime nextCutoff = nextDate.plusDays(1).atTime(LocalTime.parse(pipeline.config().getOrDefault("deliveryCutoffTime", "18:00:00").toString()))
                     .atZone(ZoneId.of(pipeline.config().getOrDefault("businessTimezone", "Asia/Shanghai").toString())).toOffsetDateTime();
             int expired = jdbc.update("UPDATE delivery_task SET execution_status='EXPIRED',lease_owner=NULL,lease_until=NULL,updated_at=now() " +
                     "WHERE task_id=? AND execution_status NOT IN('SUCCEEDED','EXPIRED','CANCELLED')", old.taskId());
             if (expired != 1) continue;
             jdbc.update("UPDATE delivery_node SET status='CANCELLED',finished_at=now() WHERE task_id=? AND status IN('RUNNING','WAITING')", old.taskId());
+            // 跨日仅重新分配渠道名称，原批次包名/机器组/包内容不变，旧任务与旧成品保留。
+            var ftpName = ftpNames.allocate(nextDate, old.deliveryEntityId());
             long newTaskId = jdbc.queryForObject("INSERT INTO delivery_task(delivery_id,delivery_entity_id,entity_code,worker_group," +
-                            "delivery_date,cutoff_at,new_file_name,size_bytes,token_count,artifacts,current_node_id) " +
-                            "VALUES(?,?,?,?,?,?,?,?,?,?::jsonb,?) RETURNING task_id", Long.class, old.deliveryId(), old.deliveryEntityId(),
+                            "delivery_date,cutoff_at,new_file_name,size_bytes,token_count,artifacts,current_node_id,ftp_file_name,ftp_sequence) " +
+                            "VALUES(?,?,?,?,?,?,?,?,?,?::jsonb,?,?,?) RETURNING task_id", Long.class, old.deliveryId(), old.deliveryEntityId(),
                     old.entityCode(), old.workerGroup(), nextDate, nextCutoff, old.newFileName(), old.sizeBytes(), old.tokenCount(),
-                    old.artifacts().toString(), pipeline.rolloverStartNode());
+                    old.artifacts().toString(), pipeline.rolloverStartNode(), ftpName.fileName(), ftpName.sequence());
             copyPrerequisiteNodes(old.taskId(), newTaskId, pipeline);
             ObjectNode expiredPayload = mapper.createObjectNode().put("taskId", old.taskId()).put("oldTaskId", old.taskId())
                     .put("newTaskId", newTaskId).put("oldDeliveryDate", old.deliveryDate().toString()).put("newDeliveryDate", nextDate.toString());

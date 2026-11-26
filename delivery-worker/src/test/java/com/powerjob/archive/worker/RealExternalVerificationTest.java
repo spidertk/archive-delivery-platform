@@ -136,7 +136,7 @@ class RealExternalVerificationTest {
         OssNodeConfig sourceConfig = config(batchPipeline, "oss.download", true);
         OssNodeConfig targetConfig = config(deliveryPipeline, "oss.upload", false);
         var ftpConfig = configs.ftp(deliveryPipeline.nodes().stream().filter(node -> node.type().equals("ftp.download-verify")).findFirst().orElseThrow());
-        List<Map<String, Object>> tasks = jdbc.queryForList("SELECT t.task_id,t.delivery_entity_id,t.entity_code,t.delivery_date,t.new_file_name," +
+        List<Map<String, Object>> tasks = jdbc.queryForList("SELECT t.task_id,t.delivery_entity_id,t.entity_code,t.delivery_date,t.new_file_name,t.ftp_file_name," +
                 "t.size_bytes,t.artifacts::text AS artifacts,e.account_name,e.endpoint_locator::text AS endpoint_locator " +
                 "FROM delivery_task t JOIN delivery_entity e ON e.delivery_entity_id=t.delivery_entity_id " +
                 "WHERE t.delivery_id=? AND t.execution_status NOT IN('EXPIRED','CANCELLED') ORDER BY t.new_file_name", deliveryId);
@@ -148,6 +148,7 @@ class RealExternalVerificationTest {
             try {
                 long taskId = ((Number) task.get("task_id")).longValue();
                 String newFileName = task.get("new_file_name").toString();
+                String ftpFileName = task.get("ftp_file_name").toString();
                 assertEquals("SUCCEEDED", jdbc.queryForObject("SELECT execution_status FROM delivery_task WHERE task_id=?", String.class, taskId));
                 long sourceTaskId = jdbc.queryForObject("SELECT COALESCE((SELECT (payload->>'oldTaskId')::bigint FROM delivery_event " +
                         "WHERE delivery_id=? AND event_type='TASK_REGENERATED' AND (payload->>'newTaskId')::bigint=?),?)",
@@ -189,6 +190,10 @@ class RealExternalVerificationTest {
 
                 JsonNode targetOutput = output(jdbc, taskId, "oss.upload");
                 URI targetUri = URI.create(targetOutput.required("uri").asText());
+                // 新版本的真实 OSS 对象必须沿用 FTP 日序号，回验仍使用实际对象 URI 和字节事实。
+                if (targetConfig.useFtpFileName()) {
+                    assertEquals(ftpFileName, Path.of(targetUri.getPath()).getFileName().toString());
+                }
                 assertEquals(expectedSha, targetOutput.required("sha256").asText());
                 Path targetFile = temp.resolve("target-" + taskId + ".tar.gz");
                 transfers.download(targetConfig, targetUri.getHost(), targetUri.getPath().replaceFirst("^/", ""), targetFile, expectedSize, expectedSha);
@@ -197,13 +202,14 @@ class RealExternalVerificationTest {
                 assertEquals(expectedSize, ftpOutput.required("sizeBytes").asLong());
                 JsonNode endpoint = mapper.readTree(task.get("endpoint_locator").toString());
                 String remotePath = URI.create(ftpOutput.required("uri").asText()).getPath();
+                assertEquals(ftpFileName, Path.of(remotePath).getFileName().toString());
                 String rootPath = endpoint.path("rootPath").asText("/");
                 if (!"/".equals(rootPath) && remotePath.startsWith(rootPath)) remotePath = remotePath.substring(rootPath.length());
                 remotePath = remotePath.replaceFirst("^/", "");
-                Path independentDownload = temp.resolve("ftp-" + taskId).resolve(newFileName);
+                Path independentDownload = temp.resolve("ftp-" + taskId).resolve(ftpFileName);
                 ftpTransfer(endpoint, task.get("account_name").toString(), ftpConfig.passwordFor(task.get("account_name").toString()),
                         remotePath, targetFile, independentDownload, expectedSize, expectedSha);
-                assertFalse(Files.exists(independentDownload.resolveSibling(newFileName + ".partial")));
+                assertFalse(Files.exists(independentDownload.resolveSibling(ftpFileName + ".partial")));
                 Files.deleteIfExists(targetFile);
                 Files.deleteIfExists(independentDownload);
                 System.out.println("REAL VERIFIED deliveryId=" + deliveryId + " taskId=" + taskId + " sources=" + sourceCount

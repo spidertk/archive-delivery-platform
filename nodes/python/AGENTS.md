@@ -63,3 +63,5 @@ ftp_download_verify.py 的固定 stdin 契约新增 cleanupOtherDeliveryDates(bo
 该模式完整 RETR 并在内存累计 size/SHA，不落第二份回验包，也不输出不存在的本地下载产物；节点正常上传下载流程继续保留已核验本地副本。
 
 2026-11-21 性能优化：merge 使用 gzip/TAR 流完整读取拼接成员；最终协议校验按 TAR 流建立直属文件与 metadata 索引，单次解压，禁止 getmembers 后逐请求 gzip 回卷。完整保留原始 requestId、源日期秒级 requestTime、providerCode、模式及必需文件检查，并拒绝空包、重复成员、路径穿越和链接。
+
+FTP 容量核对合计已占用成品及在途预留。北京时间 07:00 后才允许清理其他合法日期直属目录。回验保留目录、size/SHA 与原子发布守卫。

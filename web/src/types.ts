@@ -56,6 +56,8 @@ export interface DeliveryTask {
   deliveryDate: string
   cutoffAt: string
   newFileName: string
+  ftpFileName: string
+  ftpSequence: number | null
   sizeBytes: number
   tokenCount: number
   sha256?: string

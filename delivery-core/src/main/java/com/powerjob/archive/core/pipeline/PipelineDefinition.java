@@ -1,6 +1,7 @@
 package com.powerjob.archive.core.pipeline;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +47,7 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
                 throw new IllegalArgumentException("Unsupported legacy Pipeline node: " + node.type());
             }
         }
-        Set<String> visited = new HashSet<>();
+        Set<String> visited = new LinkedHashSet<>();
         String current = firstNode();
         while (current != null) {
             if (!visited.add(current)) throw new IllegalArgumentException("Pipeline DAG contains a cycle");
@@ -66,9 +67,14 @@ public record PipelineDefinition(String pipelineCode, int version, Map<String, O
             }
         }
         PipelineNodeConfig configs = new PipelineNodeConfig(new com.fasterxml.jackson.databind.ObjectMapper());
+        List<String> executionOrder = List.copyOf(visited);
         for (NodeDefinition node : nodes) {
             if (node.type().equals("oss.download")) configs.oss(node, true);
-            if (node.type().equals("oss.upload")) configs.oss(node, false);
+            // 跨日会重新分配 FTP 名称，同名模式必须由 OSS 上传节点重新生成成品对象。
+            if (node.type().equals("oss.upload") && configs.oss(node, false).useFtpFileName()
+                    && executionOrder.indexOf(rolloverStartNode()) > executionOrder.indexOf(node.id())) {
+                throw new IllegalArgumentException("OSS useFtpFileName requires rollover to run the OSS upload node");
+            }
             if (node.type().equals("ftp.download-verify")) configs.ftp(node);
             if (node.type().equals("package.merge") || node.type().equals("python.repair")
                     || node.type().equals("ftp.download-verify")) configs.script(node);

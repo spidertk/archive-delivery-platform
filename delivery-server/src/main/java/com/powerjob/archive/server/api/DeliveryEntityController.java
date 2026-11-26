@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -41,4 +43,13 @@ public class DeliveryEntityController {
     public record EntityRequest(@NotBlank String vendorCode, @NotBlank String entityCode, @NotBlank String entityName,
                                 @NotBlank String protocol, @NotBlank String accountName, @NotBlank String workerGroup,
                                 @NotNull JsonNode endpointLocator) {}
+
+    /** 运维仅替换已核对的 FTP 地址；业务键、账户和机器组不在可修改字段内。 */
+    @PutMapping("/{vendorCode}/{entityCode}/endpoint")
+    public DeliveryEntity updateEndpoint(@PathVariable String vendorCode, @PathVariable String entityCode,
+                                         @Valid @RequestBody EndpointRequest request) {
+        return entities.updateEndpoint(vendorCode, entityCode, request.expectedEndpointLocator(), request.endpointLocator());
+    }
+
+    public record EndpointRequest(@NotNull JsonNode expectedEndpointLocator, @NotNull JsonNode endpointLocator) {}
 }

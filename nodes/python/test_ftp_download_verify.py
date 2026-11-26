@@ -1,5 +1,7 @@
 import ftplib
+import datetime
 import hashlib
+import fcntl
 import sys
 import tempfile
 import threading
@@ -10,6 +12,8 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).parent))
 import ftp_download_verify as node
 from ftp_retention import retain_delivery_date
+import ftp_retention as retention
+from ftp_capacity import reserve_capacity
 
 
 class FileFtp:
@@ -67,6 +71,10 @@ class FileFtp:
 
 class FtpNodeTest(unittest.TestCase):
     def setUp(self):
+        # 普通协议测试固定在可清理时窗；时间门禁由独立边界用例验证，避免测试依赖执行时间。
+        window = patch("ftp_retention.cleanup_window_open", return_value=True)
+        window.start()
+        self.addCleanup(window.stop)
         self.temp = tempfile.TemporaryDirectory()
         self.root = Path(self.temp.name)
         remote = self.root / "remote"
@@ -93,6 +101,46 @@ class FtpNodeTest(unittest.TestCase):
         with patch.object(node.ftplib, "FTP", return_value=self.ftp):
             return node.transfer(self.request)
 
+    def test_capacity_counts_active_reservations_and_allows_retry_at_limit(self):
+        # 未开始 STOR 的活动预留也占一位，完成文件及 partial 不再重复计数。
+        first = dict(self.request)
+        second = dict(first, remotePath="2026-11-21/batch_0000002.tar.gz")
+        third = dict(first, remotePath="2026-11-21/batch_0000003.tar.gz")
+        with reserve_capacity(self.ftp, first, maximum=2) as a:
+            with reserve_capacity(self.ftp, second, maximum=2) as b:
+                with reserve_capacity(self.ftp, third, maximum=2) as c:
+                    self.assertTrue(a and b)
+                    self.assertFalse(c)
+        self.write_remote(first["remotePath"])
+        self.write_remote(second["remotePath"]+".partial")
+        with reserve_capacity(self.ftp, first, maximum=2) as retry:
+            self.assertTrue(retry)
+        with reserve_capacity(self.ftp, third, maximum=2) as full:
+            self.assertFalse(full)
+
+    def test_capacity_ignores_locked_claim_that_has_not_reached_admission(self):
+        # 复现另一 Worker 已取得包锁但仍在等待容量锁的窗口，未写完的记录不能导致 JSON 错误。
+        import ftp_capacity as capacity
+        identity='\0'.join(str(self.request[k]) for k in ('host','port','username','rootPath'))
+        directory=Path(self.request['retentionRoot'])/(hashlib.sha256(identity.encode()).hexdigest()+'.capacity')
+        directory.mkdir(parents=True)
+        for incomplete in ('','{"remotePath":'):
+            with (directory/'waiting.claim').open('w+') as pending:
+                pending.write(incomplete);pending.flush();fcntl.flock(pending,fcntl.LOCK_EX)
+                with capacity.reserve_capacity(self.ftp,self.request,maximum=1) as granted:
+                    self.assertTrue(granted)
+
+    def test_capacity_ignores_abandoned_claims_but_preserves_old_date_files(self):
+        with reserve_capacity(self.ftp, self.request, maximum=1) as first:
+            self.assertTrue(first)
+        other=dict(self.request, remotePath="2026-11-21/batch_0000002.tar.gz")
+        with reserve_capacity(self.ftp, other, maximum=1) as released:
+            self.assertTrue(released)
+        self.write_remote("2026-11-20/download-in-progress.tar.gz")
+        with reserve_capacity(self.ftp, other, maximum=1) as full:
+            self.assertFalse(full)
+        self.assertTrue(self.ftp.path("2026-11-20/download-in-progress.tar.gz").exists())
+
     def test_cleanup_preserves_current_date_and_non_date_directories(self):
         self.write_remote("2026-11-19/nested/a.tar.gz")
         self.write_remote("2026-11-22/b.tar.gz")
@@ -106,6 +154,39 @@ class FtpNodeTest(unittest.TestCase):
         self.assertTrue(self.ftp.path("2026-02-30/invalid-date.txt").exists())
         self.assertEqual(self.ftp.retrievals, 1)
         self.assertFalse(list(self.root.rglob("*.partial")))
+
+    def test_before_seven_preserves_old_dates_then_same_day_after_seven_cleans(self):
+        # 传输与清理分开：凌晨成品正常交付，旧目录必须继续供用户下载。
+        self.write_remote("2026-11-20/keep.tar.gz")
+        with patch("ftp_retention.cleanup_window_open", return_value=False):
+            early = self.transfer()
+        self.assertEqual([], early["removedDates"])
+        self.assertTrue(self.ftp.path("2026-11-20/keep.tar.gz").exists())
+        self.assertTrue(self.ftp.path(self.request["remotePath"]).exists())
+        late = self.transfer()
+        self.assertEqual(["2026-11-20"], late["removedDates"])
+        self.assertFalse(self.ftp.path("2026-11-20").exists())
+
+    def test_before_seven_advances_watermark_without_deleting_old_dates(self):
+        original = dict(self.request)
+        with patch("ftp_retention.cleanup_window_open", return_value=False):
+            self.transfer()
+            self.request.update(deliveryDate="2026-11-22", remotePath="2026-11-22/batch_0000001.tar.gz")
+            self.transfer()
+        # 新日期已传输后，旧日期重试即使到了清理时窗也不能删除较新成品。
+        self.assertTrue(self.ftp.path("2026-11-21/batch_0000001.tar.gz").exists())
+        self.assertTrue(self.ftp.path("2026-11-22/batch_0000001.tar.gz").exists())
+        self.request = original
+        with self.assertRaisesRegex(ValueError, "older delivery date"):
+            self.transfer()
+        self.assertTrue(self.ftp.path("2026-11-22/batch_0000001.tar.gz").exists())
+
+    def test_exclusive_lock_rechecks_window_if_wait_crosses_midnight(self):
+        self.write_remote("2026-11-20/keep.tar.gz")
+        with patch("ftp_retention.cleanup_window_open", side_effect=[True, False]):
+            result = self.transfer()
+        self.assertEqual([], result["removedDates"])
+        self.assertTrue(self.ftp.path("2026-11-20/keep.tar.gz").exists())
 
     def test_same_name_different_sha_is_never_overwritten(self):
         content = b"x" * self.request["expectedSize"]
@@ -204,6 +285,17 @@ class FtpNodeTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "older delivery date"):
             self.transfer()
         self.assertTrue(self.ftp.path("2026-11-22/keep.tar.gz").exists())
+
+
+class RetentionWindowTest(unittest.TestCase):
+    def test_beijing_seven_boundary_uses_aware_clock(self):
+        # 主机即使使用 UTC，业务边界仍必须精确落在北京时间 07:00。
+        before = datetime.datetime(2026, 11, 25, 22, 59, 59, tzinfo=datetime.timezone.utc)
+        at = datetime.datetime(2026, 11, 25, 23, 0, tzinfo=datetime.timezone.utc)
+        self.assertFalse(retention.cleanup_window_open(before))
+        self.assertTrue(retention.cleanup_window_open(at))
+        with self.assertRaisesRegex(ValueError, "timezone-aware"):
+            retention.cleanup_window_open(datetime.datetime(2026, 11, 26, 7))
 
 
 if __name__ == "__main__":

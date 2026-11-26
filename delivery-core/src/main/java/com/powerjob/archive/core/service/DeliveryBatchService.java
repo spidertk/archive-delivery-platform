@@ -60,12 +60,13 @@ public class DeliveryBatchService {
     private final OssClientFactory clients;
     private final FileTransferService files;
     private final ArchiveProperties properties;
+    private final BatchPreparationLease preparationLease;
 
     public DeliveryBatchService(JdbcTemplate jdbc, TransactionTemplate transactions, ObjectMapper mapper,
                                 DeliveryRepository deliveries, DeliveryBatchRepository batches, SourceDataRepository sources,
                                 DeliveryEventRepository events, DeliveryProjectionService projections, PipelineRepository pipelines,
                                 PipelineNodeConfig configs, IngestSourceService ingestSources, OssClientFactory clients,
-                                FileTransferService files, ArchiveProperties properties) {
+                                FileTransferService files, ArchiveProperties properties, BatchPreparationLease preparationLease) {
         this.jdbc = jdbc;
         this.transactions = transactions;
         this.mapper = mapper;
@@ -80,6 +81,7 @@ public class DeliveryBatchService {
         this.clients = clients;
         this.files = files;
         this.properties = properties;
+        this.preparationLease = preparationLease;
     }
 
     public DeliverySubmissionService.Submission create(BatchCommand command) {
@@ -107,6 +109,11 @@ public class DeliveryBatchService {
     }
 
     public int prepare(long deliveryId) {
+        // 通用调度的重复实例不能同时归档同一批次，取得准备租约后重新读取最新状态。
+        return preparationLease.run(deliveryId, () -> prepareExclusive(deliveryId));
+    }
+
+    private int prepareExclusive(long deliveryId) {
         DeliverySubmit submit = deliveries.find(deliveryId).orElseThrow();
         if (!submit.batchCreation()) throw new IllegalArgumentException("Only BATCH_CREATE can archive OSS sources");
         if (submit.discoveryCompletedAt() != null) return batches.byBatch(deliveryId).size();

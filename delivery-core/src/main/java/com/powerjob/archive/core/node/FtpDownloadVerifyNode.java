@@ -73,7 +73,7 @@ public class FtpDownloadVerifyNode implements NodeHandler {
         Path ossCopy = NodeSupport.ossVerifiedPath(context, properties.getWorkRoot());
         // 下载文件按 delivery、日期和实体隔离，并保留任务级唯一包名。
         Path download = Path.of(properties.getFtpVerificationRoot(), Long.toString(context.task().deliveryId()),
-                context.task().deliveryDate().toString(), "entity-" + context.task().deliveryEntityId(), context.task().newFileName());
+                context.task().deliveryDate().toString(), "entity-" + context.task().deliveryEntityId(), context.task().ftpFileName());
         // 密码只写入 stdin JSON，不进入命令行、日志或 locator。
         ObjectNode request = mapper.createObjectNode();
         request.put("host", host).put("port", port).put("username", context.entity().accountName())
@@ -95,6 +95,11 @@ public class FtpDownloadVerifyNode implements NodeHandler {
         ObjectNode input = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
                 .put("scriptPath", configs.script(context.node()))
                 .put("localPath", ossCopy.toAbsolutePath().toString()).put("deliveryEntityId", context.task().deliveryEntityId());
+        // FTP 实物容量包含旧日期及在途文件；等待不形成成功 locator，也不删除用户仍需下载的历史。
+        if ("CAPACITY_WAIT".equals(result.path("status").asText())) {
+            return NodeResult.waiting(context.node().id(),input,mapper.createObjectNode()
+                    .put("schemaVersion",1).put("nodeId",context.node().id()).put("status","CAPACITY_WAIT"),Duration.ofSeconds(60));
+        }
         // 输出 locator 保留远端 URI 和本地下载文件的复核事实。
         ObjectNode output = mapper.createObjectNode().put("schemaVersion", 1).put("nodeId", context.node().id())
                 .put("uri", result.required("uri").asText()).put("downloadPath", result.required("downloadPath").asText())

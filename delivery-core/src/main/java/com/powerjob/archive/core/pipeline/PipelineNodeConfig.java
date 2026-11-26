@@ -16,6 +16,11 @@ public class PipelineNodeConfig {
     }
 
     public OssNodeConfig oss(NodeDefinition node, boolean source) {
+        // 同名模式只接受显式 JSON 布尔值，避免字符串被 Jackson 隐式转换后切换历史路径规则。
+        Object useFtpFileName = node.config().get("useFtpFileName");
+        if (node.config().containsKey("useFtpFileName") && !(useFtpFileName instanceof Boolean)) {
+            throw new IllegalArgumentException("OSS useFtpFileName must be boolean");
+        }
         OssNodeConfig config = mapper.convertValue(node.config(), OssNodeConfig.class);
         config.validate(source);
         return config;

@@ -60,7 +60,7 @@ class ArchiveModelIntegrationTest {
     @Test void currentBaselineIsIdempotentAndContainsOnlyBatchLineage() {
         int before = jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery'", Integer.class);
         Flyway.configure().dataSource(dataSource).schemas("archive_delivery").defaultSchema("archive_delivery").load().migrate();
-        assertEquals("29", jdbc.queryForObject("SELECT max(version) FROM archive_delivery.flyway_schema_history WHERE success", String.class));
+        assertEquals("30", jdbc.queryForObject("SELECT max(version) FROM archive_delivery.flyway_schema_history WHERE success", String.class));
         assertEquals(before, jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery'", Integer.class));
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM information_schema.tables WHERE table_schema='archive_delivery' " +
                 "AND table_name='delivery_mapping'", Integer.class));
@@ -99,7 +99,7 @@ class ArchiveModelIntegrationTest {
         DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
         SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
         DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
-        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources, new com.powerjob.archive.core.service.FtpFileNameAllocator(jdbc));
         for (int sequence = 1; sequence <= 4; sequence++) {
             SourceData source = sources.findById(insertSource(batchId, "two-submit-" + sequence, 10)).orElseThrow();
             String name = String.format("batch_%07d.tar.gz", sequence);
@@ -162,7 +162,7 @@ class ArchiveModelIntegrationTest {
         DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
         SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
         DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
-        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources, new com.powerjob.archive.core.service.FtpFileNameAllocator(jdbc));
         long submitId = insertSubmission(batchId, entityId, 1);
         SourceData source = sources.findById(insertSource(batchId, "operations", 10)).orElseThrow();
         batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), "batch_0000001.tar.gz", 1,
@@ -183,12 +183,14 @@ class ArchiveModelIntegrationTest {
                         "VALUES(?,?,'operations.tar.gz','batch_0000001.tar.gz','repair','python.repair','REPAIR',1,0,'SUCCEEDED',?::jsonb)",
                 submitId, taskId, "{\"nodeId\":\"repair\",\"localPath\":\"/tmp/batch_0000001.tar.gz\",\"sha256\":\"" + "a".repeat(64) + "\"}");
         DeliveryRolloverService rollovers = new DeliveryRolloverService(jdbc, transactions, tasks, events, projections,
-                new PipelineRepository(mapper), mapper);
+                new PipelineRepository(mapper), mapper, new FtpFileNameAllocator(jdbc));
         LocalDate original = jdbc.queryForObject("SELECT delivery_date FROM delivery_submit WHERE delivery_id=?", LocalDate.class, submitId);
         assertEquals(1, rollovers.rolloverDelivery(submitId, original, original.plusDays(1), "cutoff continuation", "test"));
         long newTask = jdbc.queryForObject("SELECT (payload->>'newTaskId')::bigint FROM delivery_event WHERE delivery_id=? AND event_type='TASK_EXPIRED'",
                 Long.class, submitId);
         assertEquals(List.of(source.dataId()), sources.byTaskId(newTask).stream().map(SourceData::dataId).toList());
+        assertEquals(original.plusDays(2), tasks.findById(newTask).orElseThrow().cutoffAt()
+                .atZoneSameInstant(java.time.ZoneId.of("Asia/Shanghai")).toLocalDate());
         assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM delivery_batch WHERE delivery_id=? AND new_file_name='batch_0000001.tar.gz'",
                 Integer.class, submitId));
         jdbc.update("UPDATE delivery_task SET cutoff_at=now()-interval '1 minute' WHERE task_id=?", newTask);
@@ -202,7 +204,7 @@ class ArchiveModelIntegrationTest {
         DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
         SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
         DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
-        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources, new com.powerjob.archive.core.service.FtpFileNameAllocator(jdbc));
         long submitId = insertSubmission(batchId, entityId, 1);
         List<SourceData> planned = new java.util.ArrayList<>();
         for (int index = 1; index <= 4; index++) {
@@ -252,7 +254,7 @@ class ArchiveModelIntegrationTest {
         DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
         SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
         DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
-        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources, new com.powerjob.archive.core.service.FtpFileNameAllocator(jdbc));
         long submitId = insertSubmission(batchId, entityId, 4);
         for (int index = 1; index <= 4; index++) {
             SourceData source = sources.findById(insertSource(batchId, "capacity-" + index, 10)).orElseThrow();
@@ -291,7 +293,7 @@ class ArchiveModelIntegrationTest {
         DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
         SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
         DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
-        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources, new com.powerjob.archive.core.service.FtpFileNameAllocator(jdbc));
         DeliveryProjectionService projections = new DeliveryProjectionService(jdbc);
         List<Long> submits = List.of(insertSubmission(batchId, entityId, 4), insertSubmission(batchId, entityId, 4));
         var planned = new java.util.ArrayList<com.powerjob.archive.core.domain.DeliveryTask>();
@@ -349,7 +351,7 @@ class ArchiveModelIntegrationTest {
         DeliveryRepository deliveries = new DeliveryRepository(jdbc, mapper);
         SourceDataRepository sources = new SourceDataRepository(jdbc, mapper);
         DeliveryBatchRepository batches = new DeliveryBatchRepository(jdbc);
-        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources);
+        DeliveryTaskRepository tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources, new com.powerjob.archive.core.service.FtpFileNameAllocator(jdbc));
         long submitId = insertSubmission(batchId, entityId, 1);
         SourceData source = sources.findById(insertSource(batchId, "interrupted", 10)).orElseThrow();
         batches.insertPlanned(batchId, source, "BATCH-" + batchId, source.originalFileName(), "batch_0000001.tar.gz",
@@ -387,6 +389,179 @@ class ArchiveModelIntegrationTest {
         assertNull(task.leaseUntil());
         assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM delivery_node WHERE task_id=? AND status='FAILED' " +
                 "AND error_code='InterruptedException'", Integer.class, taskId));
+    }
+
+    @Test void endpointRepairPreservesIdentityAndRejectsStaleOrActiveChanges() {
+        // 地址修复只允许空闲实体，旧地址作为并发条件；业务账户和执行组始终保持原值。
+        long entityId = ids.incrementAndGet();
+        String vendor = "VENDOR-" + entityId;
+        insertEntity(entityId, vendor, "jun");
+        var service = new DeliveryEntityService(jdbc, mapper);
+        var before = service.find(entityId);
+        var replacement = mapper.createObjectNode().put("schemaVersion", 1).put("host", "192.0.2.33")
+                .put("port", 21).put("rootPath", "/");
+        var changed = transactions.execute(status -> service.updateEndpoint(vendor, "jun", before.endpointLocator(), replacement));
+        assertEquals(before.accountName(), changed.accountName());
+        assertEquals(before.workerGroup(), changed.workerGroup());
+        assertEquals(replacement, changed.endpointLocator());
+        assertThrows(IllegalArgumentException.class, () -> transactions.execute(status ->
+                service.updateEndpoint(vendor, "jun", before.endpointLocator(), replacement)));
+        var secret = replacement.deepCopy().put("password", "forbidden");
+        assertThrows(IllegalArgumentException.class, () -> transactions.execute(status ->
+                service.updateEndpoint(vendor, "jun", replacement, secret)));
+        long batch = insertBatch();
+        long submit = insertSubmission(batch, entityId, 1);
+        var deliveries = new DeliveryRepository(jdbc, mapper);
+        var sources = new SourceDataRepository(jdbc, mapper);
+        var batches = new DeliveryBatchRepository(jdbc);
+        var tasks = new DeliveryTaskRepository(jdbc, transactions, batches, sources, new com.powerjob.archive.core.service.FtpFileNameAllocator(jdbc));
+        var source = sources.findById(insertSource(batch, "endpoint-repair", 10)).orElseThrow();
+        batches.insertPlanned(batch, source, "BATCH-" + batch, source.originalFileName(), "batch_0000001.tar.gz",
+                1, entityId, "jun", "group1");
+        tasks.createPlanned(deliveries.find(submit).orElseThrow(), new BatchPackage("batch_0000001.tar.gz", "group1", 1, 10),
+                deliveries.entity(entityId), "sourceDownload");
+        var next = replacement.deepCopy().put("host", "localhost");
+        assertThrows(IllegalArgumentException.class, () -> transactions.execute(status ->
+                service.updateEndpoint(vendor, "jun", replacement, next)));
+        assertEquals(replacement, service.find(entityId).endpointLocator());
+    }
+
+    @Test void remainingPackagesCanBeSubmittedOnNextDateOnlyAfterBatchCutoff() {
+        // 跨日只改变新交付提交的日期，仍消费原批次规划包；不能提前切日或倒退日期。
+        long batch = insertBatch();
+        long entityId = ids.incrementAndGet();
+        insertEntity(entityId, "VENDOR-" + entityId, "jun");
+        var deliveries = new DeliveryRepository(jdbc, mapper);
+        var sources = new SourceDataRepository(jdbc, mapper);
+        var batches = new DeliveryBatchRepository(jdbc);
+        var source = sources.findById(insertSource(batch, "next-date", 10)).orElseThrow();
+        batches.insertPlanned(batch, source, "BATCH-" + batch, source.originalFileName(), "batch_0000001.tar.gz",
+                1, entityId, "jun", "group1");
+        markBatchPlanned(batch);
+        LocalDate date = LocalDate.now().plusDays(1);
+        var service = new DeliverySubmissionService(jdbc, transactions, mapper, deliveries,
+                new DeliveryEventRepository(jdbc, mapper), new PipelineRepository(mapper));
+        var target = List.of(new DeliverySubmissionService.TargetCommand(1, "VENDOR-" + entityId, "jun"));
+        var next = new DeliverySubmissionService.SubmissionCommand("oss://bucket/prefix/" + batch + "/",
+                "archive-delivery", date.plusDays(1), "BATCH-" + batch, target);
+        assertThrows(IllegalArgumentException.class, () -> service.submit(next));
+        jdbc.update("UPDATE delivery_submit SET cutoff_at=now()-interval '1 minute' WHERE delivery_id=?", batch);
+        var accepted = service.submit(next);
+        assertEquals(date.plusDays(1), accepted.deliveryDate());
+        assertEquals(batch, accepted.batchDeliveryId());
+        assertEquals(date, deliveries.find(batch).orElseThrow().deliveryDate());
+        assertThrows(IllegalArgumentException.class, () -> service.submit(new DeliverySubmissionService.SubmissionCommand(
+                next.ossUri(), next.pipelineCode(), date.minusDays(1), next.deliveryBatch(), target)));
+    }
+
+    @Test void batchPreparationLeaseExcludesDuplicatesAndReleasesAfterFailure() throws Exception {
+        // 两条真实 PG 连接竞争同一准备单；重复触发必须立即退出，其他批次不受影响。
+        var lease = new BatchPreparationLease(jdbc);
+        long id = ids.incrementAndGet();
+        var entered = new java.util.concurrent.CountDownLatch(1);
+        var release = new java.util.concurrent.CountDownLatch(1);
+        var executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+        try {
+            var first = executor.submit(() -> lease.run(id, () -> {
+                entered.countDown();
+                try { assertTrue(release.await(10, java.util.concurrent.TimeUnit.SECONDS)); }
+                catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException(e); }
+                return 7;
+            }));
+            assertTrue(entered.await(10, java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(0, lease.run(id, () -> { throw new AssertionError("Duplicate download started"); }));
+            assertEquals(3, lease.run(id + 1, () -> 3));
+            release.countDown();
+            assertEquals(7, first.get(10, java.util.concurrent.TimeUnit.SECONDS));
+            assertThrows(IllegalStateException.class, () -> lease.run(id, () -> { throw new IllegalStateException("test failure"); }));
+            assertEquals(9, lease.run(id, () -> 9));
+        } finally {
+            release.countDown();
+            executor.shutdownNow();
+        }
+    }
+
+    @Test void redistributionChangesOnlyUnconsumedOwnershipAndRejectsActiveSubmissions() throws Exception {
+        // 真实事务检查整包归属变化：原始包、canonical 包名与 source_seq 不能在运维中重排。
+        long batch=insertBatch(), one=ids.incrementAndGet(),two=ids.incrementAndGet();
+        insertEntity(one,"VENDOR-"+one,"jun");insertEntity(two,"VENDOR-"+two,"jun");
+        var sources=new SourceDataRepository(jdbc,mapper);
+        var packages=new DeliveryBatchRepository(jdbc);
+        for(int i=1;i<=4;i++) {
+            var source=sources.findById(insertSource(batch,"redistribute-"+i,10L*i)).orElseThrow();
+            packages.insertPlanned(batch,source,"BATCH-"+batch,source.originalFileName(),String.format("batch_%07d.tar.gz",i),1,one,"jun","group1");
+        }
+        markBatchPlanned(batch);
+        String original=jdbc.queryForObject("SELECT definition::text FROM pipeline_version WHERE pipeline_version_id=2",String.class);
+        var definition=(com.fasterxml.jackson.databind.node.ObjectNode)mapper.readTree(original);
+        var workers=definition.with("config").with("assignment").putArray("entityWorkers");
+        for(long entity:List.of(one,two)) {
+            var configured=workers.addObject().put("vendorCode","VENDOR-"+entity).put("entityCode","jun");
+            configured.putArray("workers").addObject().put("workerGroup",entity==one?"group1":"group2").put("maxPackagesPerRound",6000);
+        }
+        jdbc.update("UPDATE pipeline_version SET definition=?::jsonb WHERE pipeline_version_id=2",definition.toString());
+        try {
+            var service=new BatchRedistributionService(jdbc,transactions,new DeliveryRepository(jdbc,mapper),new PipelineRepository(mapper),
+                    new DeliveryProjectionService(jdbc),new DeliveryEventRepository(jdbc,mapper),mapper);
+            var before=jdbc.queryForList("SELECT data_id,new_file_name,source_seq FROM delivery_batch WHERE batch_delivery_id=? ORDER BY batch_item_id",batch);
+            var command=new BatchRedistributionService.Command(LocalDate.now().plusDays(1),4,List.of(
+                    new BatchRedistributionService.Target("VENDOR-"+one,"jun",2),new BatchRedistributionService.Target("VENDOR-"+two,"jun",2)),"capacity balance");
+            assertEquals(4,service.redistribute(batch,command).get("packageCount"));
+            assertEquals(before,jdbc.queryForList("SELECT data_id,new_file_name,source_seq FROM delivery_batch WHERE batch_delivery_id=? ORDER BY batch_item_id",batch));
+            assertEquals(2,jdbc.queryForObject("SELECT count(*) FROM delivery_batch WHERE batch_delivery_id=? AND delivery_entity_id=?",Integer.class,batch,two));
+            assertEquals(2,jdbc.queryForObject("SELECT jsonb_array_length(batch_extension->'allocations') FROM delivery_submit WHERE delivery_id=?",Integer.class,batch));
+            insertSubmission(batch,one,1);
+            assertThrows(IdempotencyConflictException.class,()->service.redistribute(batch,command));
+        } finally { jdbc.update("UPDATE pipeline_version SET definition=?::jsonb WHERE pipeline_version_id=2",original); }
+    }
+
+    @Test void verifiedNamingReceiptChangesAliasWithoutChangingCanonicalPackageOrHistoricalResult() {
+        long batch=insertBatch(), entity=ids.incrementAndGet();insertEntity(entity,"VENDOR-"+entity,"jun");
+        var sources=new SourceDataRepository(jdbc,mapper);var packages=new DeliveryBatchRepository(jdbc);
+        var tasks=new DeliveryTaskRepository(jdbc,transactions,packages,sources,new FtpFileNameAllocator(jdbc));
+        var deliveries=new DeliveryRepository(jdbc,mapper);
+        var source=sources.findById(insertSource(batch,"naming-receipt",10)).orElseThrow();
+        String canonical="batch_0000101.tar.gz",sha="b".repeat(64);
+        packages.insertPlanned(batch,source,"BATCH-"+batch,source.originalFileName(),canonical,1,entity,"jun","group1");
+        long submit=insertSubmission(batch,entity,1);
+        long task=tasks.createPlanned(deliveries.find(submit).orElseThrow(),new BatchPackage(canonical,"group1",1,10),deliveries.entity(entity),"sourceDownload");
+        jdbc.update("UPDATE delivery_task SET ftp_sequence=NULL,ftp_file_name=?,execution_status='SUCCEEDED' WHERE task_id=?",canonical,task);
+        String historical="{\"uri\":\"ftp://test/2026-11-26/"+canonical+"\",\"sizeBytes\":10,\"sha256\":\""+sha+"\"}";
+        jdbc.update("INSERT INTO delivery_node(delivery_id,task_id,original_file_name,new_file_name,node_id,node_type,stage_code,attempt,fence,status,output_locator) " +
+                "VALUES(?,?,?,?,'ftpDownloadVerify','ftp.download-verify','FTP',1,0,'SUCCEEDED',?::jsonb)",submit,task,source.originalFileName(),canonical,historical);
+        var naming=new FtpNamingService(jdbc,transactions,deliveries,new DeliveryEventRepository(jdbc,mapper),mapper);
+        LocalDate day=tasks.findById(task).orElseThrow().deliveryDate();
+        var invalid=new FtpNamingService.Command(day,"real external receipt","c".repeat(64),List.of(new FtpNamingService.FileProof(task,canonical,"batch_0000001.tar.gz",10,"d".repeat(64))));
+        assertThrows(IllegalArgumentException.class,()->naming.adopt("VENDOR-"+entity,"jun",invalid));
+        assertEquals(canonical,tasks.findById(task).orElseThrow().ftpFileName());
+        var valid=new FtpNamingService.Command(day,"real external receipt","c".repeat(64),List.of(new FtpNamingService.FileProof(task,canonical,"batch_0000001.tar.gz",10,sha)));
+        assertEquals(2,naming.adopt("VENDOR-"+entity,"jun",valid).get("nextSequence"));
+        assertEquals(canonical,tasks.findById(task).orElseThrow().newFileName());
+        assertEquals("batch_0000001.tar.gz",tasks.findById(task).orElseThrow().ftpFileName());
+        assertEquals("ftp://test/2026-11-26/"+canonical,jdbc.queryForObject("SELECT output_locator->>'uri' FROM delivery_node WHERE task_id=?",String.class,task));
+    }
+
+    @Test void ftpNamesCountIndependentlyPerEntityAndContinueAcrossConcurrentTransactions() throws Exception {
+        long one=ids.incrementAndGet(), two=ids.incrementAndGet();
+        insertEntity(one,"VENDOR-"+one,"jun");
+        insertEntity(two,"VENDOR-"+two,"jun");
+        var names=new FtpFileNameAllocator(jdbc);
+        LocalDate day=LocalDate.of(2026,11,26);
+        assertEquals(1L,transactions.execute(status->names.allocate(day,one)).sequence());
+        assertEquals(1L,transactions.execute(status->names.allocate(day,two)).sequence());
+        var executor=java.util.concurrent.Executors.newFixedThreadPool(4);
+        try {
+            var futures=new java.util.ArrayList<java.util.concurrent.Future<Long>>();
+            for(int i=0;i<12;i++) futures.add(executor.submit(()->transactions.execute(status->names.allocate(day,one)).sequence()));
+            var sequences=new java.util.HashSet<Long>();
+            for(var future:futures) sequences.add(future.get(10,java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(12,sequences.size());
+            assertEquals(2L,sequences.stream().min(Long::compare).orElseThrow());
+            assertEquals(13L,sequences.stream().max(Long::compare).orElseThrow());
+            assertEquals(1L,transactions.execute(status->names.allocate(day.plusDays(1),one)).sequence());
+            assertThrows(IllegalStateException.class,()->transactions.execute(status->{names.allocate(day,two);throw new IllegalStateException("rollback");}));
+            assertEquals(2L,transactions.execute(status->names.allocate(day,two)).sequence());
+        } finally { executor.shutdownNow(); }
     }
 
     private long insertBatch() {
